@@ -158,6 +158,19 @@ if(HAVE_LIBEXECINFO)
   set(HAVE_BACKTRACE_SYMBOLS TRUE)
 endif()
 
+if(UNIX)
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag("-std=c++11" CXX_FLAG_CXX11)
+  check_cxx_compiler_flag("-std=c++0x" CXX_FLAG_CXX0X)
+  if(CXX_FLAG_CXX11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  elseif(CXX_FLAG_CXX0X)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  else()
+    message(FATAL_ERROR "Your C++ compiler does not support C++11.")
+  endif()
+endif()
+
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h ESCAPE_QUOTES)
 
 install(

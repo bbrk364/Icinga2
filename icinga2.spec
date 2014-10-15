@@ -54,6 +54,18 @@
 %endif
 %endif
 
+%define gcc_c_package gcc
+%define gcc_cxx_package gcc-c++
+%define gcc_c_name gcc
+%define gcc_cxx_name g++
+
+%if "%{_vendor}" == "suse" && 0%{?suse_version} < 1310
+%define gcc_c_package gcc47
+%define gcc_cxx_package gcc47-c++
+%define gcc_c_name gcc-4.7
+%define gcc_cxx_name g++-4.7
+%endif
+
 %define icinga_user icinga
 %define icinga_group icinga
 %define icingacmd_group icingacmd
@@ -91,7 +103,10 @@ BuildRequires: libyajl-devel
 %endif
 %endif
 BuildRequires: openssl-devel
-BuildRequires: gcc-c++
+%if "%{gcc_c_package}" != "gcc"
+BuildRequires: %{gcc_c_package}
+%endif
+BuildRequires: %{gcc_cxx_package}
 BuildRequires: libstdc++-devel
 BuildRequires: cmake
 BuildRequires: flex >= 2.5.35
@@ -221,7 +236,7 @@ CMAKE_OPTS="$CMAKE_OPTS -DICINGA2_PLUGINDIR=%{_prefix}/lib/nagios/plugins"
 CMAKE_OPTS="$CMAKE_OPTS -DUSE_SYSTEMD=ON"
 %endif
 
-cmake $CMAKE_OPTS -DCMAKE_C_FLAGS:STRING="%{optflags} %{?march_flag}" -DCMAKE_CXX_FLAGS:STRING="%{optflags} %{?march_flag}" .
+CC=%{gcc_c_name} CXX=%{gcc_cxx_name} cmake $CMAKE_OPTS -DCMAKE_C_FLAGS:STRING="%{optflags} %{?march_flag}" -DCMAKE_CXX_FLAGS:STRING="%{optflags} %{?march_flag}" .
 
 make %{?_smp_mflags}
 

@@ -20,7 +20,7 @@ parentheses):
 
 * cmake
 * GNU make (make)
-* C++ compiler (gcc-c++ on RHEL, build-essential on Debian)
+* C++ compiler: GCC (>= 4.6) or Clang (>= 3.0) (gcc-c++ on RHEL, build-essential on Debian)
 * OpenSSL library and header files (openssl-devel on RHEL, libssl-dev on Debian)
 * Boost library and header files (boost-devel on RHEL, libboost-all-dev on Debian)
 * GNU bison (bison)
@@ -38,6 +38,13 @@ example from the repoforge buildtools repository.
 
 * x86: http://mirror.hs-esslingen.de/repoforge/redhat/el5/en/i386/buildtools/
 * x86\_64: http://mirror.hs-esslingen.de/repoforge/redhat/el5/en/x86_64/buildtools/
+
+On RHEL 5 and 6 you'll also need the Red Hat Developer Toolset:
+
+* http://people.centos.org/tru/devtools-2/
+
+More specifically you'll need the packages devtoolset-2-gcc, devtoolset-2-gcc-c++
+and devtoolset-2-binutils.
 
 ### User Requirements
 
