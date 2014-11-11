@@ -29,7 +29,7 @@ set(base_SOURCES
   array-script.cpp boolean.cpp boolean-script.cpp console.cpp context.cpp
   convert.cpp datetime.cpp datetime.thpp datetime-script.cpp debuginfo.cpp dictionary.cpp dictionary-script.cpp
   configobject.cpp configobject.thpp configobject-script.cpp configtype.cpp configwriter.cpp dependencygraph.cpp
-  exception.cpp fifo.cpp filelogger.cpp filelogger.thpp initialize.cpp json.cpp
+  exception.cpp fifo.cpp filelogger.cpp filelogger.thpp gc.cpp gc-script.cpp initialize.cpp json.cpp
   json-script.cpp loader.cpp logger.cpp logger.thpp math-script.cpp
   netstring.cpp networkstream.cpp number.cpp number-script.cpp object.cpp
   object-script.cpp objecttype.cpp primitivetype.cpp process.cpp ringbuffer.cpp scriptframe.cpp
@@ -49,7 +49,7 @@ endif()
 
 add_library(base SHARED ${base_SOURCES})
 
-target_link_libraries(base ${CMAKE_DL_LIBS} ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} ${YAJL_LIBRARIES} mmatch socketpair)
+target_link_libraries(base ${CMAKE_DL_LIBS} ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} ${YAJL_LIBRARIES} ${GC_LIBRARIES} mmatch socketpair)
 
 if(HAVE_LIBEXECINFO)
     target_link_libraries(base execinfo)

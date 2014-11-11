@@ -42,7 +42,7 @@ static Timer::Ptr l_ObjectCountTimer;
  * Default constructor for the Object class.
  */
 Object::Object(void)
-	: m_References(0), m_Mutex(0)
+	: m_Mutex(0)
 #ifdef I2_DEBUG
 	, m_LockOwner(0)
 #endif /* I2_DEBUG */
@@ -207,45 +207,20 @@ Value icinga::GetPrototypeField(const Value& context, const String& field, bool 
 		return Empty;
 }
 
-#ifdef I2_LEAK_DEBUG
-void icinga::TypeAddObject(Object *object)
+#pragma GCC visibility push(hidden)
+
+extern "C++" {
+
+I2_BASE_API void *operator new(size_t size)
 {
-	boost::mutex::scoped_lock lock(l_ObjectCountLock);
-	String typeName = Utility::GetTypeName(typeid(*object));
-	l_ObjectCounts[typeName]++;
+	GC::Initialize();
+	return GC_malloc(size);
 }
 
-void icinga::TypeRemoveObject(Object *object)
+I2_BASE_API void operator delete(void *ptr)
 {
-	boost::mutex::scoped_lock lock(l_ObjectCountLock);
-	String typeName = Utility::GetTypeName(typeid(*object));
-	l_ObjectCounts[typeName]--;
 }
 
-static void TypeInfoTimerHandler(void)
-{
-	boost::mutex::scoped_lock lock(l_ObjectCountLock);
-
-	typedef std::map<String, int>::value_type kv_pair;
-	BOOST_FOREACH(kv_pair& kv, l_ObjectCounts) {
-		if (kv.second == 0)
-			continue;
-
-		Log(LogInformation, "TypeInfo")
-		    << kv.second << " " << kv.first << " objects";
-
-		kv.second = 0;
-	}
 }
 
-static void StartTypeInfoTimer(void)
-{
-	l_ObjectCountTimer = new Timer();
-	l_ObjectCountTimer->SetInterval(10);
-	l_ObjectCountTimer->OnTimerExpired.connect(boost::bind(TypeInfoTimerHandler));
-	l_ObjectCountTimer->Start();
-}
-
-INITIALIZE_ONCE(StartTypeInfoTimer);
-#endif /* I2_LEAK_DEBUG */
-
+#pragma GCC visibility pop

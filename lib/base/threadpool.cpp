@@ -23,6 +23,7 @@
 #include "base/utility.hpp"
 #include "base/exception.hpp"
 #include "base/application.hpp"
+#include "base/gc.hpp"
 #include <boost/bind.hpp>
 #include <iostream>
 
@@ -54,7 +55,7 @@ void ThreadPool::Start(void)
 	for (size_t i = 0; i < sizeof(m_Queues) / sizeof(m_Queues[0]); i++)
 		m_Queues[i].SpawnWorker(m_ThreadGroup);
 
-	m_MgmtThread = boost::thread(boost::bind(&ThreadPool::ManagerThreadProc, this));
+	m_MgmtThread = boost::thread(GC::WrapThread(boost::bind(&ThreadPool::ManagerThreadProc, this)));
 }
 
 void ThreadPool::Stop(void)
@@ -337,7 +338,7 @@ void ThreadPool::Queue::SpawnWorker(boost::thread_group& group)
 			Log(LogDebug, "ThreadPool", "Spawning worker thread.");
 
 			Threads[i] = WorkerThread(ThreadIdle);
-			Threads[i].Thread = group.create_thread(boost::bind(&ThreadPool::WorkerThread::ThreadProc, boost::ref(Threads[i]), boost::ref(*this)));
+			Threads[i].Thread = group.create_thread(GC::WrapThread(boost::bind(&ThreadPool::WorkerThread::ThreadProc, boost::ref(Threads[i]), boost::ref(*this))));
 
 			break;
 		}

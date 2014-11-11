@@ -22,6 +22,7 @@
 #include "base/logger.hpp"
 #include "base/application.hpp"
 #include "base/scriptglobal.hpp"
+#include "base/gc.hpp"
 #include <boost/thread/once.hpp>
 #include <boost/foreach.hpp>
 #include <map>
@@ -51,7 +52,7 @@ void SocketEventEngine::Start(void)
 
 		InitializeThread(tid);
 
-		m_Threads[tid] = boost::thread(boost::bind(&SocketEventEngine::ThreadProc, this, tid));
+		m_Threads[tid] = boost::thread(GC::WrapThread(boost::bind(&SocketEventEngine::ThreadProc, this, tid)));
 	}
 }
 

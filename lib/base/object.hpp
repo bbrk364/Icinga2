@@ -22,6 +22,7 @@
 
 #include "base/i2-base.hpp"
 #include "base/debug.hpp"
+#include "base/gc.hpp"
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -108,7 +109,7 @@ struct TypeHelper<T, true>
  *
  * @ingroup base
  */
-class I2_BASE_API Object
+class I2_BASE_API Object : public GCObject
 {
 public:
 	DECLARE_PTR_TYPEDEFS(Object);
@@ -145,7 +146,6 @@ private:
 	Object(const Object& other);
 	Object& operator=(const Object& rhs);
 
-	uintptr_t m_References;
 	mutable uintptr_t m_Mutex;
 
 #ifdef I2_DEBUG
@@ -164,40 +164,12 @@ private:
 
 I2_BASE_API Value GetPrototypeField(const Value& context, const String& field, bool not_found_error, const DebugInfo& debugInfo);
 
-void TypeAddObject(Object *object);
-void TypeRemoveObject(Object *object);
-
 inline void intrusive_ptr_add_ref(Object *object)
 {
-#ifdef I2_LEAK_DEBUG
-	if (object->m_References == 0)
-		TypeAddObject(object);
-#endif /* I2_LEAK_DEBUG */
-
-#ifdef _WIN32
-	InterlockedIncrement(&object->m_References);
-#else /* _WIN32 */
-	__sync_add_and_fetch(&object->m_References, 1);
-#endif /* _WIN32 */
 }
 
 inline void intrusive_ptr_release(Object *object)
 {
-	uintptr_t refs;
-
-#ifdef _WIN32
-	refs = InterlockedDecrement(&object->m_References);
-#else /* _WIN32 */
-	refs = __sync_sub_and_fetch(&object->m_References, 1);
-#endif /* _WIN32 */
-
-	if (unlikely(refs == 0)) {
-#ifdef I2_LEAK_DEBUG
-		TypeRemoveObject(object);
-#endif /* I2_LEAK_DEBUG */
-
-		delete object;
-	}
 }
 
 template<typename T>

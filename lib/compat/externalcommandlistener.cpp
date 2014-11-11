@@ -25,6 +25,7 @@
 #include "base/exception.hpp"
 #include "base/application.hpp"
 #include "base/statsfunction.hpp"
+#include "base/gc.hpp"
 
 using namespace icinga;
 
@@ -51,7 +52,7 @@ void ExternalCommandListener::Start(bool runtimeCreated)
 	ObjectImpl<ExternalCommandListener>::Start(runtimeCreated);
 
 #ifndef _WIN32
-	m_CommandThread = boost::thread(boost::bind(&ExternalCommandListener::CommandPipeThread, this, GetCommandPath()));
+	m_CommandThread = boost::thread(GC::WrapThread(boost::bind(&ExternalCommandListener::CommandPipeThread, this, GetCommandPath())));
 	m_CommandThread.detach();
 #endif /* _WIN32 */
 }

@@ -30,6 +30,7 @@
 #include "base/exception.hpp"
 #include "base/convert.hpp"
 #include "base/statsfunction.hpp"
+#include "base/gc.hpp"
 #include <boost/foreach.hpp>
 
 using namespace icinga;
@@ -76,7 +77,7 @@ void CheckerComponent::Start(bool runtimeCreated)
 {
 	ObjectImpl<CheckerComponent>::Start(runtimeCreated);
 
-	m_Thread = boost::thread(boost::bind(&CheckerComponent::CheckThreadProc, this));
+	m_Thread = boost::thread(GC::WrapThread(boost::bind(&CheckerComponent::CheckThreadProc, this)));
 
 	m_ResultTimer = new Timer();
 	m_ResultTimer->SetInterval(5);

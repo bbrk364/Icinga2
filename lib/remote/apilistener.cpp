@@ -34,6 +34,7 @@
 #include "base/context.hpp"
 #include "base/statsfunction.hpp"
 #include "base/exception.hpp"
+#include "base/gc.hpp"
 #include <fstream>
 
 using namespace icinga;
@@ -232,7 +233,7 @@ bool ApiListener::AddListener(const String& node, const String& service)
 		return false;
 	}
 
-	boost::thread thread(boost::bind(&ApiListener::ListenerThreadProc, this, server));
+	boost::thread thread(GC::WrapThread(boost::bind(&ApiListener::ListenerThreadProc, this, server)));
 	thread.detach();
 
 	m_Servers.insert(server);
