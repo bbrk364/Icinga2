@@ -22,7 +22,6 @@
 #include "base/dictionary.hpp"
 #include "base/utility.hpp"
 #include "base/objectlock.hpp"
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
 using namespace icinga;
@@ -260,10 +259,10 @@ Value icinga::operator-(const Value& lhs, const Value& rhs)
 		Array::Ptr right = rhs;
 
 		ObjectLock olock(left);
-		BOOST_FOREACH(const Value& lv, left) {
+		for (const auto& lv : left) {
 			bool found = false;
 			ObjectLock xlock(right);
-			BOOST_FOREACH(const Value& rv, right) {
+			for (const auto& rv : right) {
 				if (lv == rv) {
 					found = true;
 					break;

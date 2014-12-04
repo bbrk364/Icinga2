@@ -37,9 +37,7 @@ void Type::Register(const Type::Ptr& type)
 
 Type::Ptr Type::GetByName(const String& name)
 {
-	std::map<String, Type::Ptr>::const_iterator it;
-
-	it = GetTypes().find(name);
+	const auto& it = GetTypes().find(name);
 
 	if (it == GetTypes().end())
 		return Type::Ptr();

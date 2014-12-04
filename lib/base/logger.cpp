@@ -25,7 +25,6 @@
 #include "base/objectlock.hpp"
 #include "base/context.hpp"
 #include "base/scriptvariable.hpp"
-#include <boost/foreach.hpp>
 #include <iostream>
 
 using namespace icinga;
@@ -101,7 +100,7 @@ void icinga::IcingaLog(LogSeverity severity, const String& facility,
 		}
 	}
 
-	BOOST_FOREACH(const Logger::Ptr& logger, Logger::GetLoggers()) {
+	for (const auto& logger : Logger::GetLoggers()) {
 		ObjectLock llock(logger);
 
 		if (!logger->IsActive())

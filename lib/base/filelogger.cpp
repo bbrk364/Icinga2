@@ -33,9 +33,8 @@ Value FileLogger::StatsFunc(Dictionary::Ptr& status, Array::Ptr&)
 {
 	Dictionary::Ptr nodes = new Dictionary();
 
-	BOOST_FOREACH(const FileLogger::Ptr& filelogger, DynamicType::GetObjectsByType<FileLogger>()) {
+	for (const auto& filelogger : DynamicType::GetObjectsByType<FileLogger>())
 		nodes->Set(filelogger->GetName(), 1); //add more stats
-	}
 
 	status->Set("filelogger", nodes);
 

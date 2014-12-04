@@ -21,7 +21,6 @@
 #include "base/debug.hpp"
 #include "base/utility.hpp"
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
@@ -220,12 +219,11 @@ void Timer::AdjustTimers(double adjustment)
 
 	double now = Utility::GetTime();
 
-	typedef boost::multi_index::nth_index<TimerSet, 1>::type TimerView;
-	TimerView& idx = boost::get<1>(l_Timers);
+	const auto& idx = boost::get<1>(l_Timers);
 
 	std::vector<Timer *> timers;
 
-	BOOST_FOREACH(Timer *timer, idx) {
+	for (const auto& timer : idx) {
 		if (abs(now - (timer->m_Next + adjustment)) <
 		    abs(now - timer->m_Next)) {
 			timer->m_Next += adjustment;
@@ -233,7 +231,7 @@ void Timer::AdjustTimers(double adjustment)
 		}
 	}
 
-	BOOST_FOREACH(Timer *timer, timers) {
+	for (const auto& timer : timers) {
 		l_Timers.erase(timer);
 		l_Timers.insert(timer);
 	}
@@ -252,8 +250,7 @@ void Timer::TimerThreadProc(void)
 	for (;;) {
 		boost::mutex::scoped_lock lock(l_TimerMutex);
 
-		typedef boost::multi_index::nth_index<TimerSet, 1>::type NextTimerView;
-		NextTimerView& idx = boost::get<1>(l_Timers);
+		const auto& idx = boost::get<1>(l_Timers);
 
 		/* Wait until there is at least one timer. */
 		while (idx.empty() && !l_StopTimerThread)
@@ -262,7 +259,7 @@ void Timer::TimerThreadProc(void)
 		if (l_StopTimerThread)
 			break;
 
-		NextTimerView::iterator it = idx.begin();
+		const auto& it = idx.begin();
 		Timer *timer = *it;
 
 		double wait = timer->m_Next - Utility::GetTime();

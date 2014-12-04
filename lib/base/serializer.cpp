@@ -21,7 +21,6 @@
 #include "base/type.hpp"
 #include "base/application.hpp"
 #include "base/objectlock.hpp"
-#include <boost/foreach.hpp>
 
 using namespace icinga;
 
@@ -30,8 +29,7 @@ static Array::Ptr SerializeArray(const Array::Ptr& input, int attributeTypes)
 	Array::Ptr result = new Array();
 
 	ObjectLock olock(input);
-
-	BOOST_FOREACH(const Value& value, input) {
+	for (const auto& value : input) {
 		result->Add(Serialize(value, attributeTypes));
 	}
 
@@ -43,8 +41,7 @@ static Dictionary::Ptr SerializeDictionary(const Dictionary::Ptr& input, int att
 	Dictionary::Ptr result = new Dictionary();
 
 	ObjectLock olock(input);
-
-	BOOST_FOREACH(const Dictionary::Pair& kv, input) {
+	for (const auto& kv : input) {
 		result->Set(kv.first, Serialize(kv.second, attributeTypes));
 	}
 
@@ -78,8 +75,7 @@ static Array::Ptr DeserializeArray(const Array::Ptr& input, bool safe_mode, int 
 	Array::Ptr result = new Array();
 
 	ObjectLock olock(input);
-
-	BOOST_FOREACH(const Value& value, input) {
+	for (const auto& value : input) {
 		result->Add(Deserialize(value, safe_mode, attributeTypes));
 	}
 
@@ -91,8 +87,7 @@ static Dictionary::Ptr DeserializeDictionary(const Dictionary::Ptr& input, bool 
 	Dictionary::Ptr result = new Dictionary();
 
 	ObjectLock olock(input);
-
-	BOOST_FOREACH(const Dictionary::Pair& kv, input) {
+	for (const auto& kv : input) {
 		result->Set(kv.first, Deserialize(kv.second, safe_mode, attributeTypes));
 	}
 
@@ -122,7 +117,7 @@ static Object::Ptr DeserializeObject(const Object::Ptr& object, const Dictionary
 		instance = type->Instantiate();
 
 	ObjectLock olock(input);
-	BOOST_FOREACH(const Dictionary::Pair& kv, input) {
+	for (const auto& kv : input) {
 		if (kv.first.IsEmpty())
 			continue;
 

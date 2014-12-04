@@ -64,31 +64,29 @@ private:
 	template<typename T>
 	void DumpNameList(std::ostream& fp, const T& list)
 	{
-		typename T::const_iterator it;
 		bool first = true;
-		for (it = list.begin(); it != list.end(); it++) {
+		for (const auto& obj : list) {
 			if (!first)
 				fp << ",";
 			else
 				first = false;
 
-			ObjectLock olock(*it);
-			fp << (*it)->GetName();
+			ObjectLock olock(obj);
+			fp << obj->GetName();
 		}
 	}
 
 	template<typename T>
 	void DumpStringList(std::ostream& fp, const T& list)
 	{
-		typename T::const_iterator it;
 		bool first = true;
-		for (it = list.begin(); it != list.end(); it++) {
+		for (const auto& str : list) {
 			if (!first)
 				fp << ",";
 			else
 				first = false;
 
-			fp << *it;
+			fp << str;
 		}
 	}
 

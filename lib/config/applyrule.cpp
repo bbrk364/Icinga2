@@ -103,7 +103,7 @@ bool ApplyRule::IsValidSourceType(const String& sourceType)
 
 bool ApplyRule::IsValidTargetType(const String& sourceType, const String& targetType)
 {
-	TypeMap::const_iterator it = m_Types.find(sourceType);
+	const auto& it = m_Types.find(sourceType);
 
 	if (it == m_Types.end())
 		return false;
@@ -121,7 +121,7 @@ bool ApplyRule::IsValidTargetType(const String& sourceType, const String& target
 
 std::vector<String> ApplyRule::GetTargetTypes(const String& sourceType)
 {
-	TypeMap::const_iterator it = m_Types.find(sourceType);
+	const auto& it = m_Types.find(sourceType);
 
 	if (it == m_Types.end())
 		return std::vector<String>();

@@ -81,6 +81,18 @@ private:
 };
 
 template<typename T>
+DynamicTypeIterator<T> begin(const std::pair<DynamicTypeIterator<T>, DynamicTypeIterator<T> >& x)
+{
+	return x.first;
+}
+
+template<typename T>
+DynamicTypeIterator<T> end(const std::pair<DynamicTypeIterator<T>, DynamicTypeIterator<T> >& x)
+{
+	return x.second;
+}
+
+template<typename T>
 class DynamicTypeIterator : public boost::iterator_facade<DynamicTypeIterator<T>, const intrusive_ptr<T>, boost::forward_traversal_tag>
 {
 public:

@@ -28,7 +28,6 @@
 #include "base/objectlock.hpp"
 #include <mmatch.h>
 #include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/trim.hpp>
@@ -157,7 +156,7 @@ String Utility::DirName(const String& path)
 	String dupPath = path;
 
 	/* PathRemoveFileSpec doesn't properly handle forward slashes. */
-	BOOST_FOREACH(char& ch, dupPath) {
+	for (auto& ch : dupPath) {
 		if (ch == '/')
 			ch = '\\';
 	}
@@ -352,7 +351,7 @@ void Utility::ExecuteDeferredInitializers(void)
 	if (!GetDeferredInitializers().get())
 		return;
 
-	BOOST_FOREACH(const boost::function<void(void)>& callback, *GetDeferredInitializers().get())
+	for (const auto& callback : *GetDeferredInitializers().get())
 		callback();
 
 	GetDeferredInitializers().reset();
@@ -483,12 +482,12 @@ bool Utility::Glob(const String& pathSpec, const boost::function<void (const Str
 #endif /* _WIN32 */
 
 	std::sort(files.begin(), files.end());
-	BOOST_FOREACH(const String& cpath, files) {
+	for (const auto& cpath : files) {
 		callback(cpath);
 	}
 
 	std::sort(dirs.begin(), dirs.end());
-	BOOST_FOREACH(const String& cpath, dirs) {
+	for (const auto& cpath : dirs) {
 		callback(cpath);
 	}
 
@@ -609,17 +608,17 @@ bool Utility::GlobRecursive(const String& path, const String& pattern, const boo
 #endif /* _WIN32 */
 
 	std::sort(files.begin(), files.end());
-	BOOST_FOREACH(const String& cpath, files) {
+	for (const auto& cpath : files) {
 		callback(cpath);
 	}
 
 	std::sort(dirs.begin(), dirs.end());
-	BOOST_FOREACH(const String& cpath, dirs) {
+	for (const auto& cpath : dirs) {
 		callback(cpath);
 	}
 
 	std::sort(alldirs.begin(), alldirs.end());
-	BOOST_FOREACH(const String& cpath, alldirs) {
+	for (const auto& cpath : alldirs) {
 		GlobRecursive(cpath, pattern, callback, type);
 	}
 
@@ -784,7 +783,7 @@ String Utility::Join(const Array::Ptr& tokens, char separator)
 	bool first = true;
 
 	ObjectLock olock(tokens);
-	BOOST_FOREACH(const Value& vtoken, tokens) {
+	for (const auto& vtoken : tokens) {
 		String token = Convert::ToString(vtoken);
 		boost::algorithm::replace_all(token, "\\", "\\\\");
 
@@ -907,7 +906,7 @@ String Utility::EscapeShellCmd(const String& s)
 	size_t prev_quote = String::NPos;
 	int index = -1;
 
-	BOOST_FOREACH(char ch, s) {
+	for (const auto& ch : s) {
 		bool escape = false;
 
 		index++;
@@ -957,7 +956,7 @@ String Utility::EscapeShellArg(const String& s)
 	result = "'";
 #endif /* _WIN32 */
 
-	BOOST_FOREACH(char ch, s) {
+	for (const auto& ch : s) {
 #ifdef _WIN32
 		if (ch == '"' || ch == '%') {
 			result += ' ';
@@ -1038,7 +1037,7 @@ unsigned long Utility::SDBM(const String& str, size_t len)
 	unsigned long hash = 0;
 	size_t current = 0;
 
-	BOOST_FOREACH(char c, str) {
+	for (const auto& c : str) {
 		if (current >= len)
 			break;
 

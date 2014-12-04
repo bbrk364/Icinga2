@@ -24,6 +24,7 @@
 #include "base/exception.hpp"
 #include "base/application.hpp"
 #include "base/statsfunction.hpp"
+#include <boost/foreach.hpp>
 
 using namespace icinga;
 

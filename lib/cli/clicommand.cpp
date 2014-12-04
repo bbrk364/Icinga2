@@ -122,7 +122,7 @@ CLICommand::Ptr CLICommand::GetByName(const std::vector<String>& name)
 {
 	boost::mutex::scoped_lock lock(GetRegistryMutex());
 
-	std::map<std::vector<String>, CLICommand::Ptr>::const_iterator it = GetRegistry().find(name);
+	const auto& it = GetRegistry().find(name);
 
 	if (it == GetRegistry().end())
 		return CLICommand::Ptr();

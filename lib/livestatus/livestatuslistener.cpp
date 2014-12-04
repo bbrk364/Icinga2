@@ -32,6 +32,7 @@
 #include "base/scriptfunction.hpp"
 #include "base/statsfunction.hpp"
 #include "base/convert.hpp"
+#include <boost/foreach.hpp>
 
 using namespace icinga;
 

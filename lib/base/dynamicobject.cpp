@@ -33,7 +33,6 @@
 #include "base/workqueue.hpp"
 #include "base/context.hpp"
 #include <fstream>
-#include <boost/foreach.hpp>
 #include <boost/exception/errinfo_api_function.hpp>
 #include <boost/exception/errinfo_errno.hpp>
 #include <boost/exception/errinfo_file_name.hpp>
@@ -263,8 +262,8 @@ void DynamicObject::DumpObjects(const String& filename, int attributeTypes)
 
 	StdioStream::Ptr sfp = new StdioStream(&fp, false);
 
-	BOOST_FOREACH(const DynamicType::Ptr& type, DynamicType::GetTypes()) {
-		BOOST_FOREACH(const DynamicObject::Ptr& object, type->GetObjects()) {
+	for (const auto& type : DynamicType::GetTypes()) {
+		for (const auto& object : type->GetObjects()) {
 			Dictionary::Ptr persistentObject = new Dictionary();
 
 			persistentObject->Set("type", type->GetName());
@@ -354,8 +353,8 @@ void DynamicObject::RestoreObjects(const String& filename, int attributeTypes)
 
 	unsigned long no_state = 0;
 
-	BOOST_FOREACH(const DynamicType::Ptr& type, DynamicType::GetTypes()) {
-		BOOST_FOREACH(const DynamicObject::Ptr& object, type->GetObjects()) {
+	for (const auto& type : DynamicType::GetTypes()) {
+		for (const auto& object : type->GetObjects()) {
 			if (!object->GetStateLoaded()) {
 				object->OnStateLoaded();
 				object->SetStateLoaded(true);
@@ -371,8 +370,8 @@ void DynamicObject::RestoreObjects(const String& filename, int attributeTypes)
 
 void DynamicObject::StopObjects(void)
 {
-	BOOST_FOREACH(const DynamicType::Ptr& dt, DynamicType::GetTypes()) {
-		BOOST_FOREACH(const DynamicObject::Ptr& object, dt->GetObjects()) {
+	for (const auto& type : DynamicType::GetTypes()) {
+		for (const auto& object : type->GetObjects()) {
 			object->Deactivate();
 		}
 	}

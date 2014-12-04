@@ -36,7 +36,7 @@ DynamicType::Ptr DynamicType::GetByName(const String& name)
 {
 	boost::mutex::scoped_lock lock(GetStaticMutex());
 
-	DynamicType::TypeMap::const_iterator tt = InternalGetTypeMap().find(name);
+	const auto& tt = InternalGetTypeMap().find(name);
 
 	if (tt == InternalGetTypeMap().end()) {
 		Type::Ptr type = Type::GetByName(name);
@@ -117,7 +117,7 @@ DynamicObject::Ptr DynamicType::GetObject(const String& name) const
 {
 	ObjectLock olock(this);
 
-	DynamicType::ObjectMap::const_iterator nt = m_ObjectMap.find(name);
+	const auto& nt = m_ObjectMap.find(name);
 
 	if (nt == m_ObjectMap.end())
 		return DynamicObject::Ptr();

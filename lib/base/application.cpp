@@ -31,7 +31,6 @@
 #include "base/process.hpp"
 #include <sstream>
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/foreach.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/exception/errinfo_api_function.hpp>
 #include <boost/exception/errinfo_errno.hpp>
@@ -104,7 +103,7 @@ void Application::Exit(int rc)
 {
 	std::cout.flush();
 
-	BOOST_FOREACH(const Logger::Ptr& logger, Logger::GetLoggers()) {
+	for (const auto& logger : Logger::GetLoggers()) {
 		logger->Flush();
 	}
 
@@ -340,6 +339,7 @@ static void ReloadProcessCallback(const ProcessResult& pr)
 {
 	if (pr.ExitStatus != 0)
 		Log(LogCritical, "Application", "Found error in config: reloading aborted");
+
 	l_Restarting = false;
 }
 
@@ -357,6 +357,7 @@ pid_t Application::StartReloadProcess(void)
 		else
 			i++;     // the next parameter after --reload-internal is the pid, remove that too
 	}
+
 	args->Add("--reload-internal");
 	args->Add(Convert::ToString(Utility::GetPid()));
 
@@ -434,7 +435,7 @@ String Application::GetExePath(const String& argv0)
 			boost::algorithm::split(paths, pathEnv, boost::is_any_of(":"));
 
 			bool foundPath = false;
-			BOOST_FOREACH(String& path, paths) {
+			for (const auto& path : paths) {
 				String pathTest = path + "/" + argv0;
 
 				if (access(pathTest.CStr(), X_OK) == 0) {

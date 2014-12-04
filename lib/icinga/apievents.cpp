@@ -32,6 +32,7 @@
 #include "base/initialize.hpp"
 #include "base/serializer.hpp"
 #include "base/json.hpp"
+#include <boost/foreach.hpp>
 #include <fstream>
 
 using namespace icinga;

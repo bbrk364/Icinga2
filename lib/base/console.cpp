@@ -61,7 +61,7 @@ void Console::DetectType(void)
 void Console::SetType(std::ostream& fp, ConsoleType type)
 {
 	if (&fp == &std::cout || &fp == &std::cerr)
-	l_ConsoleType = type;
+		l_ConsoleType = type;
 }
 
 ConsoleType Console::GetType(std::ostream& fp)

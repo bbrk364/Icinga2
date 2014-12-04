@@ -21,7 +21,6 @@
 #include "base/objectlock.hpp"
 #include "base/debug.hpp"
 #include "base/primitivetype.hpp"
-#include <boost/foreach.hpp>
 
 using namespace icinga;
 

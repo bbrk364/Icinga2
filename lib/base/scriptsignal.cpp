@@ -29,7 +29,7 @@ void ScriptSignal::AddSlot(const Callback& slot)
 
 void ScriptSignal::Invoke(const std::vector<Value>& arguments)
 {
-	BOOST_FOREACH(const Callback& slot, m_Slots)
+	for (const auto& slot : m_Slots)
 		slot(arguments);
 }
 

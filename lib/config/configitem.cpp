@@ -266,12 +266,12 @@ ConfigItem::Ptr ConfigItem::GetObject(const String& type, const String& name)
 	{
 		boost::mutex::scoped_lock lock(m_Mutex);
 
-		ConfigItem::TypeMap::const_iterator it = m_Items.find(type);
+		const auto& it = m_Items.find(type);
 
 		if (it == m_Items.end())
 			return ConfigItem::Ptr();
 
-		ConfigItem::ItemMap::const_iterator it2 = it->second.find(name);
+		const auto& it2 = it->second.find(name);
 
 		if (it2 == it->second.end())
 			return ConfigItem::Ptr();
@@ -420,7 +420,7 @@ std::vector<ConfigItem::Ptr> ConfigItem::GetItems(const String& type)
 
 	boost::mutex::scoped_lock lock(m_Mutex);
 
-	TypeMap::const_iterator it = m_Items.find(type);
+	const auto& it = m_Items.find(type);
 
 	if (it == m_Items.end())
 		return items;

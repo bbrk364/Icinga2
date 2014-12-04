@@ -239,9 +239,7 @@ void DbConnection::SetObjectID(const DbObject::Ptr& dbobj, const DbReference& db
 
 DbReference DbConnection::GetObjectID(const DbObject::Ptr& dbobj) const
 {
-	std::map<DbObject::Ptr, DbReference>::const_iterator it;
-
-	it = m_ObjectIDs.find(dbobj);
+	const auto& it = m_ObjectIDs.find(dbobj);
 
 	if (it == m_ObjectIDs.end())
 		return DbReference();
@@ -275,9 +273,7 @@ DbReference DbConnection::GetInsertID(const DbType::Ptr& type, const DbReference
 	if (!objid.IsValid())
 		return DbReference();
 
-	std::map<std::pair<DbType::Ptr, DbReference>, DbReference>::const_iterator it;
-
-	it = m_InsertIDs.find(std::make_pair(type, objid));
+	const auto& it = m_InsertIDs.find(std::make_pair(type, objid));
 
 	if (it == m_InsertIDs.end())
 		return DbReference();
@@ -295,9 +291,7 @@ void DbConnection::SetNotificationInsertID(const CustomVarObject::Ptr& obj, cons
 
 DbReference DbConnection::GetNotificationInsertID(const CustomVarObject::Ptr& obj) const
 {
-	std::map<CustomVarObject::Ptr, DbReference>::const_iterator it;
-
-	it = m_NotificationInsertIDs.find(obj);
+	const auto& it = m_NotificationInsertIDs.find(obj);
 
 	if (it == m_NotificationInsertIDs.end())
 		return DbReference();

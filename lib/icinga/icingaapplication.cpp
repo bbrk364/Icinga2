@@ -29,6 +29,7 @@
 #include "base/scriptvariable.hpp"
 #include "base/initialize.hpp"
 #include "base/statsfunction.hpp"
+#include <boost/foreach.hpp>
 
 using namespace icinga;
 

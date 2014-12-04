@@ -68,6 +68,16 @@ private:
 	std::map<String, Value> m_Data; /**< The data for the dictionary. */
 };
 
+inline Dictionary::Iterator begin(const Dictionary::Ptr& x)
+{
+	return x->Begin();
+}
+
+inline Dictionary::Iterator end(const Dictionary::Ptr& x)
+{
+	return x->End();
+}
+
 inline Dictionary::Iterator range_begin(Dictionary::Ptr x)
 {
 	return x->Begin();

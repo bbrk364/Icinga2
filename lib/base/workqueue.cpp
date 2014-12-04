@@ -23,7 +23,6 @@
 #include "base/convert.hpp"
 #include "base/application.hpp"
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 
 using namespace icinga;
 
@@ -154,7 +153,7 @@ void WorkQueue::WorkerThreadProc(void)
 
 		lock.unlock();
 
-		BOOST_FOREACH(WorkItem& wi, items) {
+		for (const auto& wi : items) {
 			try {
 				wi.Callback();
 			}

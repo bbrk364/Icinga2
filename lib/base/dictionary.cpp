@@ -21,7 +21,6 @@
 #include "base/objectlock.hpp"
 #include "base/debug.hpp"
 #include "base/primitivetype.hpp"
-#include <boost/foreach.hpp>
 
 using namespace icinga;
 
@@ -70,9 +69,7 @@ Value Dictionary::Get(const char *key) const
 	ASSERT(!OwnsLock());
 	ObjectLock olock(this);
 
-	std::map<String, Value>::const_iterator it;
-
-	it = std::lower_bound(m_Data.begin(), m_Data.end(), key, DictionaryKeyLessComparer());
+	const auto& it = std::lower_bound(m_Data.begin(), m_Data.end(), key, DictionaryKeyLessComparer());
 
 	if (it == m_Data.end() || DictionaryKeyLessComparer()(key, *it))
 		return Empty;
@@ -102,8 +99,7 @@ void Dictionary::Set(const String& key, const Value& value)
 	ASSERT(!OwnsLock());
 	ObjectLock olock(this);
 
-	std::pair<std::map<String, Value>::iterator, bool> ret;
-	ret = m_Data.insert(std::make_pair(key, value));
+	auto ret = m_Data.insert(std::make_pair(key, value));
 	if (!ret.second)
 		ret.first->second = value;
 }
@@ -173,8 +169,7 @@ void Dictionary::Remove(const String& key)
 	ASSERT(!OwnsLock());
 	ObjectLock olock(this);
 
-	Dictionary::Iterator it;
-	it = m_Data.find(key);
+	const auto& it = m_Data.find(key);
 
 	if (it == m_Data.end())
 		return;
@@ -199,9 +194,8 @@ void Dictionary::CopyTo(const Dictionary::Ptr& dest) const
 	ASSERT(!OwnsLock());
 	ObjectLock olock(this);
 
-	BOOST_FOREACH(const Dictionary::Pair& kv, m_Data) {
+	for (const auto& kv : m_Data)
 		dest->Set(kv.first, kv.second);
-	}
 }
 
 /**

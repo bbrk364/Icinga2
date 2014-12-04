@@ -27,7 +27,6 @@
 #include "base/dynamictype.hpp"
 #include "base/application.hpp"
 #include "base/configerror.hpp"
-#include <boost/foreach.hpp>
 #include <boost/regex.hpp>
 #include <algorithm>
 #include <set>
@@ -96,18 +95,18 @@ Array::Ptr ScriptUtils::Union(const std::vector<Value>& arguments)
 {
 	std::set<Value> values;
 
-	BOOST_FOREACH(const Value& varr, arguments) {
+	for (const auto& varr : arguments) {
 		Array::Ptr arr = varr;
 
 		if (arr) {
-			BOOST_FOREACH(const Value& value, arr) {
+			for (const auto& value : arr) {
 				values.insert(value);
 			}
 		}
 	}
 
 	Array::Ptr result = new Array();
-	BOOST_FOREACH(const Value& value, values) {
+	for (const auto& value : values) {
 		result->Add(value);
 	}
 
@@ -233,7 +232,7 @@ Array::Ptr ScriptUtils::Keys(const Dictionary::Ptr& dict)
 
 	if (dict) {
 		ObjectLock olock(dict);
-		BOOST_FOREACH(const Dictionary::Pair& kv, dict) {
+		for (const auto& kv : dict) {
 			result->Add(kv.first);
 		}
 	}

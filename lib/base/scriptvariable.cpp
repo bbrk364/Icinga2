@@ -24,7 +24,6 @@
 #include "base/netstring.hpp"
 #include "base/json.hpp"
 #include "base/convert.hpp"
-#include <boost/foreach.hpp>
 #include <fstream>
 
 using namespace icinga;
@@ -112,7 +111,7 @@ void ScriptVariable::WriteVariablesFile(const String& filename)
 
 	StdioStream::Ptr sfp = new StdioStream(&fp, false);
 
-	BOOST_FOREACH(const ScriptVariableRegistry::ItemMap::value_type& kv, ScriptVariableRegistry::GetInstance()->GetItems()) {
+	for (const auto& kv : ScriptVariableRegistry::GetInstance()->GetItems()) {
 		Dictionary::Ptr persistentVariable = new Dictionary();
 
 		persistentVariable->Set("name", kv.first);

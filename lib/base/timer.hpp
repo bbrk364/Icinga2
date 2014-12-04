@@ -73,6 +73,11 @@ public:
 			return m_Timer;
 		}
 
+		Timer *operator->(void) const
+		{
+			return m_Timer;
+		}
+
 	private:
 		Timer *m_Timer;
 	};
