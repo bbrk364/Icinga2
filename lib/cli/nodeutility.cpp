@@ -255,7 +255,7 @@ void NodeUtility::CollectNodes(const String& node_file, std::vector<Dictionary::
  * Node Setup helpers
  */
 
-int NodeUtility::GenerateNodeIcingaConfig(const std::vector<std::string>& endpoints)
+int NodeUtility::GenerateNodeIcingaConfig(const std::vector<std::string>& endpoints, const std::vector<std::string>& global_zones)
 {
 	Array::Ptr my_config = new Array();
 
@@ -322,6 +322,15 @@ int NodeUtility::GenerateNodeIcingaConfig(const std::vector<std::string>& endpoi
 	/* store the local config */
 	my_config->Add(my_endpoint);
 	my_config->Add(my_zone);
+
+	BOOST_FOREACH(const String& global_zone_name, global_zones) {
+		Dictionary::Ptr global_zone = new Dictionary();
+		global_zone->Set("__name", global_zone_name);
+		global_zone->Set("__type", "Zone");
+		global_zone->Set("global", true);
+
+		my_config->Add(global_zone);
+	}
 
 	/* write the newly generated configuration */
 	String zones_path = Application::GetSysconfDir() + "/icinga2/zones.conf";

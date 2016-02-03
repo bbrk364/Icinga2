@@ -134,6 +134,7 @@ int NodeWizardCommand::Run(const boost::program_options::variables_map& vm,
 		String cn = answer;
 		cn = cn.Trim();
 
+		/* endpoints */
 		std::vector<std::string> endpoints;
 
 		String endpoint_buffer;
@@ -350,6 +351,40 @@ wizard_ticket:
 			    << node_cert << "'. Verify it yourself!";
 		}
 
+		/* global zones */
+		std::vector<std::string> global_zones;
+
+		String global_zones_buffer;
+
+		std::cout << ConsoleColorTag(Console_Bold)
+		    << "Please specify the global zones for this node:"
+		    << ConsoleColorTag(Console_Normal) << "\n";
+
+wizard_global_zone_loop_start:
+		std::cout << ConsoleColorTag(Console_Bold)
+		    << "Global zone name [global-templates]:" << ConsoleColorTag(Console_Normal);
+		std::getline(std::cin, answer);
+		boost::algorithm::to_lower(answer);
+
+		global_zones_buffer = answer;
+		global_zones_buffer.Trim();
+
+		if (global_zones_buffer.IsEmpty())
+			global_zones_buffer = "global-templates";
+
+		global_zones.push_back(global_zones_buffer);
+
+		std::cout << ConsoleColorTag(Console_Bold) << "Add more global zones?"
+		    << ConsoleColorTag(Console_Normal) << " [y/N]: ";
+		std::getline (std::cin, answer);
+
+		boost::algorithm::to_lower(answer);
+
+		choice = answer;
+
+		if (choice.Contains("y"))
+			goto wizard_global_zone_loop_start;
+
 		/* apilistener config */
 		std::cout << ConsoleColorTag(Console_Bold)
 		    << "Please specify the API bind host/port"
@@ -442,7 +477,7 @@ wizard_ticket:
 		/* apilistener config */
 		Log(LogInformation, "cli", "Generating local zones.conf.");
 
-		NodeUtility::GenerateNodeIcingaConfig(endpoints);
+		NodeUtility::GenerateNodeIcingaConfig(endpoints, global_zones);
 
 		if (cn != Utility::GetFQDN()) {
 			Log(LogWarning, "cli")

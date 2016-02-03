@@ -59,13 +59,14 @@ void NodeSetupCommand::InitParameters(boost::program_options::options_descriptio
 	visibleDesc.add_options()
 		("zone", po::value<std::string>(), "The name of the local zone")
 		("master_host", po::value<std::string>(), "The name of the master host for auto-signing the csr")
-		("endpoint", po::value<std::vector<std::string> >(), "Connect to remote endpoint; syntax: cn[,host,port]")
+		("endpoint", po::value<std::vector<std::string> >(), "Connect to remote endpoint; syntax: cn[,host,port] (can be repeated to add more than one)")
 		("listen", po::value<std::string>(), "Listen on host,port")
 		("ticket", po::value<std::string>(), "Generated ticket number for this request")
 		("trustedcert", po::value<std::string>(), "Trusted master certificate file")
 		("cn", po::value<std::string>(), "The certificate's common name")
 		("accept-config", "Accept config from master")
 		("accept-commands", "Accept commands from master")
+		("global_zone", po::value<std::vector<std::string> >(), "Global zone name (can be repeated to add more than one)")
 		("master", "Use setup for a master instance");
 
 	hiddenDesc.add_options()
@@ -427,7 +428,7 @@ int NodeSetupCommand::SetupNode(const boost::program_options::variables_map& vm,
 
 	Log(LogInformation, "cli", "Generating zone and object configuration.");
 
-	NodeUtility::GenerateNodeIcingaConfig(vm["endpoint"].as<std::vector<std::string> >());
+	NodeUtility::GenerateNodeIcingaConfig(vm["endpoint"].as<std::vector<std::string> >(), vm["global_zone"].as<std::vector<std::string> >());
 
 	/* update constants.conf with NodeName = CN */
 	if (cn != Utility::GetFQDN()) {

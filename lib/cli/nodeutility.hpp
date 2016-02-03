@@ -59,7 +59,7 @@ public:
 	static void UpdateConstant(const String& name, const String& value);
 
 	/* node setup helpers */
-	static int GenerateNodeIcingaConfig(const std::vector<std::string>& endpoints);
+	static int GenerateNodeIcingaConfig(const std::vector<std::string>& endpoints, const std::vector<std::string>& global_zones);
 	static int GenerateNodeMasterIcingaConfig(void);
 
 	/* black/whitelist */
