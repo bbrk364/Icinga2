@@ -52,6 +52,7 @@ INT wmain(INT argc, WCHAR **argv)
 
 	if (parseArguments(argc, argv, vm, printInfo) != -1)
 		return 3;
+
 	if (printInfo.ipv4) {
 		if (check_ping4(printInfo, response) != -1)
 			return 3;
@@ -247,29 +248,30 @@ INT printOutput(printInfoStruct& printInfo, response& response)
 	return state;
 }
 
-INT check_ping4(const printInfoStruct& pi, response& response)
+INT check_ping4(CONST printInfoStruct& pi, response& response)
 {
-	in_addr ipDest4;
 	HANDLE hIcmp;
 	DWORD dwRet = 0, dwRepSize = 0;
 	LPVOID repBuf = NULL;
 	UINT rtt = 0;
 	INT num = pi.num;
 	LARGE_INTEGER frequency, timer1, timer2;
-	LPCWSTR term;
 
 	if (debug)
 		std::wcout << L"Parsing ip address" << '\n';
 
-	if (RtlIpv4StringToAddress(pi.host.c_str(), TRUE, &term, &ipDest4) == STATUS_INVALID_PARAMETER) {
-		std::wcout << pi.host << " is not a valid ip address\n";
+	PADDRINFOW pAddrinfo;
+	ADDRINFOW hints = { 0 };
+	hints.ai_family = AF_INET;
+
+	INT ret = GetAddrInfoW(pi.host.c_str(), NULL, &hints, &pAddrinfo);
+
+	if (ret) {
+		std::wcout << gai_strerror(ret) << std::endl;
 		return 3;
 	}
 
-	if (*term != L'\0') {
-		std::wcout << pi.host << " is not a valid ip address\n";
-		return 3;
-	}
+	IPAddr pIpDest4 = reinterpret_cast<sockaddr_in*>(pAddrinfo->ai_addr)->sin_addr.S_un.S_addr;
 
 	if (debug)
 		std::wcout << L"Creating Icmp File\n";
@@ -278,7 +280,7 @@ INT check_ping4(const printInfoStruct& pi, response& response)
 		goto die;
 
 	dwRepSize = sizeof(ICMP_ECHO_REPLY) + 8;
-	repBuf = reinterpret_cast<VOID *>(new BYTE[dwRepSize]);
+	repBuf = new BYTE[dwRepSize];
 
 	if (repBuf == NULL)
 		goto die;
@@ -290,16 +292,15 @@ INT check_ping4(const printInfoStruct& pi, response& response)
 		if (debug)
 			std::wcout << L"Sending Icmp echo\n";
 
-		if (!IcmpSendEcho2(hIcmp, NULL, NULL, NULL, ipDest4.S_un.S_addr,
+		if (!IcmpSendEcho2(hIcmp, NULL, NULL, NULL, pIpDest4,
 			NULL, 0, NULL, repBuf, dwRepSize, pi.timeout)) {
 			response.dropped++;
 			if (debug)
-				std::wcout << L"Dropped: Response was 0" << '\n';
+				std::wcout << L"Dropped: Response was 0\n";
 			continue;
+		} else if (debug) {
+				std::wcout << "Ping recieved\n";
 		}
-
-		if (debug)
-			std::wcout << "Ping recieved" << '\n';
 
 		PICMP_ECHO_REPLY pEchoReply = static_cast<PICMP_ECHO_REPLY>(repBuf);
 
@@ -330,7 +331,7 @@ INT check_ping4(const printInfoStruct& pi, response& response)
 	if (hIcmp)
 		IcmpCloseHandle(hIcmp);
 	if (repBuf)
-		delete reinterpret_cast<VOID *>(repBuf);
+		delete[] repBuf;
 
 	response.avg = ((double)rtt / pi.num);
 
@@ -341,17 +342,17 @@ die:
 	if (hIcmp)
 		IcmpCloseHandle(hIcmp);
 	if (repBuf)
-		delete reinterpret_cast<VOID *>(repBuf);
+		delete[] repBuf;
 
 	return 3;
 }
 
-INT check_ping6(const printInfoStruct& pi, response& response)
+INT check_ping6(CONST printInfoStruct& pi, response& response)
 {
-	sockaddr_in6 ipDest6, ipSource6;
+	sockaddr_in6 ipSource6;
 	IP_OPTION_INFORMATION ipInfo = { 30, 0, 0, 0, NULL };
 	DWORD dwRepSize = sizeof(ICMPV6_ECHO_REPLY) + 8;
-	LPVOID repBuf = reinterpret_cast<VOID *>(new BYTE[dwRepSize]);
+	LPVOID repBuf = new BYTE[dwRepSize];
 	HANDLE hIcmp = NULL;
 
 	LARGE_INTEGER frequency, timer1, timer2;
@@ -361,12 +362,20 @@ INT check_ping6(const printInfoStruct& pi, response& response)
 	if (debug)
 		std::wcout << L"Parsing ip address" << '\n';
 
-	if (RtlIpv6StringToAddressEx(pi.host.c_str(), &ipDest6.sin6_addr, &ipDest6.sin6_scope_id, &ipDest6.sin6_port)) {
-		std::wcout << pi.host << " is not a valid ipv6 address" << '\n';
+	PADDRINFOW pAddrinfo = NULL;
+	ADDRINFOW hints;
+	ZeroMemory(&hints, sizeof(hints));
+
+	hints.ai_family = AF_INET6;
+
+	INT ret = GetAddrInfoW(pi.host.c_str(), NULL, &hints, &pAddrinfo);
+
+	if (ret) {
+		std::wcout << gai_strerror(ret) << std::endl;
 		return 3;
 	}
 
-	ipDest6.sin6_family = AF_INET6;
+	sockaddr_in6* pIpDest6 = reinterpret_cast<sockaddr_in6*>(pAddrinfo->ai_addr);
 
 	ipSource6.sin6_addr = in6addr_any;
 	ipSource6.sin6_family = AF_INET6;
@@ -388,7 +397,7 @@ INT check_ping6(const printInfoStruct& pi, response& response)
 		if (debug)
 			std::wcout << L"Sending Icmp echo" << '\n';
 
-		if (!Icmp6SendEcho2(hIcmp, NULL, NULL, NULL, &ipSource6, &ipDest6,
+		if (!Icmp6SendEcho2(hIcmp, NULL, NULL, NULL, &ipSource6, pIpDest6,
 			NULL, 0, &ipInfo, repBuf, dwRepSize, pi.timeout)) {
 			response.dropped++;
 			if (debug)
@@ -431,7 +440,7 @@ INT check_ping6(const printInfoStruct& pi, response& response)
 	if (hIcmp)
 		IcmpCloseHandle(hIcmp);
 	if (repBuf)
-		delete reinterpret_cast<VOID *>(repBuf);
+		delete[] repBuf;
 	response.avg = ((double)rtt / pi.num);
 
 	return -1;
@@ -441,7 +450,7 @@ die:
 	if (hIcmp)
 		IcmpCloseHandle(hIcmp);
 	if (repBuf)
-		delete reinterpret_cast<VOID *>(repBuf);
+		delete[] repBuf;
 
 	return 3;
 }
