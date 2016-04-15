@@ -119,6 +119,8 @@ if(NOT YAJL_FOUND)
   set(YAJL_LIBRARIES "yajl")
 endif()
 
+include_directories(${icinga2_SOURCE_DIR}/third-party/asmjit/src)
+
 find_package(Editline)
 set(HAVE_EDITLINE "${EDITLINE_FOUND}")
 

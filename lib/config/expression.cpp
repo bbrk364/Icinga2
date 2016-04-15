@@ -21,6 +21,7 @@
 #include "config/configitem.hpp"
 #include "config/configcompiler.hpp"
 #include "config/vmops.hpp"
+#include "config/jitops.hpp"
 #include "base/array.hpp"
 #include "base/json.hpp"
 #include "base/object.hpp"
@@ -109,6 +110,15 @@ LiteralExpression::LiteralExpression(const Value& value)
 ExpressionResult LiteralExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	return m_Value;
+}
+
+bool LiteralExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	EmitJitNewValue(evaluate, m_Value, res);
+
+	delete this;
+
+	return true;
 }
 
 const DebugInfo& DebuggableExpression::GetDebugInfo(void) const
@@ -499,6 +509,20 @@ ExpressionResult DictExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint
 	}
 }
 
+bool DictExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	BOOST_FOREACH(Expression *aexpr, m_Expressions) {
+		aexpr->Compile(owner, dtor, evaluate, frame, dhint, res);
+//		JIT_REPLACE_EXPRESSION(aexpr);
+	}
+
+	m_Expressions.clear();
+
+	EmitJitDeleteExpression(dtor, this);
+
+	return true; // Expression::Compile(owner, dtor, evaluate, frame, dhint, res);
+}
+
 ExpressionResult GetScopeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (m_ScopeSpec == ScopeLocal)
@@ -610,6 +634,18 @@ ExpressionResult ReturnExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	CHECK_RESULT(operand);
 
 	return ExpressionResult(operand.GetValue(), ResultReturn);
+}
+
+bool ReturnExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	m_Operand->Compile(owner, dtor, evaluate, frame, dhint, res);
+	m_Operand = NULL;
+
+	evaluate.ret();
+
+	delete this;
+
+	return true;
 }
 
 ExpressionResult BreakExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
@@ -891,3 +927,59 @@ ExpressionResult BreakpointExpression::DoEvaluate(ScriptFrame& frame, DebugHint 
 	return Empty;
 }
 
+bool Expression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	EmitJitDeleteExpression(dtor, this);
+
+	EmitJitInvokeDoEvaluate(evaluate, this, frame, dhint, res);
+
+	return true;
+}
+
+JitExpression::JitExpression(Expression *otherExpression)
+	: DebuggableExpression(otherExpression->GetDebugInfo())
+{
+	asmjit::X86Assembler assemblerDtor(&m_Runtime);
+	asmjit::X86Assembler assemblerEvaluate(&m_Runtime);
+	asmjit::X86Compiler compilerDtor(&assemblerDtor);
+	asmjit::X86Compiler compilerEvaluate(&assemblerEvaluate);
+
+	compilerDtor.addFunc(asmjit::FuncBuilder0<void>(asmjit::kCallConvHost));
+	compilerEvaluate.addFunc(asmjit::FuncBuilder3<void, ScriptFrame *, DebugHint *, ExpressionResult *>(asmjit::kCallConvHost));
+
+	asmjit::GpVar frame = compilerEvaluate.newIntPtr("frame");
+	asmjit::GpVar dhint = compilerEvaluate.newIntPtr("dhint");
+	asmjit::GpVar res = compilerEvaluate.newIntPtr("res");
+
+	compilerEvaluate.setArg(0, frame);
+	compilerEvaluate.setArg(1, dhint);
+	compilerEvaluate.setArg(2, res);
+
+	if (!otherExpression->Compile(this, compilerDtor, compilerEvaluate, frame, dhint, res))
+		BOOST_THROW_EXCEPTION(std::invalid_argument("Expression does not support JIT"));
+
+	compilerDtor.ret();
+	compilerDtor.endFunc();
+	compilerDtor.finalize();
+
+	m_Dtor = asmjit_cast<JitDtor>(assemblerDtor.make());
+
+	compilerEvaluate.ret();
+	compilerEvaluate.endFunc();
+	compilerEvaluate.finalize();
+
+	m_Evaluate = asmjit_cast<JitEvaluateFunction>(assemblerEvaluate.make());
+}
+
+JitExpression::~JitExpression(void)
+{
+	m_Dtor();
+}
+
+ExpressionResult JitExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
+{
+	char res[sizeof(Value)];
+	Value *pres = reinterpret_cast<Value *>(res);
+	m_Evaluate(&frame, dhint, pres);
+	return *pres;
+}

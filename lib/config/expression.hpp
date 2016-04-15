@@ -28,6 +28,7 @@
 #include "base/exception.hpp"
 #include "base/scriptframe.hpp"
 #include "base/convert.hpp"
+#include "asmjit/asmjit.h"
 #include <boost/foreach.hpp>
 #include <boost/thread/future.hpp>
 #include <map>
@@ -185,6 +186,8 @@ private:
 	if (res.GetCode() == ResultBreak)	\
 		break;				\
 
+class JitExpression;
+
 /**
  * @ingroup config
  */
@@ -199,10 +202,18 @@ public:
 
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const = 0;
 
+	virtual bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res);
+
 	static boost::signals2::signal<void (ScriptFrame& frame, ScriptError *ex, const DebugInfo& di)> OnBreakpoint;
 
 	static void ScriptBreakpoint(ScriptFrame& frame, ScriptError *ex, const DebugInfo& di);
 };
+
+#define JIT_REPLACE_EXPRESSION(e) \
+	try { \
+		Expression *oldExpr = e; \
+		e = new JitExpression(e); \
+	} catch (const std::invalid_argument&) { }
 
 I2_CONFIG_API Expression *MakeIndexer(ScopeSpecifier scopeSpec, const String& index);
 
@@ -232,6 +243,8 @@ class I2_CONFIG_API LiteralExpression : public Expression
 {
 public:
 	LiteralExpression(const Value& value = Value());
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -302,6 +315,11 @@ public:
 	String GetVariable(void) const
 	{
 		return m_Variable;
+	}
+
+	inline bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override
+	{
+		return false;
 	}
 
 protected:
@@ -614,6 +632,8 @@ public:
 
 	void MakeInline(void);
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 
@@ -692,6 +712,8 @@ public:
 		: UnaryExpression(expression, debugInfo)
 	{ }
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -738,6 +760,11 @@ public:
 	IndexerExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	inline bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override
+	{
+		return false;
+	}
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -950,6 +977,24 @@ public:
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
+};
+
+typedef void(*JitDtor)(void);
+typedef void(*JitEvaluateFunction)(ScriptFrame *, DebugHint *, Value *);
+
+class I2_CONFIG_API JitExpression : public DebuggableExpression
+{
+public:
+	JitExpression(Expression *otherExpression);
+	~JitExpression(void);
+
+protected:
+	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const;
+
+private:
+	asmjit::JitRuntime m_Runtime;
+	JitDtor m_Dtor;
+	JitEvaluateFunction m_Evaluate;
 };
 
 }

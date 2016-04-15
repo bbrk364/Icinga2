@@ -265,7 +265,7 @@ Expression *ConfigCompiler::Compile(void)
 
 	DictExpression *expr = new DictExpression(dlist);
 	expr->MakeInline();
-	return expr;
+	return new JitExpression(expr);
 }
 
 #define scanner (context->GetScanner())

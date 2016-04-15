@@ -46,7 +46,7 @@ endif()
 
 add_library(config SHARED ${config_SOURCES})
 
-target_link_libraries(config ${Boost_LIBRARIES} base) 
+target_link_libraries(config ${Boost_LIBRARIES} base asmjit) 
 
 set_target_properties (
   config PROPERTIES
