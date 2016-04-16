@@ -273,6 +273,8 @@ enable_testing()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+set(ASMJIT_STATIC TRUE)
+
 add_subdirectory(third-party)
 add_subdirectory(tools)
 add_subdirectory(lib)
