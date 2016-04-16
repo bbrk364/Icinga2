@@ -274,6 +274,7 @@ enable_testing()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(ASMJIT_STATIC TRUE)
+add_definitions(-DASMJIT_STATIC)
 
 add_subdirectory(third-party)
 add_subdirectory(tools)

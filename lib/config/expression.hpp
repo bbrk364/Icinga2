@@ -202,18 +202,12 @@ public:
 
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const = 0;
 
-	virtual bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res);
+	virtual bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) = 0;
 
 	static boost::signals2::signal<void (ScriptFrame& frame, ScriptError *ex, const DebugInfo& di)> OnBreakpoint;
 
 	static void ScriptBreakpoint(ScriptFrame& frame, ScriptError *ex, const DebugInfo& di);
 };
-
-#define JIT_REPLACE_EXPRESSION(e) \
-	try { \
-		Expression *oldExpr = e; \
-		e = new JitExpression(e); \
-	} catch (const std::invalid_argument&) { }
 
 I2_CONFIG_API Expression *MakeIndexer(ScopeSpecifier scopeSpec, const String& index);
 
@@ -223,6 +217,11 @@ public:
 	OwnedExpression(const boost::shared_ptr<Expression>& expression)
 		: m_Expression(expression)
 	{ }
+
+	inline bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override
+	{
+		return false;
+	}
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override
@@ -239,12 +238,39 @@ private:
 	boost::shared_ptr<Expression> m_Expression;
 };
 
+typedef void(*JitDtor)(void);
+typedef void(*JitEvaluateFunction)(ScriptFrame *, DebugHint *, Value *);
+
+#define JIT_REPLACE_EXPRESSION(expr) \
+	if (expr) { \
+		try { \
+			expr = new JitExpression(expr); \
+		} catch (const std::invalid_argument&) { } \
+	}
+
+class I2_CONFIG_API JitExpression : public Expression
+{
+public:
+	JitExpression(Expression *otherExpression);
+	~JitExpression(void);
+
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
+protected:
+	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const;
+
+private:
+	asmjit::JitRuntime m_Runtime;
+	JitDtor m_Dtor;
+	JitEvaluateFunction m_Evaluate;
+};
+
 class I2_CONFIG_API LiteralExpression : public Expression
 {
 public:
 	LiteralExpression(const Value& value = Value());
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -317,7 +343,7 @@ public:
 		return m_Variable;
 	}
 
-	inline bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override
+	inline bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override
 	{
 		return false;
 	}
@@ -339,7 +365,7 @@ public:
 		: UnaryExpression(operand, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -352,7 +378,7 @@ public:
 		: UnaryExpression(operand, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -365,7 +391,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -378,7 +404,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -391,7 +417,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -404,7 +430,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -417,7 +443,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -430,7 +456,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -443,7 +469,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -456,7 +482,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -469,7 +495,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -482,7 +508,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -495,7 +521,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -508,7 +534,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -521,7 +547,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -534,7 +560,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -547,7 +573,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -560,7 +586,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -573,6 +599,8 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -583,6 +611,8 @@ public:
 	NotInExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -595,6 +625,8 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -605,6 +637,8 @@ public:
 	LogicalOrExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -624,6 +658,8 @@ public:
 		BOOST_FOREACH(Expression *expr, m_Args)
 			delete expr;
 	}
+
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -646,7 +682,7 @@ public:
 			delete expr;
 	}
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -670,7 +706,7 @@ public:
 
 	void MakeInline(void);
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -688,6 +724,8 @@ public:
 	SetExpression(Expression *operand1, CombinedSetOp op, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo), m_Op(op)
 	{ }
+
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -712,6 +750,8 @@ public:
 		delete m_FalseBranch; 
 	}
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 
@@ -734,6 +774,8 @@ public:
 		delete m_LoopBody;
 	}
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 
@@ -750,7 +792,7 @@ public:
 		: UnaryExpression(expression, debugInfo)
 	{ }
 
-	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -763,6 +805,8 @@ public:
 		: DebuggableExpression(debugInfo)
 	{ }
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -774,6 +818,8 @@ public:
 		: DebuggableExpression(debugInfo)
 	{ }
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -784,6 +830,8 @@ public:
 	GetScopeExpression(ScopeSpecifier scopeSpec)
 		: m_ScopeSpec(scopeSpec)
 	{ }
+
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -799,10 +847,7 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
-	inline bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override
-	{
-		return false;
-	}
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -825,6 +870,8 @@ public:
 		delete m_Message;
 	}
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 
@@ -845,6 +892,8 @@ public:
 		delete m_Name;
 	}
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 
@@ -857,8 +906,10 @@ class I2_CONFIG_API FunctionExpression : public DebuggableExpression
 public:
 	FunctionExpression(const std::vector<String>& args,
 	    std::map<String, Expression *> *closedVars, Expression *expression, const DebugInfo& debugInfo = DebugInfo())
-		: DebuggableExpression(debugInfo), m_Args(args), m_ClosedVars(closedVars), m_Expression(expression)
+		: DebuggableExpression(debugInfo), m_Args(args), m_ClosedVars(closedVars), m_Expression(new JitExpression(expression))
 	{ }
+
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -886,6 +937,8 @@ public:
 	{
 		delete m_Name;
 	}
+
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -923,6 +976,8 @@ public:
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 private:
 	bool m_Abstract;
 	String m_Type;
@@ -948,6 +1003,8 @@ public:
 		delete m_Expression;
 	}
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 
@@ -964,6 +1021,8 @@ public:
 	LibraryExpression(Expression *expression, const DebugInfo& debugInfo = DebugInfo())
 		: UnaryExpression(expression, debugInfo)
 	{ }
+
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -992,6 +1051,8 @@ public:
 		delete m_Name;
 	}
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 
@@ -1013,26 +1074,10 @@ public:
 	    : DebuggableExpression(debugInfo)
 	{ }
 
+	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
-};
-
-typedef void(*JitDtor)(void);
-typedef void(*JitEvaluateFunction)(ScriptFrame *, DebugHint *, Value *);
-
-class I2_CONFIG_API JitExpression : public DebuggableExpression
-{
-public:
-	JitExpression(Expression *otherExpression);
-	~JitExpression(void);
-
-protected:
-	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const;
-
-private:
-	asmjit::JitRuntime m_Runtime;
-	JitDtor m_Dtor;
-	JitEvaluateFunction m_Evaluate;
 };
 
 }

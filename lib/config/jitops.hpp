@@ -66,6 +66,29 @@ inline void JitNewValueObject(Object *val, Value *res)
 	new (res) Value(val);
 }
 
+inline void JitNewDictionary(Value *res)
+{
+	new (res) Value(new Dictionary());
+}
+
+inline void EmitJitNewDictionary(asmjit::X86Compiler& compiler, asmjit::X86GpVar& val)
+{
+	asmjit::X86CallNode *call = compiler.addCall(asmjit::imm_ptr(&JitNewDictionary), asmjit::FuncBuilder1<void, Value *>(asmjit::kCallConvHost));
+	call->setArg(0, val);
+}
+
+inline void JitScriptFrameSwapSelf(ScriptFrame *frame, Value *self)
+{
+	std::swap(frame->Self, *self);
+}
+
+inline void EmitJitScriptFrameSwapSelf(asmjit::X86Compiler& compiler, asmjit::X86GpVar& frame, asmjit::X86GpVar& self)
+{
+	asmjit::X86CallNode *call = compiler.addCall(asmjit::imm_ptr(&JitScriptFrameSwapSelf), asmjit::FuncBuilder2<void, ScriptFrame *, Value *>(asmjit::kCallConvHost));
+	call->setArg(0, frame);
+	call->setArg(1, self);
+}
+
 inline void JitNewArray(Value *res)
 {
 	new (res) Value(new Array());
@@ -87,6 +110,22 @@ inline void EmitJitArrayAdd(asmjit::X86Compiler& compiler, asmjit::X86GpVar& arr
 	asmjit::X86CallNode *call = compiler.addCall(asmjit::imm_ptr(&JitArrayAdd), asmjit::FuncBuilder2<void, Value *, Value *>(asmjit::kCallConvHost));
 	call->setArg(0, array);
 	call->setArg(1, val);
+}
+
+inline int32_t JitValueIsTrue(Value *val)
+{
+	return val->ToBool();
+}
+
+inline asmjit::X86GpVar EmitJitValueIsTrue(asmjit::X86Compiler& compiler, asmjit::X86GpVar& val)
+{
+	asmjit::X86CallNode *call = compiler.addCall(asmjit::imm_ptr(&JitValueIsTrue), asmjit::FuncBuilder1<void, Value *>(asmjit::kCallConvHost));
+	call->setArg(0, val);
+
+	asmjit::X86GpVar eres = compiler.newInt32();
+	call->setRet(0, eres);
+
+	return eres;
 }
 
 inline void JitDtorValue(Value *val)
@@ -114,10 +153,21 @@ inline int32_t JitInvokeDoEvaluate(Expression *expr, ScriptFrame *frame, DebugHi
 	return 1;
 }
 
+inline void JitDeleteExpression(Expression *expr)
+{
+	delete expr;
+}
+
+inline void EmitJitDeleteExpression(asmjit::X86Compiler& compiler, Expression *expr)
+{
+	asmjit::X86CallNode *dcall = compiler.addCall(asmjit::imm_ptr(&JitDeleteExpression), asmjit::FuncBuilder1<void, Expression *>(asmjit::kCallConvHost));
+	dcall->setArg(0, asmjit::imm_ptr(expr));
+}
+
 inline void EmitJitInvokeDoEvaluate(asmjit::X86Compiler& compiler, Expression *expr,
 	asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
-	asmjit::X86GpVar eres = compiler.newInt32("pres");
+	asmjit::X86GpVar eres = compiler.newInt32();
 
 	asmjit::X86CallNode *call = compiler.addCall(asmjit::imm_ptr(&JitInvokeDoEvaluate),
 		asmjit::FuncBuilder4<int32_t, Expression *, ScriptFrame *, DebugHint *, Value *>(asmjit::kCallConvHost));
@@ -137,15 +187,13 @@ inline void EmitJitInvokeDoEvaluate(asmjit::X86Compiler& compiler, Expression *e
 	compiler.bind(after_if);
 }
 
-inline void JitDeleteExpression(Expression *expr)
+inline void EmitJitExpression(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, Expression *expr,
+	asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
-	delete expr;
-}
-
-inline void EmitJitDeleteExpression(asmjit::X86Compiler& compiler, Expression *expr)
-{
-	asmjit::X86CallNode *dcall = compiler.addCall(asmjit::imm_ptr(&JitDeleteExpression), asmjit::FuncBuilder1<void, Expression *>(asmjit::kCallConvHost));
-	dcall->setArg(0, asmjit::imm_ptr(expr));
+	if (!expr->Compile(dtor, evaluate, frame, dhint, res)) {
+		EmitJitInvokeDoEvaluate(evaluate, expr, frame, dhint, res);
+		EmitJitDeleteExpression(dtor, expr);
+	}
 }
 
 inline void EmitJitNewValue(asmjit::X86Compiler& compilerDtor, asmjit::X86Compiler& compilerEvaluate, const Value& value, asmjit::X86GpVar& res)

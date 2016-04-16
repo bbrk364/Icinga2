@@ -112,7 +112,7 @@ ExpressionResult LiteralExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 	return m_Value;
 }
 
-bool LiteralExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool LiteralExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	EmitJitNewValue(dtor, evaluate, m_Value, res);
 
@@ -171,9 +171,9 @@ ExpressionResult NegateExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	return ~(long)operand.GetValue();
 }
 
-bool NegateExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool NegateExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
-	m_Operand->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand, frame, dhint, res);
 	m_Operand = NULL;
 
 	EmitJitValueNegate(evaluate, res);
@@ -191,9 +191,9 @@ ExpressionResult LogicalNegateExpression::DoEvaluate(ScriptFrame& frame, DebugHi
 	return !operand.GetValue().ToBool();
 }
 
-bool LogicalNegateExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool LogicalNegateExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
-	m_Operand->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand, frame, dhint, res);
 	m_Operand = NULL;
 
 	EmitJitValueLogicalNegate(evaluate, res);
@@ -214,17 +214,17 @@ ExpressionResult AddExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 	return operand1.GetValue() + operand2.GetValue();
 }
 
-bool AddExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool AddExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueAdd(evaluate, pop1, res);
@@ -246,17 +246,17 @@ ExpressionResult SubtractExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 	return operand1.GetValue() - operand2.GetValue();
 }
 
-bool SubtractExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool SubtractExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueSubtract(evaluate, pop1, res);
@@ -279,17 +279,17 @@ ExpressionResult MultiplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 }
 
 
-bool MultiplyExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool MultiplyExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueMultiply(evaluate, pop1, res);
@@ -312,17 +312,17 @@ ExpressionResult DivideExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 }
 
 
-bool DivideExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool DivideExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueDivide(evaluate, pop1, res);
@@ -345,17 +345,17 @@ ExpressionResult ModuloExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 }
 
 
-bool ModuloExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool ModuloExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueModulo(evaluate, pop1, res);
@@ -378,17 +378,17 @@ ExpressionResult XorExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 }
 
 
-bool XorExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool XorExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueXor(evaluate, pop1, res);
@@ -410,17 +410,17 @@ ExpressionResult BinaryAndExpression::DoEvaluate(ScriptFrame& frame, DebugHint *
 	return operand1.GetValue() & operand2.GetValue();
 }
 
-bool BinaryAndExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool BinaryAndExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueBinaryAnd(evaluate, pop1, res);
@@ -443,17 +443,17 @@ ExpressionResult BinaryOrExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 }
 
 
-bool BinaryOrExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool BinaryOrExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueBinaryOr(evaluate, pop1, res);
@@ -476,17 +476,17 @@ ExpressionResult ShiftLeftExpression::DoEvaluate(ScriptFrame& frame, DebugHint *
 }
 
 
-bool ShiftLeftExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool ShiftLeftExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueShiftLeft(evaluate, pop1, res);
@@ -509,17 +509,17 @@ ExpressionResult ShiftRightExpression::DoEvaluate(ScriptFrame& frame, DebugHint 
 }
 
 
-bool ShiftRightExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool ShiftRightExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueShiftRight(evaluate, pop1, res);
@@ -542,17 +542,17 @@ ExpressionResult EqualExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 }
 
 
-bool EqualExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool EqualExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueEqual(evaluate, pop1, res);
@@ -575,17 +575,17 @@ ExpressionResult NotEqualExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 }
 
 
-bool NotEqualExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool NotEqualExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueNotEqual(evaluate, pop1, res);
@@ -608,17 +608,17 @@ ExpressionResult LessThanExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 }
 
 
-bool LessThanExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool LessThanExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueLessThan(evaluate, pop1, res);
@@ -641,17 +641,17 @@ ExpressionResult GreaterThanExpression::DoEvaluate(ScriptFrame& frame, DebugHint
 }
 
 
-bool GreaterThanExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool GreaterThanExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueGreaterThan(evaluate, pop1, res);
@@ -674,17 +674,17 @@ ExpressionResult LessThanOrEqualExpression::DoEvaluate(ScriptFrame& frame, Debug
 }
 
 
-bool LessThanOrEqualExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool LessThanOrEqualExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueLessThanOrEqual(evaluate, pop1, res);
@@ -707,17 +707,17 @@ ExpressionResult GreaterThanOrEqualExpression::DoEvaluate(ScriptFrame& frame, De
 }
 
 
-bool GreaterThanOrEqualExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool GreaterThanOrEqualExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	asmjit::X86Mem op1 = evaluate.newStack(sizeof(Value), 8);
 
 	asmjit::X86GpVar pop1 = evaluate.newIntPtr();
 	evaluate.lea(pop1, op1);
 
-	m_Operand1->Compile(owner, dtor, evaluate, frame, dhint, pop1);
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, pop1);
 	m_Operand1 = NULL;
 
-	m_Operand2->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
 	m_Operand2 = NULL;
 
 	EmitJitValueGreaterThanOrEqual(evaluate, pop1, res);
@@ -745,6 +745,14 @@ ExpressionResult InExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) 
 	return arr->Contains(operand1.GetValue());
 }
 
+bool InExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_Operand1);
+	JIT_REPLACE_EXPRESSION(m_Operand2);
+
+	return false;
+}
+
 ExpressionResult NotInExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
@@ -762,6 +770,14 @@ ExpressionResult NotInExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	return !arr->Contains(operand1.GetValue());
 }
 
+bool NotInExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_Operand1);
+	JIT_REPLACE_EXPRESSION(m_Operand2);
+
+	return false;
+}
+
 ExpressionResult LogicalAndExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
@@ -777,6 +793,25 @@ ExpressionResult LogicalAndExpression::DoEvaluate(ScriptFrame& frame, DebugHint 
 	}
 }
 
+bool LogicalAndExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, res);
+
+	asmjit::X86GpVar eres = EmitJitValueIsTrue(evaluate, res);
+
+	asmjit::Label after_if = evaluate.newLabel();
+
+	evaluate.cmp(eres, 0);
+	evaluate.jz(after_if);
+
+	EmitJitDtorValue(evaluate, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
+
+	evaluate.bind(after_if);
+
+	return true;
+}
+
 ExpressionResult LogicalOrExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
@@ -790,6 +825,25 @@ ExpressionResult LogicalOrExpression::DoEvaluate(ScriptFrame& frame, DebugHint *
 
 		return operand2.GetValue();
 	}
+}
+
+bool LogicalOrExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	EmitJitExpression(dtor, evaluate, m_Operand1, frame, dhint, res);
+
+	asmjit::X86GpVar eres = EmitJitValueIsTrue(evaluate, res);
+
+	asmjit::Label after_if = evaluate.newLabel();
+
+	evaluate.cmp(eres, 0);
+	evaluate.jnz(after_if);
+
+	EmitJitDtorValue(evaluate, res);
+	EmitJitExpression(dtor, evaluate, m_Operand2, frame, dhint, res);
+
+	evaluate.bind(after_if);
+
+	return true;
 }
 
 ExpressionResult FunctionCallExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
@@ -837,6 +891,13 @@ ExpressionResult FunctionCallExpression::DoEvaluate(ScriptFrame& frame, DebugHin
 	return VMOps::FunctionCall(frame, self, func, arguments);
 }
 
+bool FunctionCallExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_FName);
+
+	return false;
+}
+
 ExpressionResult ArrayExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	Array::Ptr result = new Array();
@@ -851,7 +912,7 @@ ExpressionResult ArrayExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	return result;
 }
 
-bool ArrayExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool ArrayExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	EmitJitNewArray(evaluate, res);
 
@@ -862,7 +923,7 @@ bool ArrayExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, a
 
 	BOOST_FOREACH(Expression *aexpr, m_Expressions) {
 		// XXX/BUG: we might not call the value's dtor if this does 'ret'
-		aexpr->Compile(owner, dtor, evaluate, frame, dhint, pitem);
+		EmitJitExpression(dtor, evaluate, aexpr, frame, dhint, pitem);
 
 		EmitJitArrayAdd(evaluate, res, pitem);
 		EmitJitDtorValue(evaluate, pitem);
@@ -906,23 +967,40 @@ ExpressionResult DictExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint
 	}
 }
 
-bool DictExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool DictExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
+	asmjit::X86GpVar pres;
+
+	if (!m_Inline) {
+		EmitJitNewDictionary(evaluate, res);
+		EmitJitScriptFrameSwapSelf(evaluate, frame, res);
+
+		asmjit::X86Mem temp_res = evaluate.newStack(sizeof(Value), 8);
+
+		pres = evaluate.newIntPtr();
+		evaluate.lea(pres, temp_res);
+	} else {
+		pres = res;
+	}
+
 	if (m_Expressions.empty())
-		EmitJitNewValue(dtor, evaluate, Empty, res);
+		EmitJitNewValue(dtor, evaluate, Empty, pres);
 
 	bool first = true;
 
 	BOOST_FOREACH(Expression *aexpr, m_Expressions) {
 		if (!first)
-			EmitJitDtorValue(evaluate, res);
+			EmitJitDtorValue(evaluate, pres);
 		else
 			first = false;
 
-		aexpr->Compile(owner, dtor, evaluate, frame, dhint, res);
+		EmitJitExpression(dtor, evaluate, aexpr, frame, dhint, pres);
 	}
 
 	m_Expressions.clear();
+
+	if (!m_Inline)
+		EmitJitScriptFrameSwapSelf(evaluate, frame, res);
 
 	delete this;
 
@@ -939,6 +1017,11 @@ ExpressionResult GetScopeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 		return ScriptGlobal::GetGlobals();
 	else
 		VERIFY(!"Invalid scope.");
+}
+
+bool GetScopeExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	return false;
 }
 
 ExpressionResult SetExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
@@ -1002,6 +1085,14 @@ ExpressionResult SetExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 	return Empty;
 }
 
+bool SetExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_Operand1);
+	JIT_REPLACE_EXPRESSION(m_Operand2);
+
+	return false;
+}
+
 ExpressionResult ConditionalExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ExpressionResult condition = m_Condition->Evaluate(frame, dhint);
@@ -1013,6 +1104,35 @@ ExpressionResult ConditionalExpression::DoEvaluate(ScriptFrame& frame, DebugHint
 		return m_FalseBranch->Evaluate(frame, dhint);
 
 	return Empty;
+}
+
+bool ConditionalExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	EmitJitExpression(dtor, evaluate, m_Condition, frame, dhint, res);
+	asmjit::X86GpVar eres = EmitJitValueIsTrue(evaluate, res);
+
+	asmjit::Label else_branch = evaluate.newLabel();
+	asmjit::Label after_if = evaluate.newLabel();
+
+	evaluate.cmp(eres, 0);
+	evaluate.jz(else_branch);
+
+	EmitJitDtorValue(evaluate, res);
+	EmitJitExpression(dtor, evaluate, m_TrueBranch, frame, dhint, res);
+	evaluate.jmp(after_if);
+
+	evaluate.bind(else_branch);
+
+	EmitJitDtorValue(evaluate, res);
+
+	if (m_FalseBranch)
+		EmitJitExpression(dtor, evaluate, m_FalseBranch, frame, dhint, res);
+	else
+		EmitJitNewValue(dtor, evaluate, Empty, res);
+
+	evaluate.bind(after_if);
+
+	return true;
 }
 
 ExpressionResult WhileExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
@@ -1034,6 +1154,32 @@ ExpressionResult WhileExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	return Empty;
 }
 
+bool WhileExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	asmjit::Label cond_check = evaluate.newLabel();
+	asmjit::Label after_loop = evaluate.newLabel();
+
+	evaluate.bind(cond_check);
+
+	EmitJitExpression(dtor, evaluate, m_Condition, frame, dhint, res);
+	asmjit::X86GpVar eres = EmitJitValueIsTrue(evaluate, res);
+
+	evaluate.cmp(eres, 0);
+	evaluate.jz(after_loop);
+
+	EmitJitDtorValue(evaluate, res);
+	EmitJitExpression(dtor, evaluate, m_LoopBody, frame, dhint, res);
+	evaluate.jmp(cond_check);
+
+	evaluate.bind(after_loop);
+
+	EmitJitDtorValue(evaluate, res);
+
+	EmitJitNewValue(dtor, evaluate, Empty, res);
+
+	return true;
+}
+
 ExpressionResult ReturnExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ExpressionResult operand = m_Operand->Evaluate(frame);
@@ -1042,9 +1188,9 @@ ExpressionResult ReturnExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	return ExpressionResult(operand.GetValue(), ResultReturn);
 }
 
-bool ReturnExpression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool ReturnExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
-	m_Operand->Compile(owner, dtor, evaluate, frame, dhint, res);
+	EmitJitExpression(dtor, evaluate, m_Operand, frame, dhint, res);
 	m_Operand = NULL;
 
 	evaluate.ret();
@@ -1059,9 +1205,19 @@ ExpressionResult BreakExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	return ExpressionResult(Empty, ResultBreak);
 }
 
+bool BreakExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	return false;
+}
+
 ExpressionResult ContinueExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	return ExpressionResult(Empty, ResultContinue);
+}
+
+bool ContinueExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	return false;
 }
 
 ExpressionResult IndexerExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
@@ -1119,8 +1275,18 @@ bool IndexerExpression::GetReference(ScriptFrame& frame, bool init_dict, Value *
 	return true;
 }
 
+bool IndexerExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_Operand1);
+	JIT_REPLACE_EXPRESSION(m_Operand2);
+
+	return false;
+}
+
 void icinga::BindToScope(Expression *& expr, ScopeSpecifier scopeSpec)
 {
+	ASSERT(!dynamic_cast<JitExpression *>(expr));
+
 	DictExpression *dexpr = dynamic_cast<DictExpression *>(expr);
 
 	if (dexpr) {
@@ -1171,6 +1337,13 @@ ExpressionResult ThrowExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	BOOST_THROW_EXCEPTION(ScriptError(message, m_DebugInfo, m_IncompleteExpr));
 }
 
+bool ThrowExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_Message);
+
+	return false;
+}
+
 ExpressionResult ImportExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (frame.Sandboxed)
@@ -1195,9 +1368,30 @@ ExpressionResult ImportExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	return Empty;
 }
 
+bool ImportExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_Name);
+
+	return false;
+}
+
 ExpressionResult FunctionExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	return VMOps::NewFunction(frame, m_Args, m_ClosedVars, m_Expression);
+}
+
+bool FunctionExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	if (m_ClosedVars) {
+		typedef std::map<String, Expression *>::value_type kv_pair;
+		BOOST_FOREACH(kv_pair& kv, *m_ClosedVars) {
+			JIT_REPLACE_EXPRESSION(kv.second);
+		}
+	}
+
+	// TODO: m_Expression
+
+	return false;
 }
 
 ExpressionResult ApplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
@@ -1210,6 +1404,23 @@ ExpressionResult ApplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 
 	return VMOps::NewApply(frame, m_Type, m_Target, nameres.GetValue(), m_Filter,
 	    m_Package, m_FKVar, m_FVVar, m_FTerm, m_ClosedVars, m_IgnoreOnError, m_Expression, m_DebugInfo);
+}
+
+bool ApplyExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_Name);
+
+	if (m_ClosedVars) {
+		typedef std::map<String, Expression *>::value_type kv_pair;
+		BOOST_FOREACH(kv_pair& kv, *m_ClosedVars) {
+			JIT_REPLACE_EXPRESSION(kv.second);
+		}
+	}
+	// TODO: m_Filter
+	// TODO: m_FTerm
+	// TODO: m_Expression
+
+	return false;
 }
 
 ExpressionResult ObjectExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
@@ -1230,6 +1441,23 @@ ExpressionResult ObjectExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	    m_Package, m_IgnoreOnError, m_ClosedVars, m_Expression, m_DebugInfo);
 }
 
+bool ObjectExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_Name);
+
+	if (m_ClosedVars) {
+		typedef std::map<String, Expression *>::value_type kv_pair;
+		BOOST_FOREACH(kv_pair& kv, *m_ClosedVars) {
+			JIT_REPLACE_EXPRESSION(kv.second);
+		}
+	}
+
+	// TODO: m_Filter
+	// TODO: m_Expression
+
+	return false;
+}
+
 ExpressionResult ForExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (frame.Sandboxed)
@@ -1239,6 +1467,14 @@ ExpressionResult ForExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 	CHECK_RESULT(valueres);
 
 	return VMOps::For(frame, m_FKVar, m_FVVar, valueres.GetValue(), m_Expression, m_DebugInfo);
+}
+
+bool ForExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_Value);
+	JIT_REPLACE_EXPRESSION(m_Expression);
+
+	return false;
 }
 
 ExpressionResult LibraryExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
@@ -1252,6 +1488,11 @@ ExpressionResult LibraryExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 	Loader::LoadExtensionLibrary(libres.GetValue());
 
 	return Empty;
+}
+
+bool LibraryExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	return false;
 }
 
 ExpressionResult IncludeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
@@ -1326,6 +1567,15 @@ ExpressionResult IncludeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 	return res;
 }
 
+bool IncludeExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	JIT_REPLACE_EXPRESSION(m_Path);
+	JIT_REPLACE_EXPRESSION(m_Pattern);
+	JIT_REPLACE_EXPRESSION(m_Name);
+
+	return false;
+}
+
 ExpressionResult BreakpointExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ScriptBreakpoint(frame, NULL, GetDebugInfo());
@@ -1333,7 +1583,12 @@ ExpressionResult BreakpointExpression::DoEvaluate(ScriptFrame& frame, DebugHint 
 	return Empty;
 }
 
-bool Expression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+bool BreakpointExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	return false;
+}
+
+bool Expression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
 	EmitJitDeleteExpression(dtor, this);
 
@@ -1343,7 +1598,6 @@ bool Expression::Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit
 }
 
 JitExpression::JitExpression(Expression *otherExpression)
-	: DebuggableExpression(otherExpression->GetDebugInfo())
 {
 	asmjit::X86Assembler assemblerDtor(&m_Runtime);
 	asmjit::X86Assembler assemblerEvaluate(&m_Runtime);
@@ -1361,8 +1615,8 @@ JitExpression::JitExpression(Expression *otherExpression)
 	compilerEvaluate.setArg(1, dhint);
 	compilerEvaluate.setArg(2, res);
 
-	if (!otherExpression->Compile(this, compilerDtor, compilerEvaluate, frame, dhint, res))
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Expression does not support JIT"));
+	if (!otherExpression->Compile(compilerDtor, compilerEvaluate, frame, dhint, res))
+		BOOST_THROW_EXCEPTION(std::invalid_argument("Expression doesn't support JIT compilation"));
 
 	compilerDtor.ret();
 	compilerDtor.endFunc();
@@ -1380,6 +1634,11 @@ JitExpression::JitExpression(Expression *otherExpression)
 JitExpression::~JitExpression(void)
 {
 	m_Dtor();
+}
+
+bool JitExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
+{
+	return false;
 }
 
 ExpressionResult JitExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
