@@ -339,6 +339,8 @@ public:
 		: UnaryExpression(operand, debugInfo)
 	{ }
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -349,6 +351,8 @@ public:
 	LogicalNegateExpression(Expression *operand, const DebugInfo& debugInfo = DebugInfo())
 		: UnaryExpression(operand, debugInfo)
 	{ }
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -361,6 +365,8 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -371,6 +377,8 @@ public:
 	SubtractExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -383,6 +391,8 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -393,6 +403,8 @@ public:
 	DivideExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -405,6 +417,8 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -415,6 +429,8 @@ public:
 	XorExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -427,6 +443,8 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -437,6 +455,8 @@ public:
 	BinaryOrExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -449,6 +469,8 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -459,6 +481,8 @@ public:
 	ShiftRightExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -471,6 +495,8 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -481,6 +507,8 @@ public:
 	NotEqualExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -493,6 +521,8 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -503,6 +533,8 @@ public:
 	GreaterThanExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -515,6 +547,8 @@ public:
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
 
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
+
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
 };
@@ -525,6 +559,8 @@ public:
 	GreaterThanOrEqualExpression(Expression *operand1, Expression *operand2, const DebugInfo& debugInfo = DebugInfo())
 		: BinaryExpression(operand1, operand2, debugInfo)
 	{ }
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
@@ -609,6 +645,8 @@ public:
 		BOOST_FOREACH(Expression *expr, m_Expressions)
 			delete expr;
 	}
+
+	bool Compile(JitExpression *owner, asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
 
 protected:
 	virtual ExpressionResult DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const override;
