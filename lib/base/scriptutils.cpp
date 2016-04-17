@@ -233,6 +233,8 @@ Array::Ptr ScriptUtils::Range(const std::vector<Value>& arguments)
 	    (start > end && increment >= 0))
 		return result;
 
+	result->Reserve(std::abs(end - start) / increment);
+
 	for (double i = start; (increment > 0 ? i < end : i > end); i += increment)
 		result->Add(i);
 
