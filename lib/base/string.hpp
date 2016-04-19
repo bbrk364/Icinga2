@@ -77,6 +77,12 @@ public:
 		: m_Data(other.m_Data)
 	{ }
 
+#ifdef HAVE_CXX11
+	inline String(String&& other)
+		: m_Data(other.m_Data)
+	{}
+#endif /* HAVE_CXX11 */
+
 	inline ~String(void)
 	{ }
 
@@ -91,11 +97,27 @@ public:
 		return *this;
 	}
 
+#ifdef HAVE_CXX11
+	inline String& operator=(String&& rhs)
+	{
+		m_Data.swap(rhs.m_Data);
+		return *this;
+	}
+#endif /* HAVE_CXX11 */
+
 	inline String& operator=(const std::string& rhs)
 	{
 		m_Data = rhs;
 		return *this;
 	}
+
+#ifdef HAVE_CXX11
+	inline String& operator=(std::string&& rhs)
+	{
+		m_Data.swap(rhs);
+		return *this;
+	}
+#endif /* HAVE_CXX11 */
 
 	inline String& operator=(const char *rhs)
 	{

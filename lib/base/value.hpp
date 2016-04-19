@@ -97,6 +97,12 @@ public:
 		: m_Value(other.m_Value)
 	{ }
 
+#ifdef HAVE_CXX11
+	inline Value(Value&& other)
+		: m_Value(other.m_Value)
+	{ }
+#endif /* HAVE_CXX11 */
+
 	inline Value(Object *value)
 	{
 		if (!value)
@@ -114,12 +120,34 @@ public:
 		m_Value = static_pointer_cast<Object>(value);
 	}
 
+	inline Value(const intrusive_ptr<Object>& value)
+	{
+		if (!value)
+			return;
+
+		m_Value = value;
+	}
+
+#ifdef HAVE_CXX11
+	inline Value(intrusive_ptr<Object>&& value)
+	{
+		if (!value)
+			return;
+
+		m_Value = value;
+	}
+#endif /* HAVE_CXX11 */
+
 	bool ToBool(void) const;
 
 	operator double(void) const;
 	operator String(void) const;
 
 	Value& operator=(const Value& other);
+
+#ifdef HAVE_CXX11
+	Value& operator=(Value&& other) = default;
+#endif /* HAVE_CXX11 */
 
 	bool operator==(bool rhs) const;
 	bool operator!=(bool rhs) const;

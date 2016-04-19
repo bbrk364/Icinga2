@@ -261,6 +261,8 @@ if(NOT MSVC)
   endif()
 endif()
 
+set(HAVE_CXX11 ${_ICINGA2_CXX11})
+
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h ESCAPE_QUOTES)
 
 install(
