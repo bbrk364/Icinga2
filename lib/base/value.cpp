@@ -107,7 +107,7 @@ Type::Ptr Value::GetReflectionType(void) const
 Value Value::Clone(void) const
 {
 	if (IsObject())
-		return static_cast<Object::Ptr>(*this)->Clone();
+		return boost::get<Object::Ptr>(m_Value)->Clone();
 	else
 		return *this;
 }

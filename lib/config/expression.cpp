@@ -128,14 +128,7 @@ const DebugInfo& DebuggableExpression::GetDebugInfo(void) const
 
 ExpressionResult VariableExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	Value value;
-
-	if (frame.Locals && frame.Locals->Get(m_Variable, &value))
-		return value;
-	else if (frame.Self.IsObject() && frame.Locals != static_cast<Object::Ptr>(frame.Self) && static_cast<Object::Ptr>(frame.Self)->HasOwnField(m_Variable))
-		return VMOps::GetField(frame.Self, m_Variable, frame.Sandboxed, m_DebugInfo);
-	else
-		return ScriptGlobal::Get(m_Variable);
+	return VMOps::Variable(frame, m_Variable, m_DebugInfo);
 }
 
 bool VariableExpression::GetReference(ScriptFrame& frame, bool init_dict, Value *parent, String *index, DebugHint **dhint) const
@@ -147,12 +140,22 @@ bool VariableExpression::GetReference(ScriptFrame& frame, bool init_dict, Value 
 
 		if (dhint)
 			*dhint = NULL;
-	} else if (frame.Self.IsObject() && frame.Locals != static_cast<Object::Ptr>(frame.Self) && static_cast<Object::Ptr>(frame.Self)->HasOwnField(m_Variable)) {
-		*parent = frame.Self;
 
-		if (dhint && *dhint)
-			*dhint = new DebugHint((*dhint)->GetChild(m_Variable));
-	} else if (ScriptGlobal::Exists(m_Variable)) {
+		return true;
+	} else if (frame.Self.IsObject()) {
+		const Object::Ptr& self = frame.Self;
+
+		if (frame.Locals != self && self->HasOwnField(m_Variable)) {
+			*parent = frame.Self;
+
+			if (dhint && *dhint)
+				*dhint = new DebugHint((*dhint)->GetChild(m_Variable));
+
+			return true;
+		}
+	}
+
+	if (ScriptGlobal::Exists(m_Variable)) {
 		*parent = ScriptGlobal::GetGlobals();
 
 		if (dhint)

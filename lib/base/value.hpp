@@ -117,15 +117,7 @@ public:
 		if (!value)
 			return;
 
-		m_Value = static_pointer_cast<Object>(value);
-	}
-
-	inline Value(const intrusive_ptr<Object>& value)
-	{
-		if (!value)
-			return;
-
-		m_Value = value;
+		m_Value = Object::Ptr(value);
 	}
 
 #ifdef HAVE_CXX11
@@ -190,6 +182,11 @@ public:
 
 	operator const intrusive_ptr<Object>&(void) const
 	{
+		if (IsEmpty()) {
+			static Object::Ptr nullRef;
+			return nullRef;
+		}
+
 		if (!IsObject())
 			BOOST_THROW_EXCEPTION(std::runtime_error("Cannot convert value of type '" + GetTypeName() + "' to an object."));
 

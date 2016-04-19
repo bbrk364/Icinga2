@@ -47,12 +47,17 @@ public:
 	static inline Value Variable(ScriptFrame& frame, const String& name, const DebugInfo& debugInfo = DebugInfo())
 	{
 		Value value;
+
 		if (frame.Locals && frame.Locals->Get(name, &value))
 			return value;
-		else if (frame.Self.IsObject() && frame.Locals != static_cast<Object::Ptr>(frame.Self) && static_cast<Object::Ptr>(frame.Self)->HasOwnField(name))
-			return GetField(frame.Self, name, frame.Sandboxed, debugInfo);
-		else
-			return ScriptGlobal::Get(name);
+		else if (frame.Self.IsObject()) {
+			const Object::Ptr& self = frame.Self;
+
+			if (frame.Locals != self && self->HasOwnField(name))
+				return GetField(frame.Self, name, frame.Sandboxed, debugInfo);
+		}
+
+		return ScriptGlobal::Get(name);
 	}
 
 	static inline Value ConstructorCall(const Type::Ptr& type, const std::vector<Value>& args, const DebugInfo& debugInfo = DebugInfo())

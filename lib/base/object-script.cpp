@@ -28,21 +28,21 @@ using namespace icinga;
 static String ObjectToString(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Object::Ptr self = static_cast<Object::Ptr>(vframe->Self);
+	const Object::Ptr& self = vframe->Self;
 	return self->ToString();
 }
 
 static void ObjectNotifyAttribute(const String& attribute)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Object::Ptr self = static_cast<Object::Ptr>(vframe->Self);
+	const Object::Ptr& self = vframe->Self;
 	self->NotifyField(self->GetReflectionType()->GetFieldId(attribute));
 }
 
 static Object::Ptr ObjectClone(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Object::Ptr self = static_cast<Object::Ptr>(vframe->Self);
+	const Object::Ptr& self = vframe->Self;
 	return self->Clone();
 }
 
