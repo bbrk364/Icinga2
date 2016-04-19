@@ -1009,19 +1009,35 @@ bool DictExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& eva
 
 ExpressionResult GetScopeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	if (m_ScopeSpec == ScopeLocal)
-		return frame.Locals;
-	else if (m_ScopeSpec == ScopeThis)
-		return frame.Self;
-	else if (m_ScopeSpec == ScopeGlobal)
-		return ScriptGlobal::GetGlobals();
-	else
-		VERIFY(!"Invalid scope.");
+	switch (m_ScopeSpec) {
+		case ScopeLocal:
+			return frame.Locals;
+		case ScopeThis:
+			return frame.Self;
+		case ScopeGlobal:
+			return ScriptGlobal::GetGlobals();
+		default:
+			VERIFY(!"Invalid scope.");
+	}
 }
 
 bool GetScopeExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
 {
-	return false;
+	switch (m_ScopeSpec) {
+		case ScopeLocal:
+			EmitJitGetScopeLocal(evaluate, frame, res);
+			break;
+		case ScopeThis:
+			EmitJitGetScopeThis(evaluate, frame, res);
+			break;
+		case ScopeGlobal:
+			EmitJitGetScopeGlobal(evaluate, res);
+			break;
+	}
+
+	delete this;
+
+	return true;
 }
 
 ExpressionResult SetExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const

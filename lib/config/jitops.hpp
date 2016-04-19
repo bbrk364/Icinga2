@@ -89,6 +89,41 @@ inline void EmitJitScriptFrameSwapSelf(asmjit::X86Compiler& compiler, asmjit::X8
 	call->setArg(1, self);
 }
 
+inline void JitGetScopeLocal(ScriptFrame *frame, Value *result)
+{
+	new (result) Value(frame->Locals);
+}
+
+inline void EmitJitGetScopeLocal(asmjit::X86Compiler& compiler, asmjit::X86GpVar& frame, asmjit::X86GpVar& result)
+{
+	asmjit::X86CallNode *call = compiler.addCall(asmjit::imm_ptr(&JitGetScopeLocal), asmjit::FuncBuilder2<void, ScriptFrame *, Value *>(asmjit::kCallConvHost));
+	call->setArg(0, frame);
+	call->setArg(1, result);
+}
+
+inline void JitGetScopeThis(ScriptFrame *frame, Value *result)
+{
+	new (result) Value(frame->Self);
+}
+
+inline void EmitJitGetScopeThis(asmjit::X86Compiler& compiler, asmjit::X86GpVar& frame, asmjit::X86GpVar& result)
+{
+	asmjit::X86CallNode *call = compiler.addCall(asmjit::imm_ptr(&JitGetScopeThis), asmjit::FuncBuilder2<void, ScriptFrame *, Value *>(asmjit::kCallConvHost));
+	call->setArg(0, frame);
+	call->setArg(1, result);
+}
+
+inline void JitGetScopeGlobal(Value *result)
+{
+	new (result) Value(ScriptGlobal::GetGlobals());
+}
+
+inline void EmitJitGetScopeGlobal(asmjit::X86Compiler& compiler, asmjit::X86GpVar& result)
+{
+	asmjit::X86CallNode *call = compiler.addCall(asmjit::imm_ptr(&JitGetScopeGlobal), asmjit::FuncBuilder1<void, Value *>(asmjit::kCallConvHost));
+	call->setArg(0, result);
+}
+
 inline void JitNewArray(Value *res)
 {
 	new (res) Value(new Array());
