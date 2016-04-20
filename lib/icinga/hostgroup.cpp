@@ -50,7 +50,7 @@ bool HostGroup::EvaluateObjectRule(const Host::Ptr& host, const ConfigItem::Ptr&
 		group->GetScope()->CopyTo(frame.Locals);
 	frame.Locals->Set("host", host);
 
-	if (!group->GetFilter()->Evaluate(frame).GetValue().ToBool())
+	if (!group->GetFilter()->Evaluate(frame).Result.ToBool())
 		return false;
 
 	Log(LogDebug, "HostGroup")

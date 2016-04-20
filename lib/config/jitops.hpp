@@ -178,12 +178,12 @@ inline int32_t JitInvokeDoEvaluate(Expression *expr, ScriptFrame *frame, DebugHi
 {
 	ExpressionResult eres = expr->DoEvaluate(*frame, dhint);
 
-	if (eres.GetCode() != ResultOK) {
+	if (eres.Code != ResultOK) {
 		new (res) Value();
 		return 0;
 	}
 
-	new (res) Value(eres.GetValue());
+	new (res) Value(eres.Result);
 
 	return 1;
 }

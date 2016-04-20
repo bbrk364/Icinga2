@@ -148,42 +148,38 @@ struct ExpressionResult
 {
 public:
 	template<typename T>
-	ExpressionResult(const T& value, ExpressionResultCode code = ResultOK)
-	    : m_Value(value), m_Code(code)
+	ExpressionResult(const T& result, ExpressionResultCode code = ResultOK)
+	    : Result(result), Code(code)
 	{ }
+
+#ifdef HAVE_CXX11
+	template<typename T>
+	ExpressionResult(const T&& result, ExpressionResultCode code = ResultOK)
+	    : Result(result), Code(code)
+	{ }
+#endif /* HAVE_CXX11 */
 
 	operator Value(void) const
 	{
-		return m_Value;
+		return Result;
 	}
 
-	Value GetValue(void) const
-	{
-		return m_Value;
-	}
-
-	ExpressionResultCode GetCode(void) const
-	{
-		return m_Code;
-	}
-
-private:
-	Value m_Value;
-	ExpressionResultCode m_Code;
+	Value Result;
+	ExpressionResultCode Code;
 };
 
 #define CHECK_RESULT(res)			\
 	do {					\
-		if (res.GetCode() != ResultOK)	\
+		if (res.Code != ResultOK)	\
 			return res;		\
 	} while (0);
 
 #define CHECK_RESULT_LOOP(res)			\
-	if (res.GetCode() == ResultReturn)	\
+	if (res.Code == ResultReturn)		\
 		return res;			\
-	if (res.GetCode() == ResultContinue)	\
+	if (res.Code == ResultContinue)		\
 		continue;			\
-	if (res.GetCode() == ResultBreak)	\
+	if (res.Code == ResultBreak)		\
 		break;				\
 
 class JitExpression;

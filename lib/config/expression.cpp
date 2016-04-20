@@ -171,7 +171,7 @@ ExpressionResult NegateExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	ExpressionResult operand = m_Operand->Evaluate(frame);
 	CHECK_RESULT(operand);
 
-	return ~(long)operand.GetValue();
+	return ~(long)operand.Result;
 }
 
 bool NegateExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -191,7 +191,7 @@ ExpressionResult LogicalNegateExpression::DoEvaluate(ScriptFrame& frame, DebugHi
 	ExpressionResult operand = m_Operand->Evaluate(frame);
 	CHECK_RESULT(operand);
 
-	return !operand.GetValue().ToBool();
+	return !operand.Result.ToBool();
 }
 
 bool LogicalNegateExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -214,7 +214,7 @@ ExpressionResult AddExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() + operand2.GetValue();
+	return operand1.Result + operand2.Result;
 }
 
 bool AddExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -246,7 +246,7 @@ ExpressionResult SubtractExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() - operand2.GetValue();
+	return operand1.Result - operand2.Result;
 }
 
 bool SubtractExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -278,7 +278,7 @@ ExpressionResult MultiplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() * operand2.GetValue();
+	return operand1.Result * operand2.Result;
 }
 
 
@@ -311,7 +311,7 @@ ExpressionResult DivideExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() / operand2.GetValue();
+	return operand1.Result / operand2.Result;
 }
 
 
@@ -344,7 +344,7 @@ ExpressionResult ModuloExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() % operand2.GetValue();
+	return operand1.Result % operand2.Result;
 }
 
 
@@ -377,7 +377,7 @@ ExpressionResult XorExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() ^ operand2.GetValue();
+	return operand1.Result ^ operand2.Result;
 }
 
 
@@ -410,7 +410,7 @@ ExpressionResult BinaryAndExpression::DoEvaluate(ScriptFrame& frame, DebugHint *
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() & operand2.GetValue();
+	return operand1.Result & operand2.Result;
 }
 
 bool BinaryAndExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -442,7 +442,7 @@ ExpressionResult BinaryOrExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() | operand2.GetValue();
+	return operand1.Result | operand2.Result;
 }
 
 
@@ -475,7 +475,7 @@ ExpressionResult ShiftLeftExpression::DoEvaluate(ScriptFrame& frame, DebugHint *
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() << operand2.GetValue();
+	return operand1.Result << operand2.Result;
 }
 
 
@@ -508,7 +508,7 @@ ExpressionResult ShiftRightExpression::DoEvaluate(ScriptFrame& frame, DebugHint 
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() >> operand2.GetValue();
+	return operand1.Result >> operand2.Result;
 }
 
 
@@ -541,7 +541,7 @@ ExpressionResult EqualExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() == operand2.GetValue();
+	return operand1.Result == operand2.Result;
 }
 
 
@@ -574,7 +574,7 @@ ExpressionResult NotEqualExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() != operand2.GetValue();
+	return operand1.Result != operand2.Result;
 }
 
 
@@ -607,7 +607,7 @@ ExpressionResult LessThanExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() < operand2.GetValue();
+	return operand1.Result < operand2.Result;
 }
 
 
@@ -640,7 +640,7 @@ ExpressionResult GreaterThanExpression::DoEvaluate(ScriptFrame& frame, DebugHint
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() > operand2.GetValue();
+	return operand1.Result > operand2.Result;
 }
 
 
@@ -673,7 +673,7 @@ ExpressionResult LessThanOrEqualExpression::DoEvaluate(ScriptFrame& frame, Debug
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() <= operand2.GetValue();
+	return operand1.Result <= operand2.Result;
 }
 
 
@@ -706,7 +706,7 @@ ExpressionResult GreaterThanOrEqualExpression::DoEvaluate(ScriptFrame& frame, De
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	return operand1.GetValue() >= operand2.GetValue();
+	return operand1.Result >= operand2.Result;
 }
 
 
@@ -736,16 +736,16 @@ ExpressionResult InExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) 
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	if (operand2.GetValue().IsEmpty())
+	if (operand2.Result.IsEmpty())
 		return false;
-	else if (!operand2.GetValue().IsObjectType<Array>())
-		BOOST_THROW_EXCEPTION(ScriptError("Invalid right side argument for 'in' operator: " + JsonEncode(operand2.GetValue()), m_DebugInfo));
+	else if (!operand2.Result.IsObjectType<Array>())
+		BOOST_THROW_EXCEPTION(ScriptError("Invalid right side argument for 'in' operator: " + JsonEncode(operand2.Result), m_DebugInfo));
 
 	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
 	CHECK_RESULT(operand1)
 
-	Array::Ptr arr = operand2.GetValue();
-	return arr->Contains(operand1.GetValue());
+	Array::Ptr arr = operand2.Result;
+	return arr->Contains(operand1.Result);
 }
 
 bool InExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -761,16 +761,16 @@ ExpressionResult NotInExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 	CHECK_RESULT(operand2);
 
-	if (operand2.GetValue().IsEmpty())
+	if (operand2.Result.IsEmpty())
 		return true;
-	else if (!operand2.GetValue().IsObjectType<Array>())
-		BOOST_THROW_EXCEPTION(ScriptError("Invalid right side argument for 'in' operator: " + JsonEncode(operand2.GetValue()), m_DebugInfo));
+	else if (!operand2.Result.IsObjectType<Array>())
+		BOOST_THROW_EXCEPTION(ScriptError("Invalid right side argument for 'in' operator: " + JsonEncode(operand2.Result), m_DebugInfo));
 
 	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
 	CHECK_RESULT(operand1);
 
-	Array::Ptr arr = operand2.GetValue();
-	return !arr->Contains(operand1.GetValue());
+	Array::Ptr arr = operand2.Result;
+	return !arr->Contains(operand1.Result);
 }
 
 bool NotInExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -786,13 +786,13 @@ ExpressionResult LogicalAndExpression::DoEvaluate(ScriptFrame& frame, DebugHint 
 	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
 	CHECK_RESULT(operand1);
 
-	if (!operand1.GetValue().ToBool())
+	if (!operand1.Result.ToBool())
 		return operand1;
 	else {
 		ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 		CHECK_RESULT(operand2);
 
-		return operand2.GetValue();
+		return operand2.Result;
 	}
 }
 
@@ -820,13 +820,13 @@ ExpressionResult LogicalOrExpression::DoEvaluate(ScriptFrame& frame, DebugHint *
 	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
 	CHECK_RESULT(operand1);
 
-	if (operand1.GetValue().ToBool())
+	if (operand1.Result.ToBool())
 		return operand1;
 	else {
 		ExpressionResult operand2 = m_Operand2->Evaluate(frame);
 		CHECK_RESULT(operand2);
 
-		return operand2.GetValue();
+		return operand2.Result;
 	}
 }
 
@@ -860,7 +860,7 @@ ExpressionResult FunctionCallExpression::DoEvaluate(ScriptFrame& frame, DebugHin
 		ExpressionResult vfuncres = m_FName->Evaluate(frame);
 		CHECK_RESULT(vfuncres);
 
-		vfunc = vfuncres.GetValue();
+		vfunc = vfuncres.Result;
 	}
 
 	if (vfunc.IsObjectType<Type>()) {
@@ -869,7 +869,7 @@ ExpressionResult FunctionCallExpression::DoEvaluate(ScriptFrame& frame, DebugHin
 			ExpressionResult argres = arg->Evaluate(frame);
 			CHECK_RESULT(argres);
 
-			arguments.push_back(argres.GetValue());
+			arguments.push_back(argres.Result);
 		}
 
 		return VMOps::ConstructorCall(vfunc, arguments, m_DebugInfo);
@@ -888,7 +888,7 @@ ExpressionResult FunctionCallExpression::DoEvaluate(ScriptFrame& frame, DebugHin
 		ExpressionResult argres = arg->Evaluate(frame);
 		CHECK_RESULT(argres);
 
-		arguments.push_back(argres.GetValue());
+		arguments.push_back(argres.Result);
 	}
 
 	return VMOps::FunctionCall(frame, self, func, arguments);
@@ -909,7 +909,7 @@ ExpressionResult ArrayExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 		ExpressionResult element = aexpr->Evaluate(frame);
 		CHECK_RESULT(element);
 
-		result->Add(element.GetValue());
+		result->Add(element.Result);
 	}
 
 	return result;
@@ -954,7 +954,7 @@ ExpressionResult DictExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint
 		BOOST_FOREACH(Expression *aexpr, m_Expressions) {
 			ExpressionResult element = aexpr->Evaluate(frame, dhint);
 			CHECK_RESULT(element);
-			result = element.GetValue();
+			result = element.Result;
 		}
 	} catch (...) {
 		if (!m_Inline)
@@ -1092,7 +1092,7 @@ ExpressionResult SetExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 		}
 	}
 
-	VMOps::SetField(parent, index, operand2.GetValue(), m_DebugInfo);
+	VMOps::SetField(parent, index, operand2.Result, m_DebugInfo);
 
 	if (psdhint) {
 		psdhint->AddMessage("=", m_DebugInfo);
@@ -1117,7 +1117,7 @@ ExpressionResult ConditionalExpression::DoEvaluate(ScriptFrame& frame, DebugHint
 	ExpressionResult condition = m_Condition->Evaluate(frame, dhint);
 	CHECK_RESULT(condition);
 
-	if (condition.GetValue().ToBool())
+	if (condition.Result.ToBool())
 		return m_TrueBranch->Evaluate(frame, dhint);
 	else if (m_FalseBranch)
 		return m_FalseBranch->Evaluate(frame, dhint);
@@ -1163,7 +1163,7 @@ ExpressionResult WhileExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 		ExpressionResult condition = m_Condition->Evaluate(frame, dhint);
 		CHECK_RESULT(condition);
 
-		if (!condition.GetValue().ToBool())
+		if (!condition.Result.ToBool())
 			break;
 
 		ExpressionResult loop_body = m_LoopBody->Evaluate(frame, dhint);
@@ -1204,7 +1204,8 @@ ExpressionResult ReturnExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	ExpressionResult operand = m_Operand->Evaluate(frame);
 	CHECK_RESULT(operand);
 
-	return ExpressionResult(operand.GetValue(), ResultReturn);
+	operand.Code = ResultReturn;
+	return operand;
 }
 
 bool ReturnExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -1247,7 +1248,7 @@ ExpressionResult IndexerExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame, dhint);
 	CHECK_RESULT(operand2);
 
-	return VMOps::GetField(operand1.GetValue(), operand2.GetValue(), frame.Sandboxed, m_DebugInfo);
+	return VMOps::GetField(operand1.Result, operand2.Result, frame.Sandboxed, m_DebugInfo);
 }
 
 bool IndexerExpression::GetReference(ScriptFrame& frame, bool init_dict, Value *parent, String *index, DebugHint **dhint) const
@@ -1275,11 +1276,11 @@ bool IndexerExpression::GetReference(ScriptFrame& frame, bool init_dict, Value *
 		free_psd = true;
 	} else {
 		ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-		*parent = operand1.GetValue();
+		*parent = operand1.Result;
 	}
 
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	*index = operand2.GetValue();
+	*index = operand2.Result;
 
 	if (dhint) {
 		if (psdhint)
@@ -1333,7 +1334,7 @@ void icinga::BindToScope(Expression *& expr, ScopeSpecifier scopeSpec)
 	LiteralExpression *lexpr = dynamic_cast<LiteralExpression *>(expr);
 	ScriptFrame frame;
 
-	if (lexpr && lexpr->Evaluate(frame).GetValue().IsString()) {
+	if (lexpr && lexpr->Evaluate(frame).Result.IsString()) {
 		Expression *scope = new GetScopeExpression(scopeSpec);
 		expr = new IndexerExpression(scope, lexpr, lexpr->GetDebugInfo());
 	}
@@ -1352,7 +1353,7 @@ ExpressionResult ThrowExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 {
 	ExpressionResult messageres = m_Message->Evaluate(frame);
 	CHECK_RESULT(messageres);
-	Value message = messageres.GetValue();
+	Value message = messageres.Result;
 	BOOST_THROW_EXCEPTION(ScriptError(message, m_DebugInfo, m_IncompleteExpr));
 }
 
@@ -1371,7 +1372,7 @@ ExpressionResult ImportExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	String type = VMOps::GetField(frame.Self, "type", frame.Sandboxed, m_DebugInfo);
 	ExpressionResult nameres = m_Name->Evaluate(frame);
 	CHECK_RESULT(nameres);
-	Value name = nameres.GetValue();
+	Value name = nameres.Result;
 
 	if (!name.IsString())
 		BOOST_THROW_EXCEPTION(ScriptError("Template/object name must be a string", m_DebugInfo));
@@ -1421,7 +1422,7 @@ ExpressionResult ApplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	ExpressionResult nameres = m_Name->Evaluate(frame);
 	CHECK_RESULT(nameres);
 
-	return VMOps::NewApply(frame, m_Type, m_Target, nameres.GetValue(), m_Filter,
+	return VMOps::NewApply(frame, m_Type, m_Target, nameres.Result, m_Filter,
 	    m_Package, m_FKVar, m_FVVar, m_FTerm, m_ClosedVars, m_IgnoreOnError, m_Expression, m_DebugInfo);
 }
 
@@ -1453,7 +1454,7 @@ ExpressionResult ObjectExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 		ExpressionResult nameres = m_Name->Evaluate(frame, dhint);
 		CHECK_RESULT(nameres);
 
-		name = nameres.GetValue();
+		name = nameres.Result;
 	}
 
 	return VMOps::NewObject(frame, m_Abstract, m_Type, name, m_Filter, m_Zone,
@@ -1485,7 +1486,7 @@ ExpressionResult ForExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 	ExpressionResult valueres = m_Value->Evaluate(frame, dhint);
 	CHECK_RESULT(valueres);
 
-	return VMOps::For(frame, m_FKVar, m_FVVar, valueres.GetValue(), m_Expression, m_DebugInfo);
+	return VMOps::For(frame, m_FKVar, m_FVVar, valueres.Result, m_Expression, m_DebugInfo);
 }
 
 bool ForExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -1504,7 +1505,7 @@ ExpressionResult LibraryExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 	ExpressionResult libres = m_Operand->Evaluate(frame, dhint);
 	CHECK_RESULT(libres);
 
-	Loader::LoadExtensionLibrary(libres.GetValue());
+	Loader::LoadExtensionLibrary(libres.Result);
 
 	return Empty;
 }
@@ -1527,7 +1528,7 @@ ExpressionResult IncludeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 			{
 				ExpressionResult pathres = m_Path->Evaluate(frame, dhint);
 				CHECK_RESULT(pathres);
-				path = pathres.GetValue();
+				path = pathres.Result;
 			}
 
 			expr = ConfigCompiler::HandleInclude(m_RelativeBase, path, m_SearchIncludes, m_Zone, m_Package, m_DebugInfo);
@@ -1537,13 +1538,13 @@ ExpressionResult IncludeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 			{
 				ExpressionResult pathres = m_Path->Evaluate(frame, dhint);
 				CHECK_RESULT(pathres);
-				path = pathres.GetValue();
+				path = pathres.Result;
 			}
 
 			{
 				ExpressionResult patternres = m_Pattern->Evaluate(frame, dhint);
 				CHECK_RESULT(patternres);
-				pattern = patternres.GetValue();
+				pattern = patternres.Result;
 			}
 
 			expr = ConfigCompiler::HandleIncludeRecursive(m_RelativeBase, path, pattern, m_Zone, m_Package, m_DebugInfo);
@@ -1553,19 +1554,19 @@ ExpressionResult IncludeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 			{
 				ExpressionResult nameres = m_Name->Evaluate(frame, dhint);
 				CHECK_RESULT(nameres);
-				name = nameres.GetValue();
+				name = nameres.Result;
 			}
 
 			{
 				ExpressionResult pathres = m_Path->Evaluate(frame, dhint);
 				CHECK_RESULT(pathres);
-				path = pathres.GetValue();
+				path = pathres.Result;
 			}
 
 			{
 				ExpressionResult patternres = m_Pattern->Evaluate(frame, dhint);
 				CHECK_RESULT(patternres);
-				pattern = patternres.GetValue();
+				pattern = patternres.Result;
 			}
 
 			expr = ConfigCompiler::HandleIncludeZones(m_RelativeBase, name, path, pattern, m_Package, m_DebugInfo);
