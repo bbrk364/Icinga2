@@ -168,10 +168,7 @@ bool VariableExpression::GetReference(ScriptFrame& frame, bool init_dict, Value 
 
 ExpressionResult NegateExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand = m_Operand->Evaluate(frame);
-	CHECK_RESULT(operand);
-
-	return ~(long)operand.Result;
+	return ~(long)m_Operand->Evaluate(frame).Result;
 }
 
 bool NegateExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -188,10 +185,7 @@ bool NegateExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& e
 
 ExpressionResult LogicalNegateExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand = m_Operand->Evaluate(frame);
-	CHECK_RESULT(operand);
-
-	return !operand.Result.ToBool();
+	return !m_Operand->Evaluate(frame).Result.ToBool();
 }
 
 bool LogicalNegateExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -208,13 +202,7 @@ bool LogicalNegateExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Comp
 
 ExpressionResult AddExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result + operand2.Result;
+	return m_Operand1->Evaluate(frame).Result + m_Operand2->Evaluate(frame).Result;
 }
 
 bool AddExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -240,13 +228,7 @@ bool AddExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& eval
 
 ExpressionResult SubtractExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result - operand2.Result;
+	return m_Operand1->Evaluate(frame).Result - m_Operand2->Evaluate(frame).Result;
 }
 
 bool SubtractExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -272,13 +254,7 @@ bool SubtractExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler&
 
 ExpressionResult MultiplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result * operand2.Result;
+	return m_Operand1->Evaluate(frame).Result * m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -305,13 +281,7 @@ bool MultiplyExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler&
 
 ExpressionResult DivideExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result / operand2.Result;
+	return m_Operand1->Evaluate(frame).Result / m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -338,13 +308,7 @@ bool DivideExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& e
 
 ExpressionResult ModuloExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result % operand2.Result;
+	return m_Operand1->Evaluate(frame).Result % m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -371,13 +335,7 @@ bool ModuloExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& e
 
 ExpressionResult XorExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result ^ operand2.Result;
+	return m_Operand1->Evaluate(frame).Result ^ m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -404,13 +362,7 @@ bool XorExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& eval
 
 ExpressionResult BinaryAndExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result & operand2.Result;
+	return m_Operand1->Evaluate(frame).Result & m_Operand2->Evaluate(frame).Result;
 }
 
 bool BinaryAndExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -436,13 +388,7 @@ bool BinaryAndExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler
 
 ExpressionResult BinaryOrExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result | operand2.Result;
+	return m_Operand1->Evaluate(frame).Result | m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -469,13 +415,7 @@ bool BinaryOrExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler&
 
 ExpressionResult ShiftLeftExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result << operand2.Result;
+	return m_Operand1->Evaluate(frame).Result << m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -502,13 +442,7 @@ bool ShiftLeftExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler
 
 ExpressionResult ShiftRightExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result >> operand2.Result;
+	return m_Operand1->Evaluate(frame).Result >> m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -535,13 +469,7 @@ bool ShiftRightExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compile
 
 ExpressionResult EqualExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result == operand2.Result;
+	return m_Operand1->Evaluate(frame).Result == m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -568,13 +496,7 @@ bool EqualExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& ev
 
 ExpressionResult NotEqualExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result != operand2.Result;
+	return m_Operand1->Evaluate(frame).Result != m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -601,13 +523,7 @@ bool NotEqualExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler&
 
 ExpressionResult LessThanExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result < operand2.Result;
+	return m_Operand1->Evaluate(frame).Result < m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -634,13 +550,7 @@ bool LessThanExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler&
 
 ExpressionResult GreaterThanExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result > operand2.Result;
+	return m_Operand1->Evaluate(frame).Result > m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -667,13 +577,7 @@ bool GreaterThanExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compil
 
 ExpressionResult LessThanOrEqualExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result <= operand2.Result;
+	return m_Operand1->Evaluate(frame).Result <= m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -700,13 +604,7 @@ bool LessThanOrEqualExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Co
 
 ExpressionResult GreaterThanOrEqualExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
-
-	return operand1.Result >= operand2.Result;
+	return m_Operand1->Evaluate(frame).Result >= m_Operand2->Evaluate(frame).Result;
 }
 
 
@@ -734,18 +632,14 @@ bool GreaterThanOrEqualExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X8
 ExpressionResult InExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
 
 	if (operand2.Result.IsEmpty())
 		return false;
 	else if (!operand2.Result.IsObjectType<Array>())
 		BOOST_THROW_EXCEPTION(ScriptError("Invalid right side argument for 'in' operator: " + JsonEncode(operand2.Result), m_DebugInfo));
 
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1)
-
 	Array::Ptr arr = operand2.Result;
-	return arr->Contains(operand1.Result);
+	return arr->Contains(m_Operand1->Evaluate(frame).Result);
 }
 
 bool InExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -759,18 +653,14 @@ bool InExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evalu
 ExpressionResult NotInExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-	CHECK_RESULT(operand2);
 
 	if (operand2.Result.IsEmpty())
 		return true;
 	else if (!operand2.Result.IsObjectType<Array>())
 		BOOST_THROW_EXCEPTION(ScriptError("Invalid right side argument for 'in' operator: " + JsonEncode(operand2.Result), m_DebugInfo));
 
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
-
 	Array::Ptr arr = operand2.Result;
-	return !arr->Contains(operand1.Result);
+	return !arr->Contains(m_Operand1->Evaluate(frame));
 }
 
 bool NotInExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -784,16 +674,11 @@ bool NotInExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& ev
 ExpressionResult LogicalAndExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
 
 	if (!operand1.Result.ToBool())
 		return operand1;
-	else {
-		ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-		CHECK_RESULT(operand2);
-
-		return operand2.Result;
-	}
+	else
+		return m_Operand2->Evaluate(frame).Result;
 }
 
 bool LogicalAndExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -818,16 +703,11 @@ bool LogicalAndExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compile
 ExpressionResult LogicalOrExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
-	CHECK_RESULT(operand1);
 
 	if (operand1.Result.ToBool())
 		return operand1;
-	else {
-		ExpressionResult operand2 = m_Operand2->Evaluate(frame);
-		CHECK_RESULT(operand2);
-
-		return operand2.Result;
-	}
+	else
+		return m_Operand2->Evaluate(frame).Result;
 }
 
 bool LogicalOrExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -856,20 +736,13 @@ ExpressionResult FunctionCallExpression::DoEvaluate(ScriptFrame& frame, DebugHin
 
 	if (m_FName->GetReference(frame, false, &self, &index))
 		vfunc = VMOps::GetField(self, index, frame.Sandboxed, m_DebugInfo);
-	else {
-		ExpressionResult vfuncres = m_FName->Evaluate(frame);
-		CHECK_RESULT(vfuncres);
-
-		vfunc = vfuncres.Result;
-	}
+	else
+		vfunc = m_FName->Evaluate(frame).Result;
 
 	if (vfunc.IsObjectType<Type>()) {
 		std::vector<Value> arguments;
 		BOOST_FOREACH(Expression *arg, m_Args) {
-			ExpressionResult argres = arg->Evaluate(frame);
-			CHECK_RESULT(argres);
-
-			arguments.push_back(argres.Result);
+			arguments.push_back(arg->Evaluate(frame).Result);
 		}
 
 		return VMOps::ConstructorCall(vfunc, arguments, m_DebugInfo);
@@ -885,10 +758,7 @@ ExpressionResult FunctionCallExpression::DoEvaluate(ScriptFrame& frame, DebugHin
 
 	std::vector<Value> arguments;
 	BOOST_FOREACH(Expression *arg, m_Args) {
-		ExpressionResult argres = arg->Evaluate(frame);
-		CHECK_RESULT(argres);
-
-		arguments.push_back(argres.Result);
+		arguments.push_back(arg->Evaluate(frame).Result);
 	}
 
 	return VMOps::FunctionCall(frame, self, func, arguments);
@@ -906,10 +776,7 @@ ExpressionResult ArrayExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	Array::Ptr result = new Array();
 
 	BOOST_FOREACH(Expression *aexpr, m_Expressions) {
-		ExpressionResult element = aexpr->Evaluate(frame);
-		CHECK_RESULT(element);
-
-		result->Add(element.Result);
+		result->Add(aexpr->Evaluate(frame).Result);
 	}
 
 	return result;
@@ -1057,7 +924,6 @@ ExpressionResult SetExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 		BOOST_THROW_EXCEPTION(ScriptError("Expression cannot be assigned to.", m_DebugInfo));
 
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame, dhint);
-	CHECK_RESULT(operand2);
 
 	if (m_Op != OpSetLiteral) {
 		Value object = VMOps::GetField(parent, index, frame.Sandboxed, m_DebugInfo);
@@ -1114,10 +980,7 @@ bool SetExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& eval
 
 ExpressionResult ConditionalExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult condition = m_Condition->Evaluate(frame, dhint);
-	CHECK_RESULT(condition);
-
-	if (condition.Result.ToBool())
+	if (m_Condition->Evaluate(frame).Result.ToBool())
 		return m_TrueBranch->Evaluate(frame, dhint);
 	else if (m_FalseBranch)
 		return m_FalseBranch->Evaluate(frame, dhint);
@@ -1160,10 +1023,7 @@ ExpressionResult WhileExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 		BOOST_THROW_EXCEPTION(ScriptError("While loops are not allowed in sandbox mode.", m_DebugInfo));
 
 	for (;;) {
-		ExpressionResult condition = m_Condition->Evaluate(frame, dhint);
-		CHECK_RESULT(condition);
-
-		if (!condition.Result.ToBool())
+		if (!m_Condition->Evaluate(frame).Result.ToBool())
 			break;
 
 		ExpressionResult loop_body = m_LoopBody->Evaluate(frame, dhint);
@@ -1202,8 +1062,6 @@ bool WhileExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& ev
 ExpressionResult ReturnExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	ExpressionResult operand = m_Operand->Evaluate(frame);
-	CHECK_RESULT(operand);
-
 	operand.Code = ResultReturn;
 	return operand;
 }
@@ -1242,13 +1100,7 @@ bool ContinueExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler&
 
 ExpressionResult IndexerExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult operand1 = m_Operand1->Evaluate(frame, dhint);
-	CHECK_RESULT(operand1);
-
-	ExpressionResult operand2 = m_Operand2->Evaluate(frame, dhint);
-	CHECK_RESULT(operand2);
-
-	return VMOps::GetField(operand1.Result, operand2.Result, frame.Sandboxed, m_DebugInfo);
+	return VMOps::GetField(m_Operand1->Evaluate(frame, dhint).Result, m_Operand2->Evaluate(frame, dhint).Result, frame.Sandboxed, m_DebugInfo);
 }
 
 bool IndexerExpression::GetReference(ScriptFrame& frame, bool init_dict, Value *parent, String *index, DebugHint **dhint) const
@@ -1351,10 +1203,7 @@ void icinga::BindToScope(Expression *& expr, ScopeSpecifier scopeSpec)
 
 ExpressionResult ThrowExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	ExpressionResult messageres = m_Message->Evaluate(frame);
-	CHECK_RESULT(messageres);
-	Value message = messageres.Result;
-	BOOST_THROW_EXCEPTION(ScriptError(message, m_DebugInfo, m_IncompleteExpr));
+	BOOST_THROW_EXCEPTION(ScriptError(m_Message->Evaluate(frame).Result, m_DebugInfo, m_IncompleteExpr));
 }
 
 bool ThrowExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -1370,9 +1219,7 @@ ExpressionResult ImportExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 		BOOST_THROW_EXCEPTION(ScriptError("Imports are not allowed in sandbox mode.", m_DebugInfo));
 
 	String type = VMOps::GetField(frame.Self, "type", frame.Sandboxed, m_DebugInfo);
-	ExpressionResult nameres = m_Name->Evaluate(frame);
-	CHECK_RESULT(nameres);
-	Value name = nameres.Result;
+	Value name = m_Name->Evaluate(frame).Result;
 
 	if (!name.IsString())
 		BOOST_THROW_EXCEPTION(ScriptError("Template/object name must be a string", m_DebugInfo));
@@ -1382,10 +1229,7 @@ ExpressionResult ImportExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	if (!item)
 		BOOST_THROW_EXCEPTION(ScriptError("Import references unknown template: '" + name + "'", m_DebugInfo));
 
-	ExpressionResult result = item->GetExpression()->Evaluate(frame, dhint);
-	CHECK_RESULT(result);
-
-	return Empty;
+	return item->GetExpression()->Evaluate(frame, dhint).Result;
 }
 
 bool ImportExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -1419,10 +1263,7 @@ ExpressionResult ApplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	if (frame.Sandboxed)
 		BOOST_THROW_EXCEPTION(ScriptError("Apply rules are not allowed in sandbox mode.", m_DebugInfo));
 
-	ExpressionResult nameres = m_Name->Evaluate(frame);
-	CHECK_RESULT(nameres);
-
-	return VMOps::NewApply(frame, m_Type, m_Target, nameres.Result, m_Filter,
+	return VMOps::NewApply(frame, m_Type, m_Target, m_Name->Evaluate(frame).Result, m_Filter,
 	    m_Package, m_FKVar, m_FVVar, m_FTerm, m_ClosedVars, m_IgnoreOnError, m_Expression, m_DebugInfo);
 }
 
@@ -1450,12 +1291,8 @@ ExpressionResult ObjectExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 
 	String name;
 
-	if (m_Name) {
-		ExpressionResult nameres = m_Name->Evaluate(frame, dhint);
-		CHECK_RESULT(nameres);
-
-		name = nameres.Result;
-	}
+	if (m_Name)
+		name = m_Name->Evaluate(frame).Result;
 
 	return VMOps::NewObject(frame, m_Abstract, m_Type, name, m_Filter, m_Zone,
 	    m_Package, m_IgnoreOnError, m_ClosedVars, m_Expression, m_DebugInfo);
@@ -1483,10 +1320,7 @@ ExpressionResult ForExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 	if (frame.Sandboxed)
 		BOOST_THROW_EXCEPTION(ScriptError("For loops are not allowed in sandbox mode.", m_DebugInfo));
 
-	ExpressionResult valueres = m_Value->Evaluate(frame, dhint);
-	CHECK_RESULT(valueres);
-
-	return VMOps::For(frame, m_FKVar, m_FVVar, valueres.Result, m_Expression, m_DebugInfo);
+	return VMOps::For(frame, m_FKVar, m_FVVar, m_Value->Evaluate(frame, dhint).Result, m_Expression, m_DebugInfo);
 }
 
 bool ForExpression::Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res)
@@ -1502,10 +1336,7 @@ ExpressionResult LibraryExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 	if (frame.Sandboxed)
 		BOOST_THROW_EXCEPTION(ScriptError("Loading libraries is not allowed in sandbox mode.", m_DebugInfo));
 
-	ExpressionResult libres = m_Operand->Evaluate(frame, dhint);
-	CHECK_RESULT(libres);
-
-	Loader::LoadExtensionLibrary(libres.Result);
+	Loader::LoadExtensionLibrary(m_Operand->Evaluate(frame).Result);
 
 	return Empty;
 }
@@ -1525,50 +1356,20 @@ ExpressionResult IncludeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 
 	switch (m_Type) {
 		case IncludeRegular:
-			{
-				ExpressionResult pathres = m_Path->Evaluate(frame, dhint);
-				CHECK_RESULT(pathres);
-				path = pathres.Result;
-			}
-
+			path = m_Path->Evaluate(frame).Result;
 			expr = ConfigCompiler::HandleInclude(m_RelativeBase, path, m_SearchIncludes, m_Zone, m_Package, m_DebugInfo);
 			break;
 
 		case IncludeRecursive:
-			{
-				ExpressionResult pathres = m_Path->Evaluate(frame, dhint);
-				CHECK_RESULT(pathres);
-				path = pathres.Result;
-			}
-
-			{
-				ExpressionResult patternres = m_Pattern->Evaluate(frame, dhint);
-				CHECK_RESULT(patternres);
-				pattern = patternres.Result;
-			}
-
+			path = m_Path->Evaluate(frame).Result;
+			pattern = m_Pattern->Evaluate(frame).Result;
 			expr = ConfigCompiler::HandleIncludeRecursive(m_RelativeBase, path, pattern, m_Zone, m_Package, m_DebugInfo);
 			break;
 
 		case IncludeZones:
-			{
-				ExpressionResult nameres = m_Name->Evaluate(frame, dhint);
-				CHECK_RESULT(nameres);
-				name = nameres.Result;
-			}
-
-			{
-				ExpressionResult pathres = m_Path->Evaluate(frame, dhint);
-				CHECK_RESULT(pathres);
-				path = pathres.Result;
-			}
-
-			{
-				ExpressionResult patternres = m_Pattern->Evaluate(frame, dhint);
-				CHECK_RESULT(patternres);
-				pattern = patternres.Result;
-			}
-
+			name = m_Name->Evaluate(frame).Result;
+			path = m_Path->Evaluate(frame).Result;
+			pattern = m_Pattern->Evaluate(frame).Result;
 			expr = ConfigCompiler::HandleIncludeZones(m_RelativeBase, name, path, pattern, m_Package, m_DebugInfo);
 			break;
 	}
