@@ -89,6 +89,12 @@ public:
 		: m_Value(value)
 	{ }
 
+#ifdef HAVE_CXX11
+	inline Value(String&& other)
+		: m_Value(other)
+	{ }
+#endif /* HAVE_CXX11 */
+
 	inline Value(const char *value)
 		: m_Value(String(value))
 	{ }

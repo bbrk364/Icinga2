@@ -204,7 +204,7 @@ public:
 		if (!context.IsObject())
 			return GetPrototypeField(context, field, true, debugInfo);
 
-		Object::Ptr object = context;
+		const Object::Ptr& object = context;
 
 		return object->GetFieldByName(field, sandboxed, debugInfo);
 	}
