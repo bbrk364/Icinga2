@@ -241,13 +241,6 @@ private:
 typedef void(*JitDtor)(void);
 typedef void(*JitEvaluateFunction)(ScriptFrame *, DebugHint *, Value *);
 
-#define JIT_REPLACE_EXPRESSION(expr) \
-	if (expr) { \
-		try { \
-			expr = new JitExpression(expr); \
-		} catch (const std::invalid_argument&) { } \
-	}
-
 class I2_CONFIG_API JitExpression : public Expression
 {
 public:
@@ -264,6 +257,21 @@ private:
 	JitDtor m_Dtor;
 	JitEvaluateFunction m_Evaluate;
 };
+
+inline Expression *JitCompileExpression(Expression *expr)
+{
+	if (!expr)
+		return NULL;
+
+	try {
+		return new JitExpression(expr);
+	} catch (std::invalid_argument&) {
+		return expr;
+	}
+}
+
+#define JIT_REPLACE_EXPRESSION(expr) \
+	expr = JitCompileExpression(expr)
 
 class I2_CONFIG_API LiteralExpression : public Expression
 {
@@ -906,7 +914,7 @@ class I2_CONFIG_API FunctionExpression : public DebuggableExpression
 public:
 	FunctionExpression(const std::vector<String>& args,
 	    std::map<String, Expression *> *closedVars, Expression *expression, const DebugInfo& debugInfo = DebugInfo())
-		: DebuggableExpression(debugInfo), m_Args(args), m_ClosedVars(closedVars), m_Expression(new JitExpression(expression))
+		: DebuggableExpression(debugInfo), m_Args(args), m_ClosedVars(closedVars), m_Expression(JitCompileExpression(expression))
 	{ }
 
 	bool Compile(asmjit::X86Compiler& dtor, asmjit::X86Compiler& evaluate, asmjit::X86GpVar& frame, asmjit::X86GpVar& dhint, asmjit::X86GpVar& res) override;
@@ -928,9 +936,9 @@ public:
 	    Expression *fterm, std::map<String, Expression *> *closedVars, bool ignoreOnError,
 	    Expression *expression, const DebugInfo& debugInfo = DebugInfo())
 		: DebuggableExpression(debugInfo), m_Type(type), m_Target(target),
-		    m_Name(name), m_Filter(filter), m_Package(package), m_FKVar(fkvar), m_FVVar(fvvar),
-		    m_FTerm(fterm), m_IgnoreOnError(ignoreOnError), m_ClosedVars(closedVars),
-		    m_Expression(expression)
+		    m_Name(name), m_Filter(JitCompileExpression(filter)), m_Package(package), m_FKVar(fkvar), m_FVVar(fvvar),
+		    m_FTerm(JitCompileExpression(fterm)), m_IgnoreOnError(ignoreOnError), m_ClosedVars(closedVars),
+		    m_Expression(JitCompileExpression(expression))
 	{ }
 
 	~ApplyExpression(void)
@@ -964,8 +972,8 @@ public:
 	    const String& zone, const String& package, std::map<String, Expression *> *closedVars,
 	    bool ignoreOnError, Expression *expression, const DebugInfo& debugInfo = DebugInfo())
 		: DebuggableExpression(debugInfo), m_Abstract(abstract), m_Type(type),
-		  m_Name(name), m_Filter(filter), m_Zone(zone), m_Package(package),
-		  m_IgnoreOnError(ignoreOnError), m_ClosedVars(closedVars), m_Expression(expression)
+		  m_Name(name), m_Filter(JitCompileExpression(filter)), m_Zone(zone), m_Package(package),
+		  m_IgnoreOnError(ignoreOnError), m_ClosedVars(closedVars), m_Expression(JitCompileExpression(expression))
 	{ }
 
 	~ObjectExpression(void)
