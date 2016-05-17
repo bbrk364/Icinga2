@@ -63,7 +63,7 @@ Field ObjectType::GetFieldInfo(int id) const
 	if (id == 0)
 		return Field(1, "String", "type", NULL, NULL, 0, 0);
 	else
-		BOOST_THROW_EXCEPTION(std::runtime_error("Invalid field ID."));
+		ThrowException(std::runtime_error("Invalid field ID."));
 }
 
 int ObjectType::GetFieldCount(void) const

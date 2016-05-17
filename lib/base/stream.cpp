@@ -27,7 +27,7 @@ void Stream::RegisterDataHandler(const boost::function<void(const Stream::Ptr&)>
 	if (SupportsWaiting())
 		OnDataAvailable.connect(handler);
 	else
-		BOOST_THROW_EXCEPTION(std::runtime_error("Stream does not support waiting."));
+		ThrowException(std::runtime_error("Stream does not support waiting."));
 }
 
 bool Stream::SupportsWaiting(void) const
@@ -42,12 +42,12 @@ bool Stream::IsDataAvailable(void) const
 
 void Stream::Shutdown(void)
 {
-	BOOST_THROW_EXCEPTION(std::runtime_error("Stream does not support Shutdown()."));
+	ThrowException(std::runtime_error("Stream does not support Shutdown()."));
 }
 
 size_t Stream::Peek(void *buffer, size_t count, bool allow_partial)
 {
-	BOOST_THROW_EXCEPTION(std::runtime_error("Stream does not support Peek()."));
+	ThrowException(std::runtime_error("Stream does not support Peek()."));
 }
 
 void Stream::SignalDataAvailable(void)
@@ -63,7 +63,7 @@ void Stream::SignalDataAvailable(void)
 bool Stream::WaitForData(int timeout)
 {
 	if (!SupportsWaiting())
-		BOOST_THROW_EXCEPTION(std::runtime_error("Stream does not support waiting."));
+		ThrowException(std::runtime_error("Stream does not support waiting."));
 
 	boost::mutex::scoped_lock lock(m_Mutex);
 

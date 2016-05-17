@@ -170,7 +170,7 @@ void ConfigWriter::EmitIdentifier(std::ostream& fp, const String& identifier, bo
 	else if (inAssignment)
 		EmitString(fp, identifier);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid identifier"));
+		ThrowException(std::invalid_argument("Invalid identifier"));
 }
 
 void ConfigWriter::EmitConfigItem(std::ostream& fp, const String& type, const String& name, bool isTemplate,

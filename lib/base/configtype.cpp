@@ -101,7 +101,7 @@ void ConfigType::RegisterObject(const ConfigObject::Ptr& object)
 			if (it->second == object)
 				return;
 
-			BOOST_THROW_EXCEPTION(ScriptError("An object with type '" + m_Name + "' and name '" + name + "' already exists (" +
+			ThrowException(ScriptError("An object with type '" + m_Name + "' and name '" + name + "' already exists (" +
 			    Convert::ToString(it->second->GetDebugInfo()) + "), new declaration: " + Convert::ToString(object->GetDebugInfo()),
 			    object->GetDebugInfo()));
 		}

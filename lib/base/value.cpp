@@ -53,7 +53,7 @@ bool Value::ToBool(void) const
 			return false;
 
 		default:
-			BOOST_THROW_EXCEPTION(std::runtime_error("Invalid variant type."));
+			ThrowException(std::runtime_error("Invalid variant type."));
 	}
 }
 

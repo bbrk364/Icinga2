@@ -103,7 +103,7 @@ static Dictionary::Ptr DeserializeDictionary(const Dictionary::Ptr& input, bool 
 static Object::Ptr DeserializeObject(const Object::Ptr& object, const Dictionary::Ptr& input, bool safe_mode, int attributeTypes)
 {
 	if (!object && safe_mode)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Tried to instantiate object while safe mode is enabled."));
+		ThrowException(std::runtime_error("Tried to instantiate object while safe mode is enabled."));
 
 	Type::Ptr type;
 

@@ -237,7 +237,7 @@ extern int yydebug;
 void yyerror(const YYLTYPE *locp, std::vector<std::pair<Expression *, EItemInfo> > *, ConfigCompiler *context, const char *err)
 {
 	bool incomplete = context && context->m_Eof && (context->m_OpenBraces > 0);
-	BOOST_THROW_EXCEPTION(ScriptError(err, *locp, incomplete));
+	ThrowException(ScriptError(err, *locp, incomplete));
 }
 
 int yyparse(std::vector<std::pair<Expression *, EItemInfo> > *llist, ConfigCompiler *context);
@@ -260,7 +260,7 @@ static void UseFlowControl(ConfigCompiler *compiler, FlowControlType type, const
 	int fci = compiler->m_FlowControlInfo.top();
 
 	if ((type & fci) != type)
-		BOOST_THROW_EXCEPTION(ScriptError("Invalid flow control statement.", location));
+		ThrowException(ScriptError("Invalid flow control statement.", location));
 }
 
 Expression *ConfigCompiler::Compile(void)
@@ -402,7 +402,7 @@ object:
 
 		if (seen_assign) {
 			if (!ObjectRule::IsValidSourceType(type))
-				BOOST_THROW_EXCEPTION(ScriptError("object rule 'assign' cannot be used for type '" + type + "'", DebugInfoRange(@2, @4)));
+				ThrowException(ScriptError("object rule 'assign' cannot be used for type '" + type + "'", DebugInfoRange(@2, @4)));
 
 			if (ignore) {
 				Expression *rex = new LogicalNegateExpression(ignore, DebugInfoRange(@2, @5));
@@ -412,9 +412,9 @@ object:
 				filter = assign;
 		} else if (seen_ignore) {
 			if (!ObjectRule::IsValidSourceType(type))
-				BOOST_THROW_EXCEPTION(ScriptError("object rule 'ignore' cannot be used for type '" + type + "'", DebugInfoRange(@2, @4)));
+				ThrowException(ScriptError("object rule 'ignore' cannot be used for type '" + type + "'", DebugInfoRange(@2, @4)));
 			else
-				BOOST_THROW_EXCEPTION(ScriptError("object rule 'ignore' is missing 'assign' for type '" + type + "'", DebugInfoRange(@2, @4)));
+				ThrowException(ScriptError("object rule 'ignore' is missing 'assign' for type '" + type + "'", DebugInfoRange(@2, @4)));
 		}
 
 		$$ = new ObjectExpression(abstract, type, $4, filter, context->GetZone(), context->GetPackage(), $5, $6, $8, DebugInfoRange(@2, @6));
@@ -514,7 +514,7 @@ lterm: T_LIBRARY rterm
 		EndFlowControlBlock(context);
 
 		if ((context->m_Apply.empty() || !context->m_Apply.top()) && (context->m_ObjectAssign.empty() || !context->m_ObjectAssign.top()))
-			BOOST_THROW_EXCEPTION(ScriptError("'assign' keyword not valid in this context.", @$));
+			ThrowException(ScriptError("'assign' keyword not valid in this context.", @$));
 
 		context->m_SeenAssign.top() = true;
 
@@ -530,7 +530,7 @@ lterm: T_LIBRARY rterm
 		ASSERT(!dynamic_cast<DictExpression *>($3));
 
 		if ((context->m_Apply.empty() || !context->m_Apply.top()) && (context->m_ObjectAssign.empty() || !context->m_ObjectAssign.top()))
-			BOOST_THROW_EXCEPTION(ScriptError("'assign' keyword not valid in this context.", @$));
+			ThrowException(ScriptError("'assign' keyword not valid in this context.", @$));
 
 		context->m_SeenAssign.top() = true;
 
@@ -550,7 +550,7 @@ lterm: T_LIBRARY rterm
 		EndFlowControlBlock(context);
 
 		if ((context->m_Apply.empty() || !context->m_Apply.top()) && (context->m_ObjectAssign.empty() || !context->m_ObjectAssign.top()))
-			BOOST_THROW_EXCEPTION(ScriptError("'ignore' keyword not valid in this context.", @$));
+			ThrowException(ScriptError("'ignore' keyword not valid in this context.", @$));
 
 		context->m_SeenIgnore.top() = true;
 
@@ -566,7 +566,7 @@ lterm: T_LIBRARY rterm
 		ASSERT(!dynamic_cast<DictExpression *>($3));
 
 		if ((context->m_Apply.empty() || !context->m_Apply.top()) && (context->m_ObjectAssign.empty() || !context->m_ObjectAssign.top()))
-			BOOST_THROW_EXCEPTION(ScriptError("'ignore' keyword not valid in this context.", @$));
+			ThrowException(ScriptError("'ignore' keyword not valid in this context.", @$));
 
 		context->m_SeenIgnore.top() = true;
 
@@ -1143,7 +1143,7 @@ apply:
 		delete $6;
 
 		if (!ApplyRule::IsValidSourceType(type))
-			BOOST_THROW_EXCEPTION(ScriptError("'apply' cannot be used with type '" + type + "'", DebugInfoRange(@2, @3)));
+			ThrowException(ScriptError("'apply' cannot be used with type '" + type + "'", DebugInfoRange(@2, @3)));
 
 		if (!ApplyRule::IsValidTargetType(type, target)) {
 			if (target == "") {
@@ -1161,9 +1161,9 @@ apply:
 					typeNames += "'" + types[i] + "'";
 				}
 
-				BOOST_THROW_EXCEPTION(ScriptError("'apply' target type is ambiguous (can be one of " + typeNames + "): use 'to' to specify a type", DebugInfoRange(@2, @3)));
+				ThrowException(ScriptError("'apply' target type is ambiguous (can be one of " + typeNames + "): use 'to' to specify a type", DebugInfoRange(@2, @3)));
 			} else
-				BOOST_THROW_EXCEPTION(ScriptError("'apply' target type '" + target + "' is invalid", DebugInfoRange(@2, @5)));
+				ThrowException(ScriptError("'apply' target type '" + target + "' is invalid", DebugInfoRange(@2, @5)));
 		}
 
 		bool seen_assign = context->m_SeenAssign.top();
@@ -1171,7 +1171,7 @@ apply:
 
 		// assign && !ignore
 		if (!seen_assign && !context->m_FTerm.top())
-			BOOST_THROW_EXCEPTION(ScriptError("'apply' is missing 'assign'/'for'", DebugInfoRange(@2, @3)));
+			ThrowException(ScriptError("'apply' is missing 'assign'/'for'", DebugInfoRange(@2, @3)));
 
 		Expression *ignore = context->m_Ignore.top();
 		context->m_Ignore.pop();

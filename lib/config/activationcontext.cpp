@@ -52,7 +52,7 @@ ActivationContext::Ptr ActivationContext::GetCurrentContext(void)
 	std::stack<ActivationContext::Ptr>& astack = GetActivationStack();
 
 	if (astack.empty())
-		BOOST_THROW_EXCEPTION(std::runtime_error("Objects may not be created outside of an activation context."));
+		ThrowException(std::runtime_error("Objects may not be created outside of an activation context."));
 
 	return astack.top();
 }

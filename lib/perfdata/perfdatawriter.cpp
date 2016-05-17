@@ -125,7 +125,7 @@ void PerfdataWriter::RotateFile(std::ofstream& output, const String& temp_path, 
 
 		String finalFile = perfdata_path + "." + Convert::ToString((long)Utility::GetTime());
 		if (rename(temp_path.CStr(), finalFile.CStr()) < 0) {
-			BOOST_THROW_EXCEPTION(posix_error()
+			ThrowException(posix_error()
 			    << boost::errinfo_api_function("rename")
 			    << boost::errinfo_errno(errno)
 			    << boost::errinfo_file_name(temp_path));
@@ -150,7 +150,7 @@ void PerfdataWriter::ValidateHostFormatTemplate(const String& value, const Valid
 	ObjectImpl<PerfdataWriter>::ValidateHostFormatTemplate(value, utils);
 
 	if (!MacroProcessor::ValidateMacroString(value))
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("host_format_template"), "Closing $ not found in macro format string '" + value + "'."));
+		ThrowException(ValidationError(this, boost::assign::list_of("host_format_template"), "Closing $ not found in macro format string '" + value + "'."));
 }
 
 void PerfdataWriter::ValidateServiceFormatTemplate(const String& value, const ValidationUtils& utils)
@@ -158,5 +158,5 @@ void PerfdataWriter::ValidateServiceFormatTemplate(const String& value, const Va
 	ObjectImpl<PerfdataWriter>::ValidateServiceFormatTemplate(value, utils);
 
 	if (!MacroProcessor::ValidateMacroString(value))
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("service_format_template"), "Closing $ not found in macro format string '" + value + "'."));
+		ThrowException(ValidationError(this, boost::assign::list_of("service_format_template"), "Closing $ not found in macro format string '" + value + "'."));
 }

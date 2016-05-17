@@ -23,8 +23,8 @@
 #include "base/array.hpp"
 #include "base/objectlock.hpp"
 #include "base/convert.hpp"
+#include "base/exception.hpp"
 #include <boost/foreach.hpp>
-#include <boost/exception_ptr.hpp>
 #include <yajl/yajl_version.h>
 #include <yajl/yajl_gen.h>
 #include <yajl/yajl_parse.h>
@@ -180,7 +180,7 @@ public:
 			Array::Ptr arr = element.EValue;
 			arr->Add(value);
 		} else {
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Cannot add value to JSON element."));
+			::ThrowException(std::invalid_argument("Cannot add value to JSON element."));
 		}
 	}
 
@@ -192,19 +192,19 @@ public:
 
 	void SaveException(void)
 	{
-		m_Exception = boost::current_exception();
+		m_Exception = CurrentException();
 	}
 
 	void ThrowException(void) const
 	{
 		if (m_Exception)
-			boost::rethrow_exception(m_Exception);
+			RethrowException(m_Exception);
 	}
 
 private:
 	std::stack<JsonElement> m_Stack;
 	Value m_Key;
-	boost::exception_ptr m_Exception;
+	ExceptionPtr m_Exception;
 };
 
 static int DecodeNull(void *ctx)
@@ -352,7 +352,7 @@ Value icinga::JsonDecode(const String& data)
 		/* throw saved exception (if there is one) */
 		context.ThrowException();
 
-		BOOST_THROW_EXCEPTION(std::invalid_argument(msg));
+		::ThrowException(std::invalid_argument(msg));
 	}
 
 	yajl_free(handle);

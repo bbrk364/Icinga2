@@ -52,7 +52,7 @@ Dictionary::Ptr JsonRpc::DecodeMessage(const String& message)
 	Value value = JsonDecode(message);
 
 	if (!value.IsObjectType<Dictionary>()) {
-		BOOST_THROW_EXCEPTION(std::invalid_argument("JSON-RPC"
+		ThrowException(std::invalid_argument("JSON-RPC"
 		    " message must be a dictionary."));
 	}
 

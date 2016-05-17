@@ -171,7 +171,7 @@ void SocketEventEnginePoll::Unregister(SocketEvents *se)
 void SocketEventEnginePoll::ChangeEvents(SocketEvents *se, int events)
 {
 	if (se->m_FD == INVALID_SOCKET)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Tried to read/write from a closed socket."));
+		ThrowException(std::runtime_error("Tried to read/write from a closed socket."));
 
 	int tid = se->m_ID % SOCKET_IOTHREADS;
 

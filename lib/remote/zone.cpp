@@ -41,7 +41,7 @@ void Zone::OnAllConfigLoaded(void)
 		levels++;
 
 		if (levels > 32)
-			BOOST_THROW_EXCEPTION(ScriptError("Infinite recursion detected while resolving zone graph. Check your zone hierarchy.", GetDebugInfo()));
+			ThrowException(ScriptError("Infinite recursion detected while resolving zone graph. Check your zone hierarchy.", GetDebugInfo()));
 	}
 }
 

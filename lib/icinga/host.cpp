@@ -44,7 +44,7 @@ void Host::OnAllConfigLoaded(void)
 		Zone::Ptr zone = Zone::GetByName(zoneName);
 
 		if (zone && zone->IsGlobal())
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Host '" + GetName() + "' cannot be put into global zone '" + zone->GetName() + "'."));
+			ThrowException(std::invalid_argument("Host '" + GetName() + "' cannot be put into global zone '" + zone->GetName() + "'."));
 	}
 
 	HostGroup::EvaluateObjectRules(this);
@@ -152,7 +152,7 @@ Service::Ptr Host::GetServiceByShortName(const Value& name)
 
 		return Service::GetByNamePair(dict->Get("host"), dict->Get("service"));
 	} else {
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Host/Service name pair is invalid: " + JsonEncode(name)));
+		ThrowException(std::invalid_argument("Host/Service name pair is invalid: " + JsonEncode(name)));
 	}
 }
 

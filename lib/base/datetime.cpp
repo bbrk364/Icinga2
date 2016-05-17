@@ -56,7 +56,7 @@ DateTime::DateTime(const std::vector<Value>& args)
 	} else if (args.size() == 1)
 		m_Value = args[0];
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid number of arguments for the DateTime constructor."));
+		ThrowException(std::invalid_argument("Invalid number of arguments for the DateTime constructor."));
 }
 
 double DateTime::GetValue(void) const

@@ -105,7 +105,7 @@ void ConfigStagesHandler::HandlePost(const ApiUser::Ptr& user, HttpRequest& requ
 
 	try {
 		if (!files)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Parameter 'files' must be specified."));
+			ThrowException(std::invalid_argument("Parameter 'files' must be specified."));
 
 		stageName = ConfigPackageUtility::CreateStage(packageName, files);
 

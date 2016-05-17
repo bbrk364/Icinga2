@@ -22,11 +22,11 @@
 
 #include "base/i2-base.hpp"
 #include "base/timer.hpp"
+#include "base/exception.hpp"
 #include <boost/function.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
-#include <boost/exception_ptr.hpp>
 #include <queue>
 #include <deque>
 
@@ -78,7 +78,7 @@ inline bool operator<(const Task& a, const Task& b)
 class I2_BASE_API WorkQueue
 {
 public:
-	typedef boost::function<void (boost::exception_ptr)> ExceptionCallback;
+	typedef boost::function<void (ExceptionPtr)> ExceptionCallback;
 
 	WorkQueue(size_t maxItems = 0, int threadCount = 1);
 	~WorkQueue(void);
@@ -94,7 +94,7 @@ public:
 	void SetExceptionCallback(const ExceptionCallback& callback);
 
 	bool HasExceptions(void) const;
-	std::vector<boost::exception_ptr> GetExceptions(void) const;
+	std::vector<ExceptionPtr> GetExceptions(void) const;
 	void ReportExceptions(const String& facility) const;
 
 private:
@@ -114,7 +114,7 @@ private:
 	std::priority_queue<Task, std::deque<Task> > m_Tasks;
 	int m_NextTaskID;
 	ExceptionCallback m_ExceptionCallback;
-	std::vector<boost::exception_ptr> m_Exceptions;
+	std::vector<ExceptionPtr> m_Exceptions;
 	Timer::Ptr m_StatusTimer;
 
 	void WorkerThreadProc(void);

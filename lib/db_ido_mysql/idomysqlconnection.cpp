@@ -99,7 +99,7 @@ void IdoMysqlConnection::Pause(void)
 	m_QueryQueue.Join();
 }
 
-void IdoMysqlConnection::ExceptionHandler(boost::exception_ptr exp)
+void IdoMysqlConnection::ExceptionHandler(ExceptionPtr exp)
 {
 	Log(LogCritical, "IdoMysqlConnection", "Exception during database operation: Verify that your database is operational!");
 
@@ -224,7 +224,7 @@ void IdoMysqlConnection::Reconnect(void)
 		Log(LogCritical, "IdoMysqlConnection")
 		    << "mysql_init() failed: \"" << mysql_error(&m_Connection) << "\"";
 
-		BOOST_THROW_EXCEPTION(std::bad_alloc());
+		ThrowException(std::bad_alloc());
 	}
 
 	if (enableSsl)
@@ -235,7 +235,7 @@ void IdoMysqlConnection::Reconnect(void)
 		    << "Connection to database '" << db << "' with user '" << user << "' on '" << host << ":" << port
 		    << "' " << (enableSsl ? "(SSL enabled) " : "") << "failed: \"" << mysql_error(&m_Connection) << "\"";
 
-		BOOST_THROW_EXCEPTION(std::runtime_error(mysql_error(&m_Connection)));
+		ThrowException(std::runtime_error(mysql_error(&m_Connection)));
 	}
 
 	SetConnected(true);
@@ -490,7 +490,7 @@ void IdoMysqlConnection::FinishAsyncQueries(void)
 			msgbuf << "Error \"" << message << "\" when executing query \"" << query << "\"";
 			Log(LogCritical, "IdoMysqlConnection", msgbuf.str());
 
-			BOOST_THROW_EXCEPTION(
+			ThrowException(
 			    database_error()
 				<< errinfo_message(mysql_error(&m_Connection))
 				<< errinfo_database_query(query)
@@ -513,7 +513,7 @@ void IdoMysqlConnection::FinishAsyncQueries(void)
 					msgbuf << "Error \"" << message << "\" when executing query \"" << aq.Query << "\"";
 					Log(LogCritical, "IdoMysqlConnection", msgbuf.str());
 
-					BOOST_THROW_EXCEPTION(
+					ThrowException(
 					    database_error()
 						<< errinfo_message(mysql_error(&m_Connection))
 						<< errinfo_database_query(query)
@@ -531,7 +531,7 @@ void IdoMysqlConnection::FinishAsyncQueries(void)
 				msgbuf << "Error \"" << message << "\" when executing query \"" << query << "\"";
 				Log(LogCritical, "IdoMysqlConnection", msgbuf.str());
 
-				BOOST_THROW_EXCEPTION(
+				ThrowException(
 				    database_error()
 					<< errinfo_message(mysql_error(&m_Connection))
 					<< errinfo_database_query(query)
@@ -561,7 +561,7 @@ IdoMysqlResult IdoMysqlConnection::Query(const String& query)
 		msgbuf << "Error \"" << message << "\" when executing query \"" << query << "\"";
 		Log(LogCritical, "IdoMysqlConnection", msgbuf.str());
 
-		BOOST_THROW_EXCEPTION(
+		ThrowException(
 		    database_error()
 			<< errinfo_message(mysql_error(&m_Connection))
 			<< errinfo_database_query(query)
@@ -579,7 +579,7 @@ IdoMysqlResult IdoMysqlConnection::Query(const String& query)
 			msgbuf << "Error \"" << message << "\" when executing query \"" << query << "\"";
 			Log(LogCritical, "IdoMysqlConnection", msgbuf.str());
 
-			BOOST_THROW_EXCEPTION(
+			ThrowException(
 			    database_error()
 				<< errinfo_message(mysql_error(&m_Connection))
 				<< errinfo_database_query(query)

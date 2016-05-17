@@ -74,7 +74,7 @@ Dictionary::Ptr DowntimeNameComposer::ParseName(const String& name) const
 	boost::algorithm::split(tokens, name, boost::is_any_of("!"));
 
 	if (tokens.size() < 2)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid Downtime name."));
+		ThrowException(std::invalid_argument("Invalid Downtime name."));
 
 	Dictionary::Ptr result = new Dictionary();
 	result->Set("host_name", tokens[0]);
@@ -101,7 +101,7 @@ void Downtime::OnAllConfigLoaded(void)
 		m_Checkable = host->GetServiceByShortName(GetServiceName());
 
 	if (!m_Checkable)
-		BOOST_THROW_EXCEPTION(ScriptError("Downtime '" + GetName() + "' references a host/service which doesn't exist.", GetDebugInfo()));
+		ThrowException(ScriptError("Downtime '" + GetName() + "' references a host/service which doesn't exist.", GetDebugInfo()));
 }
 
 void Downtime::Start(bool runtimeCreated)
@@ -238,7 +238,7 @@ String Downtime::AddDowntime(const Checkable::Ptr& checkable, const String& auth
 			Log(LogCritical, "Downtime", error);
 		}
 
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not create downtime."));
+		ThrowException(std::runtime_error("Could not create downtime."));
 	}
 
 	if (!triggeredBy.IsEmpty()) {
@@ -252,7 +252,7 @@ String Downtime::AddDowntime(const Checkable::Ptr& checkable, const String& auth
 	Downtime::Ptr downtime = Downtime::GetByName(fullName);
 
 	if (!downtime)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not create downtime."));
+		ThrowException(std::runtime_error("Could not create downtime."));
 
 	Log(LogNotice, "Downtime")
 	    << "Added downtime '" << downtime->GetName()
@@ -290,7 +290,7 @@ void Downtime::RemoveDowntime(const String& id, bool cancelled, bool expired, co
 			Log(LogCritical, "Downtime", error);
 		}
 
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not remove downtime."));
+		ThrowException(std::runtime_error("Could not remove downtime."));
 	}
 }
 
@@ -371,7 +371,7 @@ void Downtime::ValidateStartTime(double value, const ValidationUtils& utils)
 	ObjectImpl<Downtime>::ValidateStartTime(value, utils);
 
 	if (value <= 0)
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("start_time"), "Start time must be greater than 0."));
+		ThrowException(ValidationError(this, boost::assign::list_of("start_time"), "Start time must be greater than 0."));
 }
 
 void Downtime::ValidateEndTime(double value, const ValidationUtils& utils)
@@ -379,5 +379,5 @@ void Downtime::ValidateEndTime(double value, const ValidationUtils& utils)
 	ObjectImpl<Downtime>::ValidateEndTime(value, utils);
 
 	if (value <= 0)
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("end_time"), "End time must be greater than 0."));
+		ThrowException(ValidationError(this, boost::assign::list_of("end_time"), "End time must be greater than 0."));
 }

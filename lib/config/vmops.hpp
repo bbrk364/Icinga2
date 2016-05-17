@@ -63,21 +63,21 @@ public:
 			else if (args.size() == 1)
 				return Convert::ToString(args[0]);
 			else
-				BOOST_THROW_EXCEPTION(ScriptError("Too many arguments for constructor."));
+				ThrowException(ScriptError("Too many arguments for constructor."));
 		} else if (type->GetName() == "Number") {
 			if (args.empty())
 				return 0;
 			else if (args.size() == 1)
 				return Convert::ToDouble(args[0]);
 			else
-				BOOST_THROW_EXCEPTION(ScriptError("Too many arguments for constructor."));
+				ThrowException(ScriptError("Too many arguments for constructor."));
 		} else if (type->GetName() == "Boolean") {
 			if (args.empty())
 				return 0;
 			else if (args.size() == 1)
 				return Convert::ToBool(args[0]);
 			else
-				BOOST_THROW_EXCEPTION(ScriptError("Too many arguments for constructor."));
+				ThrowException(ScriptError("Too many arguments for constructor."));
 		} else if (args.size() == 1 && type->IsAssignableFrom(args[0].GetReflectionType()))
 			return args[0];
 		else
@@ -133,7 +133,7 @@ public:
 			if (oldItem) {
 				std::ostringstream msgbuf;
 				msgbuf << "Object '" << name << "' of type '" << type << "' re-defined: " << debugInfo << "; previous definition: " << oldItem->GetDebugInfo();
-				BOOST_THROW_EXCEPTION(ScriptError(msgbuf.str(), debugInfo));
+				ThrowException(ScriptError(msgbuf.str(), debugInfo));
 			}
 		}
 
@@ -156,7 +156,7 @@ public:
 	{
 		if (value.IsObjectType<Array>()) {
 			if (!fvvar.IsEmpty())
-				BOOST_THROW_EXCEPTION(ScriptError("Cannot use dictionary iterator for array.", debugInfo));
+				ThrowException(ScriptError("Cannot use dictionary iterator for array.", debugInfo));
 
 			Array::Ptr arr = value;
 
@@ -167,7 +167,7 @@ public:
 			}
 		} else if (value.IsObjectType<Dictionary>()) {
 			if (fvvar.IsEmpty())
-				BOOST_THROW_EXCEPTION(ScriptError("Cannot use array iterator for dictionary.", debugInfo));
+				ThrowException(ScriptError("Cannot use array iterator for dictionary.", debugInfo));
 
 			Dictionary::Ptr dict = value;
 			std::vector<String> keys;
@@ -186,7 +186,7 @@ public:
 				CHECK_RESULT_LOOP(res);
 			}
 		} else
-			BOOST_THROW_EXCEPTION(ScriptError("Invalid type in for expression: " + value.GetTypeName(), debugInfo));
+			ThrowException(ScriptError("Invalid type in for expression: " + value.GetTypeName(), debugInfo));
 
 		return Empty;
 	}
@@ -207,7 +207,7 @@ public:
 	static inline void SetField(const Object::Ptr& context, const String& field, const Value& value, const DebugInfo& debugInfo = DebugInfo())
 	{
 		if (!context)
-			BOOST_THROW_EXCEPTION(ScriptError("Cannot set field '" + field + "' on a value that is not an object.", debugInfo));
+			ThrowException(ScriptError("Cannot set field '" + field + "' on a value that is not an object.", debugInfo));
 
 		return context->SetFieldByName(field, value, debugInfo);
 	}
@@ -217,7 +217,7 @@ private:
 	    const std::vector<String>& funcargs, const Dictionary::Ptr& closedVars, const boost::shared_ptr<Expression>& expr)
 	{
 		if (arguments.size() < funcargs.size())
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Too few arguments for function"));
+			ThrowException(std::invalid_argument("Too few arguments for function"));
 
 		ScriptFrame *frame = ScriptFrame::GetCurrentFrame();
 

@@ -82,7 +82,7 @@ LivestatusQuery::LivestatusQuery(const std::vector<String>& lines, const String&
 	size_t sp_index = line.FindFirstOf(" ");
 
 	if (sp_index == String::NPos)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Livestatus header must contain a verb."));
+		ThrowException(std::runtime_error("Livestatus header must contain a verb."));
 
 	String verb = line.SubStr(0, sp_index);
 	String target = line.SubStr(sp_index + 1);
@@ -305,7 +305,7 @@ Filter::Ptr LivestatusQuery::ParseFilter(const String& params, unsigned long& fr
 		if (sp_index == String::NPos) {
 			/* 'attr op' or 'attr op val' is valid */
 			if (i < 1)
-				BOOST_THROW_EXCEPTION(std::runtime_error("Livestatus filter '" + params + "' does not contain all required fields."));
+				ThrowException(std::runtime_error("Livestatus filter '" + params + "' does not contain all required fields."));
 
 			break;
 		}
@@ -634,7 +634,7 @@ bool LivestatusQuery::Execute(const Stream::Ptr& stream)
 		else if (m_Verb == "ERROR")
 			ExecuteErrorHelper(stream);
 		else
-			BOOST_THROW_EXCEPTION(std::runtime_error("Invalid livestatus query verb."));
+			ThrowException(std::runtime_error("Invalid livestatus query verb."));
 	} catch (const std::exception& ex) {
 		SendResponse(stream, LivestatusErrorQuery, DiagnosticInformation(ex));
 	}

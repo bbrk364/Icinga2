@@ -50,7 +50,7 @@ void LivestatusLogUtility::CreateLogIndexFileHandler(const String& path, std::ma
 	stream.open(path.CStr(), std::ifstream::in);
 
 	if (!stream)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not open log file: " + path));
+		ThrowException(std::runtime_error("Could not open log file: " + path));
 
 	/* read the first bytes to get the timestamp: [123456789] */
 	char buffer[12];

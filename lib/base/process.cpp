@@ -88,7 +88,7 @@ void Process::StaticInitialize(void)
 			if (errno == ENOSYS) {
 #	endif /* HAVE_PIPE2 */
 				if (pipe(l_EventFDs[tid]) < 0) {
-					BOOST_THROW_EXCEPTION(posix_error()
+					ThrowException(posix_error()
 					    << boost::errinfo_api_function("pipe")
 					    << boost::errinfo_errno(errno));
 				}
@@ -97,7 +97,7 @@ void Process::StaticInitialize(void)
 				Utility::SetCloExec(l_EventFDs[tid][1]);
 #	ifdef HAVE_PIPE2
 			} else {
-				BOOST_THROW_EXCEPTION(posix_error()
+				ThrowException(posix_error()
 					<< boost::errinfo_api_function("pipe2")
 					<< boost::errinfo_errno(errno));
 			}
@@ -369,19 +369,19 @@ void Process::Run(const boost::function<void(const ProcessResult&)>& callback)
 
 	HANDLE outReadPipe, outWritePipe;
 	if (!CreatePipeOverlapped(&outReadPipe, &outWritePipe, &sa, 0, FILE_FLAG_OVERLAPPED, 0))
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 			<< boost::errinfo_api_function("CreatePipe")
 			<< errinfo_win32_error(GetLastError()));
 
 	if (!SetHandleInformation(outReadPipe, HANDLE_FLAG_INHERIT, 0))
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 			<< boost::errinfo_api_function("SetHandleInformation")
 			<< errinfo_win32_error(GetLastError()));
 
 	HANDLE outWritePipeDup;
 	if (!DuplicateHandle(GetCurrentProcess(), outWritePipe, GetCurrentProcess(),
 	    &outWritePipeDup, 0, TRUE, DUPLICATE_SAME_ACCESS))
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 			<< boost::errinfo_api_function("DuplicateHandle")
 			<< errinfo_win32_error(GetLastError()));
 
@@ -389,14 +389,14 @@ void Process::Run(const boost::function<void(const ProcessResult&)>& callback)
 	SIZE_T cbSize;
 
 	if (!InitializeProcThreadAttributeList(NULL, 1, 0, &cbSize) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 		<< boost::errinfo_api_function("InitializeProcThreadAttributeList")
 		<< errinfo_win32_error(GetLastError()));
 
 	lpAttributeList = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(new char[cbSize]);
 
 	if (!InitializeProcThreadAttributeList(lpAttributeList, 1, 0, &cbSize))
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 		<< boost::errinfo_api_function("InitializeProcThreadAttributeList")
 		<< errinfo_win32_error(GetLastError()));
 
@@ -407,7 +407,7 @@ void Process::Run(const boost::function<void(const ProcessResult&)>& callback)
 
 	if (!UpdateProcThreadAttribute(lpAttributeList, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
 	    rgHandles, sizeof(rgHandles), NULL, NULL))
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 			<< boost::errinfo_api_function("UpdateProcThreadAttribute")
 			<< errinfo_win32_error(GetLastError()));
 */
@@ -446,7 +446,7 @@ void Process::Run(const boost::function<void(const ProcessResult&)>& callback)
 		envp = static_cast<char *>(realloc(envp, offset + len + 1));
 
 		if (envp == NULL)
-			BOOST_THROW_EXCEPTION(std::bad_alloc());
+			ThrowException(std::bad_alloc());
 
 		strcpy(envp + offset, pEnvironment + ioffset);
 		offset += len + 1;
@@ -464,7 +464,7 @@ void Process::Run(const boost::function<void(const ProcessResult&)>& callback)
 			envp = static_cast<char *>(realloc(envp, offset + skv.GetLength() + 1));
 
 			if (envp == NULL)
-				BOOST_THROW_EXCEPTION(std::bad_alloc());
+				ThrowException(std::bad_alloc());
 
 			strcpy(envp + offset, skv.CStr());
 			offset += skv.GetLength() + 1;
@@ -474,7 +474,7 @@ void Process::Run(const boost::function<void(const ProcessResult&)>& callback)
 	envp = static_cast<char *>(realloc(envp, offset + 1));
 
 	if (envp == NULL)
-		BOOST_THROW_EXCEPTION(std::bad_alloc());
+		ThrowException(std::bad_alloc());
 
 	envp[offset] = '\0';
 
@@ -524,7 +524,7 @@ void Process::Run(const boost::function<void(const ProcessResult&)>& callback)
 		if (errno == ENOSYS) {
 #endif /* HAVE_PIPE2 */
 			if (pipe(fds) < 0) {
-				BOOST_THROW_EXCEPTION(posix_error()
+				ThrowException(posix_error()
 				    << boost::errinfo_api_function("pipe")
 				    << boost::errinfo_errno(errno));
 			}
@@ -533,7 +533,7 @@ void Process::Run(const boost::function<void(const ProcessResult&)>& callback)
 			Utility::SetCloExec(fds[1]);
 #ifdef HAVE_PIPE2
 		} else {
-			BOOST_THROW_EXCEPTION(posix_error()
+			ThrowException(posix_error()
 				<< boost::errinfo_api_function("pipe2")
 				<< boost::errinfo_errno(errno));
 		}
@@ -588,7 +588,7 @@ void Process::Run(const boost::function<void(const ProcessResult&)>& callback)
 #endif /* HAVE_VFORK */
 
 	if (m_Process < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 			<< boost::errinfo_api_function("fork")
 			<< boost::errinfo_errno(errno));
 	}
@@ -736,7 +736,7 @@ bool Process::DoEvents(void)
 #else /* _WIN32 */
 	int status, exitcode;
 	if (waitpid(m_Process, &status, 0) != m_Process) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 			<< boost::errinfo_api_function("waitpid")
 			<< boost::errinfo_errno(errno));
 	}

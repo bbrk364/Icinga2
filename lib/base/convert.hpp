@@ -43,7 +43,7 @@ public:
 		} catch (const std::exception&) {
 			std::ostringstream msgbuf;
 			msgbuf << "Can't convert '" << val << "' to an integer.";
-			BOOST_THROW_EXCEPTION(std::invalid_argument(msgbuf.str()));
+			ThrowException(std::invalid_argument(msgbuf.str()));
 		}
 	}
 
@@ -55,7 +55,7 @@ public:
 		} catch (const std::exception&) {
 			std::ostringstream msgbuf;
 			msgbuf << "Can't convert '" << val << "' to a floating point number.";
-			BOOST_THROW_EXCEPTION(std::invalid_argument(msgbuf.str()));
+			ThrowException(std::invalid_argument(msgbuf.str()));
 		}
 	}
 

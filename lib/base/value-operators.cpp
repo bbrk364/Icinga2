@@ -49,7 +49,7 @@ Value::operator double(void) const
 	} catch (const std::exception&) {
 		std::ostringstream msgbuf;
 		msgbuf << "Can't convert '" << *this << "' to a floating point number.";
-		BOOST_THROW_EXCEPTION(std::invalid_argument(msgbuf.str()));
+		ThrowException(std::invalid_argument(msgbuf.str()));
 	}
 }
 
@@ -79,7 +79,7 @@ Value::operator String(void) const
 			object = boost::get<Object::Ptr>(m_Value).get();
 			return object->ToString();
 		default:
-			BOOST_THROW_EXCEPTION(std::runtime_error("Unknown value type."));
+			ThrowException(std::runtime_error("Unknown value type."));
 	}
 }
 
@@ -260,7 +260,7 @@ Value icinga::operator+(const Value& lhs, const Value& rhs)
 			static_cast<Dictionary::Ptr>(rhs)->CopyTo(result);
 		return result;
 	} else {
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator + cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator + cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 	}
 }
 
@@ -321,7 +321,7 @@ Value icinga::operator-(const Value& lhs, const Value& rhs)
 
 		return result;
 	} else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator - cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator - cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 Value icinga::operator-(const Value& lhs, double rhs)
@@ -349,7 +349,7 @@ Value icinga::operator*(const Value& lhs, const Value& rhs)
 	if ((lhs.IsNumber() || lhs.IsEmpty()) && (rhs.IsNumber() || rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()))
 		return static_cast<double>(lhs) * static_cast<double>(rhs);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator * cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator * cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 Value icinga::operator*(const Value& lhs, double rhs)
@@ -375,14 +375,14 @@ Value icinga::operator*(int lhs, const Value& rhs)
 Value icinga::operator/(const Value& lhs, const Value& rhs)
 {
 	if (rhs.IsEmpty())
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Right-hand side argument for operator / is Empty."));
+		ThrowException(std::invalid_argument("Right-hand side argument for operator / is Empty."));
 	else if ((lhs.IsEmpty() || lhs.IsNumber()) && rhs.IsNumber()) {
 		if (static_cast<double>(rhs) == 0)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Right-hand side argument for operator / is 0."));
+			ThrowException(std::invalid_argument("Right-hand side argument for operator / is 0."));
 
 		return static_cast<double>(lhs) / static_cast<double>(rhs);
 	} else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator / cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator / cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 Value icinga::operator/(const Value& lhs, double rhs)
@@ -408,14 +408,14 @@ Value icinga::operator/(int lhs, const Value& rhs)
 Value icinga::operator%(const Value& lhs, const Value& rhs)
 {
 	if (rhs.IsEmpty())
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Right-hand side argument for operator % is Empty."));
+		ThrowException(std::invalid_argument("Right-hand side argument for operator % is Empty."));
 	else if ((rhs.IsNumber() || lhs.IsNumber()) && rhs.IsNumber()) {
 		if (static_cast<double>(rhs) == 0)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Right-hand side argument for operator % is 0."));
+			ThrowException(std::invalid_argument("Right-hand side argument for operator % is 0."));
 
 		return static_cast<int>(lhs) % static_cast<int>(rhs);
 	} else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator % cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator % cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 Value icinga::operator%(const Value& lhs, double rhs)
@@ -443,7 +443,7 @@ Value icinga::operator^(const Value& lhs, const Value& rhs)
 	if ((lhs.IsNumber() || lhs.IsEmpty()) && (rhs.IsNumber() || rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()))
 		return static_cast<int>(lhs) ^ static_cast<int>(rhs);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator & cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator & cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 Value icinga::operator^(const Value& lhs, double rhs)
@@ -471,7 +471,7 @@ Value icinga::operator&(const Value& lhs, const Value& rhs)
 	if ((lhs.IsNumber() || lhs.IsEmpty()) && (rhs.IsNumber() || rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()))
 		return static_cast<int>(lhs) & static_cast<int>(rhs);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator & cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator & cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 Value icinga::operator&(const Value& lhs, double rhs)
@@ -499,7 +499,7 @@ Value icinga::operator|(const Value& lhs, const Value& rhs)
 	if ((lhs.IsNumber() || lhs.IsEmpty()) && (rhs.IsNumber() || rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()))
 		return static_cast<int>(lhs) | static_cast<int>(rhs);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator | cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator | cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 Value icinga::operator|(const Value& lhs, double rhs)
@@ -527,7 +527,7 @@ Value icinga::operator<<(const Value& lhs, const Value& rhs)
 	if ((lhs.IsNumber() || lhs.IsEmpty()) && (rhs.IsNumber() || rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()))
 		return static_cast<int>(lhs) << static_cast<int>(rhs);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator << cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator << cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 Value icinga::operator<<(const Value& lhs, double rhs)
@@ -555,7 +555,7 @@ Value icinga::operator>>(const Value& lhs, const Value& rhs)
 	if ((lhs.IsNumber() || lhs.IsEmpty()) && (rhs.IsNumber() || rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()))
 		return static_cast<int>(lhs) >> static_cast<int>(rhs);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator >> cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator >> cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 Value icinga::operator>>(const Value& lhs, double rhs)
@@ -587,7 +587,7 @@ bool icinga::operator<(const Value& lhs, const Value& rhs)
 	else if ((lhs.IsObjectType<DateTime>() || lhs.IsEmpty()) && (rhs.IsObjectType<DateTime>() || rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()))
 		return Convert::ToDateTimeValue(lhs) < Convert::ToDateTimeValue(rhs);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator < cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator < cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 bool icinga::operator<(const Value& lhs, double rhs)
@@ -619,7 +619,7 @@ bool icinga::operator>(const Value& lhs, const Value& rhs)
 	else if ((lhs.IsObjectType<DateTime>() || lhs.IsEmpty()) && (rhs.IsObjectType<DateTime>() || rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()))
 		return Convert::ToDateTimeValue(lhs) > Convert::ToDateTimeValue(rhs);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator > cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator > cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 bool icinga::operator>(const Value& lhs, double rhs)
@@ -651,7 +651,7 @@ bool icinga::operator<=(const Value& lhs, const Value& rhs)
 	else if ((lhs.IsObjectType<DateTime>() || lhs.IsEmpty()) && (rhs.IsObjectType<DateTime>() || rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()))
 		return Convert::ToDateTimeValue(lhs) <= Convert::ToDateTimeValue(rhs);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator <= cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator <= cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 bool icinga::operator<=(const Value& lhs, double rhs)
@@ -683,7 +683,7 @@ bool icinga::operator>=(const Value& lhs, const Value& rhs)
 	else if ((lhs.IsObjectType<DateTime>() || lhs.IsEmpty()) && (rhs.IsObjectType<DateTime>() || rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()) && !(lhs.IsEmpty() && rhs.IsEmpty()))
 		return Convert::ToDateTimeValue(lhs) >= Convert::ToDateTimeValue(rhs);
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Operator >= cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
+		ThrowException(std::invalid_argument("Operator >= cannot be applied to values of type '" + lhs.GetTypeName() + "' and '" + rhs.GetTypeName() + "'"));
 }
 
 bool icinga::operator>=(const Value& lhs, double rhs)

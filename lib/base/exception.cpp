@@ -192,20 +192,22 @@ String icinga::DiagnosticInformation(const std::exception& ex, bool verbose, Sta
 	const user_error *uex = dynamic_cast<const user_error *>(&ex);
 	const posix_error *pex = dynamic_cast<const posix_error *>(&ex);
 
-	if (!uex && !pex && verbose) {
-		const StackTrace *st = boost::get_error_info<StackTraceErrorInfo>(ex);
+	if (!pex && verbose) {
+		if (!uex) {
+			const StackTrace *st = boost::get_error_info<StackTraceErrorInfo>(ex);
 
-		if (st) {
-			result << *st;
-		} else {
-			result << std::endl;
+			if (st) {
+				result << *st;
+			} else {
+				result << std::endl;
 
-			if (!stack)
-				stack = GetLastExceptionStack();
+				if (!stack)
+					stack = GetLastExceptionStack();
 
-			if (stack)
-				result << *stack;
+				if (stack)
+					result << *stack;
 
+			}
 		}
 
 		if (boost::get_error_info<ContextTraceErrorInfo>(ex) == NULL) {
@@ -222,7 +224,7 @@ String icinga::DiagnosticInformation(const std::exception& ex, bool verbose, Sta
 	return result.str();
 }
 
-String icinga::DiagnosticInformation(boost::exception_ptr eptr, bool verbose)
+String icinga::DiagnosticInformation(ExceptionPtr eptr, bool verbose)
 {
 	StackTrace *pt = GetLastExceptionStack();
 	StackTrace stack;
@@ -237,7 +239,7 @@ String icinga::DiagnosticInformation(boost::exception_ptr eptr, bool verbose)
 		context = *pc;
 
 	try {
-		boost::rethrow_exception(eptr);
+		RethrowException(eptr);
 	} catch (const std::exception& ex) {
 		return DiagnosticInformation(ex, verbose, pt ? &stack : NULL, pc ? &context : NULL);
 	}

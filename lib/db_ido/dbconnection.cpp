@@ -458,7 +458,7 @@ void DbConnection::ValidateFailoverTimeout(double value, const ValidationUtils& 
 	ObjectImpl<DbConnection>::ValidateFailoverTimeout(value, utils);
 
 	if (value < 60)
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("failover_timeout"), "Failover timeout minimum is 60s."));
+		ThrowException(ValidationError(this, boost::assign::list_of("failover_timeout"), "Failover timeout minimum is 60s."));
 }
 
 void DbConnection::IncreaseQueryCount(void)

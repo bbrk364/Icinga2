@@ -100,7 +100,7 @@ boost::shared_ptr<SSL_CTX> MakeSSLContext(const String& pubkey, const String& pr
 		if (!SSL_CTX_use_certificate_chain_file(sslContext.get(), pubkey.CStr())) {
 			Log(LogCritical, "SSL")
 			    << "Error with public key file '" << pubkey << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-			BOOST_THROW_EXCEPTION(openssl_error()
+			ThrowException(openssl_error()
 			    << boost::errinfo_api_function("SSL_CTX_use_certificate_chain_file")
 			    << errinfo_openssl_error(ERR_peek_error())
 			    << boost::errinfo_file_name(pubkey));
@@ -111,7 +111,7 @@ boost::shared_ptr<SSL_CTX> MakeSSLContext(const String& pubkey, const String& pr
 		if (!SSL_CTX_use_PrivateKey_file(sslContext.get(), privkey.CStr(), SSL_FILETYPE_PEM)) {
 			Log(LogCritical, "SSL")
 			    << "Error with private key file '" << privkey << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-			BOOST_THROW_EXCEPTION(openssl_error()
+			ThrowException(openssl_error()
 			    << boost::errinfo_api_function("SSL_CTX_use_PrivateKey_file")
 			    << errinfo_openssl_error(ERR_peek_error())
 			    << boost::errinfo_file_name(privkey));
@@ -120,7 +120,7 @@ boost::shared_ptr<SSL_CTX> MakeSSLContext(const String& pubkey, const String& pr
 		if (!SSL_CTX_check_private_key(sslContext.get())) {
 			Log(LogCritical, "SSL")
 			    << "Error checking private key '" << privkey << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-			BOOST_THROW_EXCEPTION(openssl_error()
+			ThrowException(openssl_error()
 			    << boost::errinfo_api_function("SSL_CTX_check_private_key")
 			    << errinfo_openssl_error(ERR_peek_error()));
 		}
@@ -130,7 +130,7 @@ boost::shared_ptr<SSL_CTX> MakeSSLContext(const String& pubkey, const String& pr
 		if (!SSL_CTX_load_verify_locations(sslContext.get(), cakey.CStr(), NULL)) {
 			Log(LogCritical, "SSL")
 			    << "Error loading and verifying locations in ca key file '" << cakey << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-			BOOST_THROW_EXCEPTION(openssl_error()
+			ThrowException(openssl_error()
 			    << boost::errinfo_api_function("SSL_CTX_load_verify_locations")
 			    << errinfo_openssl_error(ERR_peek_error())
 			    << boost::errinfo_file_name(cakey));
@@ -142,7 +142,7 @@ boost::shared_ptr<SSL_CTX> MakeSSLContext(const String& pubkey, const String& pr
 		if (cert_names == NULL) {
 			Log(LogCritical, "SSL")
 			    << "Error loading client ca key file '" << cakey << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-			BOOST_THROW_EXCEPTION(openssl_error()
+			ThrowException(openssl_error()
 			    << boost::errinfo_api_function("SSL_load_client_CA_file")
 			    << errinfo_openssl_error(ERR_peek_error())
 			    << boost::errinfo_file_name(cakey));
@@ -171,7 +171,7 @@ void AddCRLToSSLContext(const boost::shared_ptr<SSL_CTX>& context, const String&
 	if (!lookup) {
 		Log(LogCritical, "SSL")
 		    << "Error adding X509 store lookup: " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("X509_STORE_add_lookup")
 		    << errinfo_openssl_error(ERR_peek_error()));
 	}
@@ -179,7 +179,7 @@ void AddCRLToSSLContext(const boost::shared_ptr<SSL_CTX>& context, const String&
 	if (X509_LOOKUP_load_file(lookup, crlPath.CStr(), X509_FILETYPE_PEM) != 0) {
 		Log(LogCritical, "SSL")
 		    << "Error loading crl file '" << crlPath << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("X509_LOOKUP_load_file")
 		    << errinfo_openssl_error(ERR_peek_error())
 		    << boost::errinfo_file_name(crlPath));
@@ -201,7 +201,7 @@ static String GetX509NameCN(X509_NAME *name)
 	if (rc == -1) {
 		Log(LogCritical, "SSL")
 		    << "Error with x509 NAME getting text by NID: " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("X509_NAME_get_text_by_NID")
 		    << errinfo_openssl_error(ERR_peek_error()));
 	}
@@ -235,7 +235,7 @@ boost::shared_ptr<X509> GetX509Certificate(const String& pemfile)
 	if (fpcert == NULL) {
 		Log(LogCritical, "SSL")
 		    << "Error creating new BIO: " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("BIO_new")
 		    << errinfo_openssl_error(ERR_peek_error()));
 	}
@@ -243,7 +243,7 @@ boost::shared_ptr<X509> GetX509Certificate(const String& pemfile)
 	if (BIO_read_filename(fpcert, pemfile.CStr()) < 0) {
 		Log(LogCritical, "SSL")
 		    << "Error reading pem file '" << pemfile << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("BIO_read_filename")
 		    << errinfo_openssl_error(ERR_peek_error())
 		    << boost::errinfo_file_name(pemfile));
@@ -253,7 +253,7 @@ boost::shared_ptr<X509> GetX509Certificate(const String& pemfile)
 	if (cert == NULL) {
 		Log(LogCritical, "SSL")
 		    << "Error on bio X509 AUX reading pem file '" << pemfile << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("PEM_read_bio_X509_AUX")
 		    << errinfo_openssl_error(ERR_peek_error())
 		    << boost::errinfo_file_name(pemfile));
@@ -280,7 +280,7 @@ int MakeX509CSR(const String& cn, const String& keyfile, const String& csrfile, 
 	if (!bio) {
 		Log(LogCritical, "SSL")
 		    << "Error while opening private RSA key file '" << keyfile << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("BIO_new_file")
 		    << errinfo_openssl_error(ERR_peek_error())
 		    << boost::errinfo_file_name(keyfile));
@@ -289,7 +289,7 @@ int MakeX509CSR(const String& cn, const String& keyfile, const String& csrfile, 
 	if (!PEM_write_bio_RSAPrivateKey(bio, rsa, NULL, NULL, 0, NULL, NULL)) {
 		Log(LogCritical, "SSL")
 		    << "Error while writing private RSA key to file '" << keyfile << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("PEM_write_bio_RSAPrivateKey")
 		    << errinfo_openssl_error(ERR_peek_error())
 		    << boost::errinfo_file_name(keyfile));
@@ -320,7 +320,7 @@ int MakeX509CSR(const String& cn, const String& keyfile, const String& csrfile, 
 		if (!bio) {
 			Log(LogCritical, "SSL")
 			    << "Error while opening certificate file '" << certfile << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-			BOOST_THROW_EXCEPTION(openssl_error()
+			ThrowException(openssl_error()
 			    << boost::errinfo_api_function("BIO_new_file")
 			    << errinfo_openssl_error(ERR_peek_error())
 			    << boost::errinfo_file_name(certfile));
@@ -329,7 +329,7 @@ int MakeX509CSR(const String& cn, const String& keyfile, const String& csrfile, 
 		if (!PEM_write_bio_X509(bio, cert.get())) {
 			Log(LogCritical, "SSL")
 			    << "Error while writing certificate to file '" << certfile << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-			BOOST_THROW_EXCEPTION(openssl_error()
+			ThrowException(openssl_error()
 			    << boost::errinfo_api_function("PEM_write_bio_X509")
 			    << errinfo_openssl_error(ERR_peek_error())
 			    << boost::errinfo_file_name(certfile));
@@ -360,7 +360,7 @@ int MakeX509CSR(const String& cn, const String& keyfile, const String& csrfile, 
 		if (!bio) {
 			Log(LogCritical, "SSL")
 			    << "Error while opening CSR file '" << csrfile << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-			BOOST_THROW_EXCEPTION(openssl_error()
+			ThrowException(openssl_error()
 			    << boost::errinfo_api_function("BIO_new_file")
 			    << errinfo_openssl_error(ERR_peek_error())
 			    << boost::errinfo_file_name(csrfile));
@@ -369,7 +369,7 @@ int MakeX509CSR(const String& cn, const String& keyfile, const String& csrfile, 
 		if (!PEM_write_bio_X509_REQ(bio, req)) {
 			Log(LogCritical, "SSL")
 			    << "Error while writing CSR to file '" << csrfile << "': " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-			BOOST_THROW_EXCEPTION(openssl_error()
+			ThrowException(openssl_error()
 			    << boost::errinfo_api_function("PEM_write_bio_X509")
 			    << errinfo_openssl_error(ERR_peek_error())
 			    << boost::errinfo_file_name(csrfile));
@@ -406,7 +406,7 @@ boost::shared_ptr<X509> CreateCert(EVP_PKEY *pubkey, X509_NAME *subject, X509_NA
 			ifp.close();
 
 			if (ifp.fail())
-				BOOST_THROW_EXCEPTION(std::runtime_error("Could not read serial file."));
+				ThrowException(std::runtime_error("Could not read serial file."));
 		}
 
 		std::ofstream ofp;
@@ -415,7 +415,7 @@ boost::shared_ptr<X509> CreateCert(EVP_PKEY *pubkey, X509_NAME *subject, X509_NA
 		ofp.close();
 
 		if (ofp.fail())
-			BOOST_THROW_EXCEPTION(std::runtime_error("Could not update serial file."));
+			ThrowException(std::runtime_error("Could not update serial file."));
 	}
 
 	ASN1_INTEGER_set(X509_get_serialNumber(cert), serial);
@@ -534,7 +534,7 @@ String SHA256(const String& s)
 	if (!SHA256_Init(&context)) {
 		Log(LogCritical, "SSL")
 		    << "Error on SHA256 Init: " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("SHA256_Init")
 		    << errinfo_openssl_error(ERR_peek_error()));
 	}
@@ -542,7 +542,7 @@ String SHA256(const String& s)
 	if (!SHA256_Update(&context, (unsigned char*)s.CStr(), s.GetLength())) {
 		Log(LogCritical, "SSL")
 		    << "Error on SHA256 Update: " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("SHA256_Update")
 		    << errinfo_openssl_error(ERR_peek_error()));
 	}
@@ -550,7 +550,7 @@ String SHA256(const String& s)
 	if (!SHA256_Final(digest, &context)) {
 		Log(LogCritical, "SSL")
 		    << "Error on SHA256 Final: " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("SHA256_Final")
 		    << errinfo_openssl_error(ERR_peek_error()));
 	}
@@ -573,7 +573,7 @@ String RandomString(int length)
 
 		Log(LogCritical, "SSL")
 			<< "Error for RAND_bytes: " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 			<< boost::errinfo_api_function("RAND_bytes")
 			<< errinfo_openssl_error(ERR_peek_error()));
 	}

@@ -529,7 +529,7 @@ void CompatLogger::ScheduleNextRotation(void)
 	tm *temp = localtime(&now);
 
 	if (temp == NULL) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("localtime")
 		    << boost::errinfo_errno(errno));
 	}
@@ -537,7 +537,7 @@ void CompatLogger::ScheduleNextRotation(void)
 	tmthen = *temp;
 #else /* _MSC_VER */
 	if (localtime_r(&now, &tmthen) == NULL) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("localtime_r")
 		    << boost::errinfo_errno(errno));
 	}
@@ -591,6 +591,6 @@ void CompatLogger::ValidateRotationMethod(const String& value, const ValidationU
 
 	if (value != "HOURLY" && value != "DAILY" &&
 	    value != "WEEKLY" && value != "MONTHLY" && value != "NONE") {
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("rotation_method"), "Rotation method '" + value + "' is invalid."));
+		ThrowException(ValidationError(this, boost::assign::list_of("rotation_method"), "Rotation method '" + value + "' is invalid."));
 	}
 }

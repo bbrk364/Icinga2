@@ -29,7 +29,6 @@
 #include "base/scriptglobal.hpp"
 #include "base/loader.hpp"
 #include <boost/foreach.hpp>
-#include <boost/exception_ptr.hpp>
 #include <boost/exception/errinfo_nested_exception.hpp>
 
 using namespace icinga;
@@ -73,7 +72,7 @@ ExpressionResult Expression::Evaluate(ScriptFrame& frame, DebugHint *dhint) cons
 	} catch (const std::exception& ex) {
 		frame.DecreaseStackDepth();
 
-		BOOST_THROW_EXCEPTION(ScriptError("Error while evaluating expression: " + String(ex.what()), GetDebugInfo())
+		ThrowException(ScriptError("Error while evaluating expression: " + String(ex.what()), GetDebugInfo())
 		    << boost::errinfo_nested_exception(boost::current_exception()));
 	}
 
@@ -353,7 +352,7 @@ ExpressionResult InExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) 
 	if (operand2.GetValue().IsEmpty())
 		return false;
 	else if (!operand2.GetValue().IsObjectType<Array>())
-		BOOST_THROW_EXCEPTION(ScriptError("Invalid right side argument for 'in' operator: " + JsonEncode(operand2.GetValue()), m_DebugInfo));
+		ThrowException(ScriptError("Invalid right side argument for 'in' operator: " + JsonEncode(operand2.GetValue()), m_DebugInfo));
 
 	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
 	CHECK_RESULT(operand1)
@@ -370,7 +369,7 @@ ExpressionResult NotInExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	if (operand2.GetValue().IsEmpty())
 		return true;
 	else if (!operand2.GetValue().IsObjectType<Array>())
-		BOOST_THROW_EXCEPTION(ScriptError("Invalid right side argument for 'in' operator: " + JsonEncode(operand2.GetValue()), m_DebugInfo));
+		ThrowException(ScriptError("Invalid right side argument for 'in' operator: " + JsonEncode(operand2.GetValue()), m_DebugInfo));
 
 	ExpressionResult operand1 = m_Operand1->Evaluate(frame);
 	CHECK_RESULT(operand1);
@@ -436,12 +435,12 @@ ExpressionResult FunctionCallExpression::DoEvaluate(ScriptFrame& frame, DebugHin
 	}
 
 	if (!vfunc.IsObjectType<Function>())
-		BOOST_THROW_EXCEPTION(ScriptError("Argument is not a callable object.", m_DebugInfo));
+		ThrowException(ScriptError("Argument is not a callable object.", m_DebugInfo));
 
 	Function::Ptr func = vfunc;
 
 	if (!func->IsSideEffectFree() && frame.Sandboxed)
-		BOOST_THROW_EXCEPTION(ScriptError("Function is not marked as safe for sandbox mode.", m_DebugInfo));
+		ThrowException(ScriptError("Function is not marked as safe for sandbox mode.", m_DebugInfo));
 
 	std::vector<Value> arguments;
 	BOOST_FOREACH(Expression *arg, m_Args) {
@@ -514,7 +513,7 @@ ExpressionResult GetScopeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 ExpressionResult SetExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (frame.Sandboxed)
-		BOOST_THROW_EXCEPTION(ScriptError("Assignments are not allowed in sandbox mode.", m_DebugInfo));
+		ThrowException(ScriptError("Assignments are not allowed in sandbox mode.", m_DebugInfo));
 
 	DebugHint *psdhint = dhint;
 
@@ -522,7 +521,7 @@ ExpressionResult SetExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 	String index;
 
 	if (!m_Operand1->GetReference(frame, true, &parent, &index, &psdhint))
-		BOOST_THROW_EXCEPTION(ScriptError("Expression cannot be assigned to.", m_DebugInfo));
+		ThrowException(ScriptError("Expression cannot be assigned to.", m_DebugInfo));
 
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame, dhint);
 	CHECK_RESULT(operand2);
@@ -588,7 +587,7 @@ ExpressionResult ConditionalExpression::DoEvaluate(ScriptFrame& frame, DebugHint
 ExpressionResult WhileExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (frame.Sandboxed)
-		BOOST_THROW_EXCEPTION(ScriptError("While loops are not allowed in sandbox mode.", m_DebugInfo));
+		ThrowException(ScriptError("While loops are not allowed in sandbox mode.", m_DebugInfo));
 
 	for (;;) {
 		ExpressionResult condition = m_Condition->Evaluate(frame, dhint);
@@ -726,13 +725,13 @@ ExpressionResult ThrowExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 	ExpressionResult messageres = m_Message->Evaluate(frame);
 	CHECK_RESULT(messageres);
 	Value message = messageres.GetValue();
-	BOOST_THROW_EXCEPTION(ScriptError(message, m_DebugInfo, m_IncompleteExpr));
+	ThrowException(ScriptError(message, m_DebugInfo, m_IncompleteExpr));
 }
 
 ExpressionResult ImportExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (frame.Sandboxed)
-		BOOST_THROW_EXCEPTION(ScriptError("Imports are not allowed in sandbox mode.", m_DebugInfo));
+		ThrowException(ScriptError("Imports are not allowed in sandbox mode.", m_DebugInfo));
 
 	String type = VMOps::GetField(frame.Self, "type", frame.Sandboxed, m_DebugInfo);
 	ExpressionResult nameres = m_Name->Evaluate(frame);
@@ -740,12 +739,12 @@ ExpressionResult ImportExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	Value name = nameres.GetValue();
 
 	if (!name.IsString())
-		BOOST_THROW_EXCEPTION(ScriptError("Template/object name must be a string", m_DebugInfo));
+		ThrowException(ScriptError("Template/object name must be a string", m_DebugInfo));
 
 	ConfigItem::Ptr item = ConfigItem::GetByTypeAndName(type, name);
 
 	if (!item)
-		BOOST_THROW_EXCEPTION(ScriptError("Import references unknown template: '" + name + "'", m_DebugInfo));
+		ThrowException(ScriptError("Import references unknown template: '" + name + "'", m_DebugInfo));
 
 	ExpressionResult result = item->GetExpression()->Evaluate(frame, dhint);
 	CHECK_RESULT(result);
@@ -761,7 +760,7 @@ ExpressionResult FunctionExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 ExpressionResult ApplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (frame.Sandboxed)
-		BOOST_THROW_EXCEPTION(ScriptError("Apply rules are not allowed in sandbox mode.", m_DebugInfo));
+		ThrowException(ScriptError("Apply rules are not allowed in sandbox mode.", m_DebugInfo));
 
 	ExpressionResult nameres = m_Name->Evaluate(frame);
 	CHECK_RESULT(nameres);
@@ -773,7 +772,7 @@ ExpressionResult ApplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 ExpressionResult ObjectExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (frame.Sandboxed)
-		BOOST_THROW_EXCEPTION(ScriptError("Object definitions are not allowed in sandbox mode.", m_DebugInfo));
+		ThrowException(ScriptError("Object definitions are not allowed in sandbox mode.", m_DebugInfo));
 
 	String name;
 
@@ -791,7 +790,7 @@ ExpressionResult ObjectExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 ExpressionResult ForExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (frame.Sandboxed)
-		BOOST_THROW_EXCEPTION(ScriptError("For loops are not allowed in sandbox mode.", m_DebugInfo));
+		ThrowException(ScriptError("For loops are not allowed in sandbox mode.", m_DebugInfo));
 
 	ExpressionResult valueres = m_Value->Evaluate(frame, dhint);
 	CHECK_RESULT(valueres);
@@ -802,7 +801,7 @@ ExpressionResult ForExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 ExpressionResult LibraryExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (frame.Sandboxed)
-		BOOST_THROW_EXCEPTION(ScriptError("Loading libraries is not allowed in sandbox mode.", m_DebugInfo));
+		ThrowException(ScriptError("Loading libraries is not allowed in sandbox mode.", m_DebugInfo));
 
 	ExpressionResult libres = m_Operand->Evaluate(frame, dhint);
 	CHECK_RESULT(libres);
@@ -815,7 +814,7 @@ ExpressionResult LibraryExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 ExpressionResult IncludeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (frame.Sandboxed)
-		BOOST_THROW_EXCEPTION(ScriptError("Includes are not allowed in sandbox mode.", m_DebugInfo));
+		ThrowException(ScriptError("Includes are not allowed in sandbox mode.", m_DebugInfo));
 
 	Expression *expr;
 	String name, path, pattern;

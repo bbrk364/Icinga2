@@ -145,9 +145,9 @@ void LegacyTimePeriod::ParseTimeSpec(const String& timespec, tm *begin, tm *end,
 		int day = Convert::ToLong(timespec.SubStr(8, 2));
 
 		if (month < 1 || month > 12)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid month in time specification: " + timespec));
+			ThrowException(std::invalid_argument("Invalid month in time specification: " + timespec));
 		if (day < 1 || day > 31)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid day in time specification: " + timespec));
+			ThrowException(std::invalid_argument("Invalid day in time specification: " + timespec));
 
 		if (begin) {
 			*begin = *reference;
@@ -225,7 +225,7 @@ void LegacyTimePeriod::ParseTimeSpec(const String& timespec, tm *begin, tm *end,
 			mon = MonthFromString(tokens[2]);
 
 			if (mon == -1)
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid month in time specification: " + timespec));
+				ThrowException(std::invalid_argument("Invalid month in time specification: " + timespec));
 
 			myref.tm_mon = mon;
 		}
@@ -265,7 +265,7 @@ void LegacyTimePeriod::ParseTimeSpec(const String& timespec, tm *begin, tm *end,
 		return;
 	}
 
-	BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid time specification: " + timespec));
+	ThrowException(std::invalid_argument("Invalid time specification: " + timespec));
 }
 
 void LegacyTimePeriod::ParseTimeRange(const String& timerange, tm *begin, tm *end, int *stride, tm *reference)
@@ -341,18 +341,18 @@ void LegacyTimePeriod::ProcessTimeRangeRaw(const String& timerange, tm *referenc
 	boost::algorithm::split(times, timerange, boost::is_any_of("-"));
 
 	if (times.size() != 2)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid timerange: " + timerange));
+		ThrowException(std::invalid_argument("Invalid timerange: " + timerange));
 
 	std::vector<String> hd1, hd2;
 	boost::algorithm::split(hd1, times[0], boost::is_any_of(":"));
 
 	if (hd1.size() != 2)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid time specification: " + times[0]));
+		ThrowException(std::invalid_argument("Invalid time specification: " + times[0]));
 
 	boost::algorithm::split(hd2, times[1], boost::is_any_of(":"));
 
 	if (hd2.size() != 2)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid time specification: " + times[1]));
+		ThrowException(std::invalid_argument("Invalid time specification: " + times[1]));
 
 	*begin = *reference;
 	begin->tm_sec = 0;
@@ -366,7 +366,7 @@ void LegacyTimePeriod::ProcessTimeRangeRaw(const String& timerange, tm *referenc
 
 	if (begin->tm_hour * 3600 + begin->tm_min * 60 + begin->tm_sec >=
 	    end->tm_hour * 3600 + end->tm_min * 60 + end->tm_sec)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Time period segment ends before it begins"));
+		ThrowException(std::invalid_argument("Time period segment ends before it begins"));
 }
 
 Dictionary::Ptr LegacyTimePeriod::ProcessTimeRange(const String& timestamp, tm *reference)

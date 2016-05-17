@@ -54,11 +54,11 @@ StreamReadStatus NetString::ReadStringFromStream(const Stream::Ptr& stream, Stri
 
 			/* make sure there's a header */
 			if (header_length == 0)
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid NetString (no length specifier)"));
+				ThrowException(std::invalid_argument("Invalid NetString (no length specifier)"));
 
 			break;
 		} else if (i > 16)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid NetString (missing :)"));
+			ThrowException(std::invalid_argument("Invalid NetString (missing :)"));
 	}
 
 	if (header_length == 0) {
@@ -68,7 +68,7 @@ StreamReadStatus NetString::ReadStringFromStream(const Stream::Ptr& stream, Stri
 
 	/* no leading zeros allowed */
 	if (context.Buffer[0] == '0' && isdigit(context.Buffer[1]))
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid NetString (leading zero)"));
+		ThrowException(std::invalid_argument("Invalid NetString (leading zero)"));
 
 	size_t len, i;
 
@@ -76,7 +76,7 @@ StreamReadStatus NetString::ReadStringFromStream(const Stream::Ptr& stream, Stri
 	for (i = 0; i < header_length && isdigit(context.Buffer[i]); i++) {
 		/* length specifier must have at most 9 characters */
 		if (i >= 9)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Length specifier must not exceed 9 characters"));
+			ThrowException(std::invalid_argument("Length specifier must not exceed 9 characters"));
 
 		len = len * 10 + (context.Buffer[i] - '0');
 	}
@@ -92,7 +92,7 @@ StreamReadStatus NetString::ReadStringFromStream(const Stream::Ptr& stream, Stri
 	}
 
 	if (data[len] != ',')
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid NetString (missing ,)"));
+		ThrowException(std::invalid_argument("Invalid NetString (missing ,)"));
 
 	*str = String(&data[0], &data[len]);
 

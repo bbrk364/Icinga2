@@ -54,7 +54,7 @@ bool AttributeFilter::Apply(const Table::Ptr& table, const Value& row)
 		} else if (m_Operator == "=") {
 			return (array->GetLength() == 0);
 		} else {
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid operator for column '" + m_Column + "': " + m_Operator + " (expected '>=' or '=')."));
+			ThrowException(std::invalid_argument("Invalid operator for column '" + m_Column + "': " + m_Operator + " (expected '>=' or '=')."));
 		}
 	} else {
 		if (m_Operator == "=") {
@@ -131,7 +131,7 @@ bool AttributeFilter::Apply(const Table::Ptr& table, const Value& row)
 			else
 				return (static_cast<String>(value) >= m_Operand);
 		} else {
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Unknown operator for column '" + m_Column + "': " + m_Operator));
+			ThrowException(std::invalid_argument("Unknown operator for column '" + m_Column + "': " + m_Operator));
 		}
 	}
 

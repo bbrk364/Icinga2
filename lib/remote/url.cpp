@@ -35,18 +35,18 @@ Url::Url(const String& base_url)
 	String url = base_url;
 
 	if (url.GetLength() == 0)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid URL Empty URL."));
+		ThrowException(std::invalid_argument("Invalid URL Empty URL."));
 
 	size_t pHelper = url.Find(":");
 
 	if (pHelper != String::NPos) {
 		if (!ParseScheme(url.SubStr(0, pHelper)))
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid URL Scheme."));
+			ThrowException(std::invalid_argument("Invalid URL Scheme."));
 		url = url.SubStr(pHelper + 1);
 	}
 
 	if (*url.Begin() != '/')
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid URL: '/' expected after scheme."));
+		ThrowException(std::invalid_argument("Invalid URL: '/' expected after scheme."));
 
 	if (url.GetLength() == 1) {
 		return;
@@ -56,10 +56,10 @@ Url::Url(const String& base_url)
 		pHelper = url.Find("/", 2);
 
 		if (pHelper == String::NPos)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid URL: Missing '/' after authority."));
+			ThrowException(std::invalid_argument("Invalid URL: Missing '/' after authority."));
 
 		if (!ParseAuthority(url.SubStr(0, pHelper)))
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid URL Authority"));
+			ThrowException(std::invalid_argument("Invalid URL Authority"));
 
 		url = url.SubStr(pHelper);
 	}
@@ -67,17 +67,17 @@ Url::Url(const String& base_url)
 	if (*url.Begin() == '/') {
 		pHelper = url.FindFirstOf("#?");
 		if (!ParsePath(url.SubStr(1, pHelper - 1)))
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid URL Path"));
+			ThrowException(std::invalid_argument("Invalid URL Path"));
 
 		if (pHelper != String::NPos)
 			url = url.SubStr(pHelper);
 	} else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid URL: Missing path."));
+		ThrowException(std::invalid_argument("Invalid URL: Missing path."));
 
 	if (*url.Begin() == '?') {
 		pHelper = url.Find("#");
 		if (!ParseQuery(url.SubStr(1, pHelper - 1)))
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid URL Query"));
+			ThrowException(std::invalid_argument("Invalid URL Query"));
 
 		if (pHelper != String::NPos)
 			url = url.SubStr(pHelper);
@@ -85,7 +85,7 @@ Url::Url(const String& base_url)
 
 	if (*url.Begin() == '#') {
 		if (!ParseFragment(url.SubStr(1)))
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid URL Fragment"));
+			ThrowException(std::invalid_argument("Invalid URL Fragment"));
 	}
 }
 

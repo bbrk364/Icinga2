@@ -110,7 +110,7 @@ Column Table::GetColumn(const String& name) const
 	std::map<String, Column>::const_iterator it = m_Columns.find(dname);
 
 	if (it == m_Columns.end())
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Column '" + dname + "' does not exist in table '" + GetName() + "'."));
+		ThrowException(std::invalid_argument("Column '" + dname + "' does not exist in table '" + GetName() + "'."));
 
 	return it->second;
 }

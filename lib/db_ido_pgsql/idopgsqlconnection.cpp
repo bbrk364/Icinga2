@@ -101,7 +101,7 @@ void IdoPgsqlConnection::Pause(void)
 	m_QueryQueue.Join();
 }
 
-void IdoPgsqlConnection::ExceptionHandler(boost::exception_ptr exp)
+void IdoPgsqlConnection::ExceptionHandler(ExceptionPtr exp)
 {
 	Log(LogWarning, "IdoPgsqlConnection", "Exception during database operation: Verify that your database is operational!");
 
@@ -214,7 +214,7 @@ void IdoPgsqlConnection::Reconnect(void)
 		    << "Connection to database '" << db << "' with user '" << user << "' on '" << host << ":" << port
 		    << "' failed: \"" << message << "\"";
 
-		BOOST_THROW_EXCEPTION(std::runtime_error(message));
+		ThrowException(std::runtime_error(message));
 	}
 
 	SetConnected(true);
@@ -423,7 +423,7 @@ IdoPgsqlResult IdoPgsqlConnection::Query(const String& query)
 		Log(LogCritical, "IdoPgsqlConnection")
 		    << "Error \"" << message << "\" when executing query \"" << query << "\"";
 
-		BOOST_THROW_EXCEPTION(
+		ThrowException(
 		    database_error()
 			<< errinfo_message(message)
 			<< errinfo_database_query(query)
@@ -445,7 +445,7 @@ IdoPgsqlResult IdoPgsqlConnection::Query(const String& query)
 		Log(LogCritical, "IdoPgsqlConnection")
 		    << "Error \"" << message << "\" when executing query \"" << query << "\"";
 
-		BOOST_THROW_EXCEPTION(
+		ThrowException(
 		    database_error()
 			<< errinfo_message(message)
 			<< errinfo_database_query(query)

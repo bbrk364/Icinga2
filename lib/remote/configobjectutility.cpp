@@ -75,12 +75,12 @@ String ConfigObjectUtility::CreateObjectConfig(const Type::Ptr& type, const Stri
 			int fid = type->GetFieldId(kv.first.SubStr(0, kv.first.FindFirstOf(".")));
 
 			if (fid < 0)
-				BOOST_THROW_EXCEPTION(ScriptError("Invalid attribute specified: " + kv.first));
+				ThrowException(ScriptError("Invalid attribute specified: " + kv.first));
 
 			Field field = type->GetFieldInfo(fid);
 
 			if (!(field.Attributes & FAConfig) || kv.first == "name")
-				BOOST_THROW_EXCEPTION(ScriptError("Attribute is marked for internal use only and may not be set: " + kv.first));
+				ThrowException(ScriptError("Attribute is marked for internal use only and may not be set: " + kv.first));
 		}
 	}
 
@@ -137,13 +137,13 @@ bool ConfigObjectUtility::CreateObject(const Type::Ptr& type, const String& full
 		if (!ConfigItem::CommitItems(ascope.GetContext(), upq, newItems) || !ConfigItem::ActivateItems(upq, newItems, true)) {
 			if (errors) {
 				if (unlink(path.CStr()) < 0) {
-					BOOST_THROW_EXCEPTION(posix_error()
+					ThrowException(posix_error()
 					    << boost::errinfo_api_function("unlink")
 					    << boost::errinfo_errno(errno)
 					    << boost::errinfo_file_name(path));
 				}
 
-				BOOST_FOREACH(const boost::exception_ptr& ex, upq.GetExceptions()) {
+				BOOST_FOREACH(const ExceptionPtr& ex, upq.GetExceptions()) {
 					errors->Add(DiagnosticInformation(ex));
 				}
 			}
@@ -156,7 +156,7 @@ bool ConfigObjectUtility::CreateObject(const Type::Ptr& type, const String& full
 		delete expr;
 
 		if (unlink(path.CStr()) < 0) {
-			BOOST_THROW_EXCEPTION(posix_error()
+			ThrowException(posix_error()
 			    << boost::errinfo_api_function("unlink")
 			    << boost::errinfo_errno(errno)
 			    << boost::errinfo_file_name(path));
@@ -218,7 +218,7 @@ bool ConfigObjectUtility::DeleteObjectHelper(const ConfigObject::Ptr& object, bo
 
 	if (Utility::PathExists(path)) {
 		if (unlink(path.CStr()) < 0) {
-			BOOST_THROW_EXCEPTION(posix_error()
+			ThrowException(posix_error()
 			    << boost::errinfo_api_function("unlink")
 			    << boost::errinfo_errno(errno)
 			    << boost::errinfo_file_name(path));

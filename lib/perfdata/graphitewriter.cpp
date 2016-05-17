@@ -299,7 +299,7 @@ void GraphiteWriter::ValidateHostNameTemplate(const String& value, const Validat
 	ObjectImpl<GraphiteWriter>::ValidateHostNameTemplate(value, utils);
 
 	if (!MacroProcessor::ValidateMacroString(value))
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("host_name_template"), "Closing $ not found in macro format string '" + value + "'."));
+		ThrowException(ValidationError(this, boost::assign::list_of("host_name_template"), "Closing $ not found in macro format string '" + value + "'."));
 }
 
 void GraphiteWriter::ValidateServiceNameTemplate(const String& value, const ValidationUtils& utils)
@@ -307,5 +307,5 @@ void GraphiteWriter::ValidateServiceNameTemplate(const String& value, const Vali
 	ObjectImpl<GraphiteWriter>::ValidateServiceNameTemplate(value, utils);
 
 	if (!MacroProcessor::ValidateMacroString(value))
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("service_name_template"), "Closing $ not found in macro format string '" + value + "'."));
+		ThrowException(ValidationError(this, boost::assign::list_of("service_name_template"), "Closing $ not found in macro format string '" + value + "'."));
 }

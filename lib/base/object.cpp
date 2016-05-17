@@ -87,9 +87,9 @@ bool Object::OwnsLock(void) const
 void Object::SetField(int id, const Value&, bool, const Value&)
 {
 	if (id == 0)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Type field cannot be set."));
+		ThrowException(std::runtime_error("Type field cannot be set."));
 	else
-		BOOST_THROW_EXCEPTION(std::runtime_error("Invalid field ID."));
+		ThrowException(std::runtime_error("Invalid field ID."));
 }
 
 Value Object::GetField(int id) const
@@ -97,7 +97,7 @@ Value Object::GetField(int id) const
 	if (id == 0)
 		return GetReflectionType()->GetName();
 	else
-		BOOST_THROW_EXCEPTION(std::runtime_error("Invalid field ID."));
+		ThrowException(std::runtime_error("Invalid field ID."));
 }
 
 bool Object::HasOwnField(const String& field) const
@@ -126,7 +126,7 @@ Value Object::GetFieldByName(const String& field, bool sandboxed, const DebugInf
 		Field fieldInfo = type->GetFieldInfo(fid);
 
 		if (fieldInfo.Attributes & FANoUserView)
-			BOOST_THROW_EXCEPTION(ScriptError("Accessing the field '" + field + "' for type '" + type->GetName() + "' is not allowed in sandbox mode.", debugInfo));
+			ThrowException(ScriptError("Accessing the field '" + field + "' for type '" + type->GetName() + "' is not allowed in sandbox mode.", debugInfo));
 	}
 
 	return GetField(fid);
@@ -137,23 +137,23 @@ void Object::SetFieldByName(const String& field, const Value& value, const Debug
 	Type::Ptr type = GetReflectionType();
 
 	if (!type)
-		BOOST_THROW_EXCEPTION(ScriptError("Cannot set field on object.", debugInfo));
+		ThrowException(ScriptError("Cannot set field on object.", debugInfo));
 
 	int fid = type->GetFieldId(field);
 
 	if (fid == -1)
-		BOOST_THROW_EXCEPTION(ScriptError("Attribute '" + field + "' does not exist.", debugInfo));
+		ThrowException(ScriptError("Attribute '" + field + "' does not exist.", debugInfo));
 
 	try {
 		SetField(fid, value);
 	} catch (const boost::bad_lexical_cast&) {
 		Field fieldInfo = type->GetFieldInfo(fid);
 		Type::Ptr ftype = Type::GetByName(fieldInfo.TypeName);
-		BOOST_THROW_EXCEPTION(ScriptError("Attribute '" + field + "' cannot be set to value of type '" + value.GetTypeName() + "', expected '" + ftype->GetName() + "'", debugInfo));
+		ThrowException(ScriptError("Attribute '" + field + "' cannot be set to value of type '" + value.GetTypeName() + "', expected '" + ftype->GetName() + "'", debugInfo));
 	} catch (const std::bad_cast&) {
 		Field fieldInfo = type->GetFieldInfo(fid);
 		Type::Ptr ftype = Type::GetByName(fieldInfo.TypeName);
-		BOOST_THROW_EXCEPTION(ScriptError("Attribute '" + field + "' cannot be set to value of type '" + value.GetTypeName() + "', expected '" + ftype->GetName() + "'", debugInfo));
+		ThrowException(ScriptError("Attribute '" + field + "' cannot be set to value of type '" + value.GetTypeName() + "', expected '" + ftype->GetName() + "'", debugInfo));
 	}
 }
 
@@ -169,17 +169,17 @@ void Object::ValidateField(int id, const Value& value, const ValidationUtils& ut
 
 void Object::NotifyField(int id, const Value& cookie)
 {
-	BOOST_THROW_EXCEPTION(std::runtime_error("Invalid field ID."));
+	ThrowException(std::runtime_error("Invalid field ID."));
 }
 
 Object::Ptr Object::NavigateField(int id) const
 {
-	BOOST_THROW_EXCEPTION(std::runtime_error("Invalid field ID."));
+	ThrowException(std::runtime_error("Invalid field ID."));
 }
 
 Object::Ptr Object::Clone(void) const
 {
-	BOOST_THROW_EXCEPTION(std::runtime_error("Object cannot be cloned."));
+	ThrowException(std::runtime_error("Object cannot be cloned."));
 }
 
 Type::Ptr Object::GetReflectionType(void) const
@@ -202,7 +202,7 @@ Value icinga::GetPrototypeField(const Value& context, const String& field, bool 
 	} while (type);
 
 	if (not_found_error)
-		BOOST_THROW_EXCEPTION(ScriptError("Invalid field access (for value of type '" + ctype->GetName() + "'): '" + field + "'", debugInfo));
+		ThrowException(ScriptError("Invalid field access (for value of type '" + ctype->GetName() + "'): '" + field + "'", debugInfo));
 	else
 		return Empty;
 }

@@ -54,7 +54,7 @@ void ApiClient::GetTypes(const TypesCompletionCallback& callback) const
 		req->AddHeader("Accept", "application/json");
 		m_Connection->SubmitRequest(req, boost::bind(TypesHttpCompletionCallback, _1, _2, callback));
 	} catch (const std::exception& ex) {
-		callback(boost::current_exception(), std::vector<ApiType::Ptr>());
+		callback(CurrentException(), std::vector<ApiType::Ptr>());
 	}
 }
 
@@ -74,7 +74,7 @@ void ApiClient::TypesHttpCompletionCallback(HttpRequest& request, HttpResponse& 
 		if (response.StatusCode < 200 || response.StatusCode > 299) {
 			std::string message = "HTTP request failed; Code: " + Convert::ToString(response.StatusCode) + "; Body: " + body;
 
-			BOOST_THROW_EXCEPTION(ScriptError(message));
+			ThrowException(ScriptError(message));
 		}
 
 		std::vector<ApiType::Ptr> types;
@@ -95,11 +95,11 @@ void ApiClient::TypesHttpCompletionCallback(HttpRequest& request, HttpResponse& 
 			types.push_back(type);
 		}
 
-		callback(boost::exception_ptr(), types);
+		callback(ExceptionPtr(), types);
 	} catch (const std::exception& ex) {
 		Log(LogCritical, "ApiClient")
 		    << "Error while decoding response: " << DiagnosticInformation(ex);
-		callback(boost::current_exception(), std::vector<ApiType::Ptr>());
+		callback(CurrentException(), std::vector<ApiType::Ptr>());
 	}
 
 }
@@ -144,7 +144,7 @@ void ApiClient::GetObjects(const String& pluralType, const ObjectsCompletionCall
 		req->AddHeader("Accept", "application/json");
 		m_Connection->SubmitRequest(req, boost::bind(ObjectsHttpCompletionCallback, _1, _2, callback));
 	} catch (const std::exception& ex) {
-		callback(boost::current_exception(), std::vector<ApiObject::Ptr>());
+		callback(CurrentException(), std::vector<ApiObject::Ptr>());
 	}
 }
 
@@ -164,7 +164,7 @@ void ApiClient::ObjectsHttpCompletionCallback(HttpRequest& request,
 		if (response.StatusCode < 200 || response.StatusCode > 299) {
 			std::string message = "HTTP request failed; Code: " + Convert::ToString(response.StatusCode) + "; Body: " + body;
 
-			BOOST_THROW_EXCEPTION(ScriptError(message));
+			ThrowException(ScriptError(message));
 		}
 
 		std::vector<ApiObject::Ptr> objects;
@@ -222,11 +222,11 @@ void ApiClient::ObjectsHttpCompletionCallback(HttpRequest& request,
 			}
 		}
 
-		callback(boost::exception_ptr(), objects);
+		callback(ExceptionPtr(), objects);
 	} catch (const std::exception& ex) {
 		Log(LogCritical, "ApiClient")
 			<< "Error while decoding response: " << DiagnosticInformation(ex);
-		callback(boost::current_exception(), std::vector<ApiObject::Ptr>());
+		callback(CurrentException(), std::vector<ApiObject::Ptr>());
 	}
 }
 
@@ -258,7 +258,7 @@ void ApiClient::ExecuteScript(const String& session, const String& command, bool
 		req->AddHeader("Accept", "application/json");
 		m_Connection->SubmitRequest(req, boost::bind(ExecuteScriptHttpCompletionCallback, _1, _2, callback));
 	} catch (const std::exception& ex) {
-		callback(boost::current_exception(), Empty);
+		callback(CurrentException(), Empty);
 	}
 }
 
@@ -278,7 +278,7 @@ void ApiClient::ExecuteScriptHttpCompletionCallback(HttpRequest& request,
 		if (response.StatusCode < 200 || response.StatusCode > 299) {
 			std::string message = "HTTP request failed; Code: " + Convert::ToString(response.StatusCode) + "; Body: " + body;
 
-			BOOST_THROW_EXCEPTION(ScriptError(message));
+			ThrowException(ScriptError(message));
 		}
 
 		result = JsonDecode(body);
@@ -304,13 +304,13 @@ void ApiClient::ExecuteScriptHttpCompletionCallback(HttpRequest& request,
 					di.LastColumn = debugInfo->Get("last_column");
 				}
 				bool incompleteExpression = resultInfo->Get("incomplete_expression");
-				BOOST_THROW_EXCEPTION(ScriptError(errorMessage, di, incompleteExpression));
+				ThrowException(ScriptError(errorMessage, di, incompleteExpression));
 			}
 		}
 
-		callback(boost::exception_ptr(), result);
+		callback(ExceptionPtr(), result);
 	} catch (const std::exception& ex) {
-		callback(boost::current_exception(), Empty);
+		callback(CurrentException(), Empty);
 	}
 }
 
@@ -342,7 +342,7 @@ void ApiClient::AutocompleteScript(const String& session, const String& command,
 		req->AddHeader("Accept", "application/json");
 		m_Connection->SubmitRequest(req, boost::bind(AutocompleteScriptHttpCompletionCallback, _1, _2, callback));
 	} catch (const std::exception& ex) {
-		callback(boost::current_exception(), Array::Ptr());
+		callback(CurrentException(), Array::Ptr());
 	}
 }
 
@@ -362,7 +362,7 @@ void ApiClient::AutocompleteScriptHttpCompletionCallback(HttpRequest& request,
 		if (response.StatusCode < 200 || response.StatusCode > 299) {
 			std::string message = "HTTP request failed; Code: " + Convert::ToString(response.StatusCode) + "; Body: " + body;
 
-			BOOST_THROW_EXCEPTION(ScriptError(message));
+			ThrowException(ScriptError(message));
 		}
 
 		result = JsonDecode(body);
@@ -378,11 +378,11 @@ void ApiClient::AutocompleteScriptHttpCompletionCallback(HttpRequest& request,
 			if (resultInfo->Get("code") >= 200 && resultInfo->Get("code") <= 299)
 				suggestions = resultInfo->Get("suggestions");
 			else
-				BOOST_THROW_EXCEPTION(ScriptError(errorMessage));
+				ThrowException(ScriptError(errorMessage));
 		}
 
-		callback(boost::exception_ptr(), suggestions);
+		callback(ExceptionPtr(), suggestions);
 	} catch (const std::exception& ex) {
-		callback(boost::current_exception(), Array::Ptr());
+		callback(CurrentException(), Array::Ptr());
 	}
 }

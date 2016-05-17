@@ -146,7 +146,7 @@ bool WorkQueue::HasExceptions(void) const
  * Returns all exceptions which have occurred for tasks in this work queue. When a
  * custom exception callback is set this method will always return an empty list.
  */
-std::vector<boost::exception_ptr> WorkQueue::GetExceptions(void) const
+std::vector<ExceptionPtr> WorkQueue::GetExceptions(void) const
 {
 	boost::mutex::scoped_lock lock(m_Mutex);
  
@@ -155,9 +155,9 @@ std::vector<boost::exception_ptr> WorkQueue::GetExceptions(void) const
 
 void WorkQueue::ReportExceptions(const String& facility) const
 {
-	std::vector<boost::exception_ptr> exceptions = GetExceptions();
+	std::vector<ExceptionPtr> exceptions = GetExceptions();
 
-	BOOST_FOREACH(const boost::exception_ptr& eptr, exceptions) {
+	BOOST_FOREACH(const ExceptionPtr& eptr, exceptions) {
 		Log(LogCritical, facility)
 		    << DiagnosticInformation(eptr);
 	}
@@ -214,12 +214,12 @@ void WorkQueue::WorkerThreadProc(void)
 			lock.lock();
 
 			if (!m_ExceptionCallback)
-				m_Exceptions.push_back(boost::current_exception());
+				m_Exceptions.push_back(CurrentException());
 
 			lock.unlock();
 
 			if (m_ExceptionCallback)
-				m_ExceptionCallback(boost::current_exception());
+				m_ExceptionCallback(CurrentException());
 		}
 
 		/* clear the task so whatever other resources it holds are released

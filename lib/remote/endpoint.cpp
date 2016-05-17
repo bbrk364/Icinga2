@@ -47,7 +47,7 @@ void Endpoint::OnAllConfigLoaded(void)
 
 		if (members.find(this) != members.end()) {
 			if (m_Zone)
-				BOOST_THROW_EXCEPTION(ScriptError("Endpoint '" + GetName()
+				ThrowException(ScriptError("Endpoint '" + GetName()
 				    + "' is in more than one zone.", GetDebugInfo()));
 
 			m_Zone = zone;
@@ -55,7 +55,7 @@ void Endpoint::OnAllConfigLoaded(void)
 	}
 
 	if (!m_Zone)
-		BOOST_THROW_EXCEPTION(ScriptError("Endpoint '" + GetName() +
+		ThrowException(ScriptError("Endpoint '" + GetName() +
 		    "' does not belong to a zone.", GetDebugInfo()));
 }
 

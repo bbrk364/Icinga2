@@ -105,7 +105,7 @@ void User::ValidateStates(const Array::Ptr& value, const ValidationUtils& utils)
 	int sfilter = FilterArrayToInt(value, 0);
 
 	if ((sfilter & ~(StateFilterUp | StateFilterDown | StateFilterOK | StateFilterWarning | StateFilterCritical | StateFilterUnknown)) != 0) {
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("states"), "State filter is invalid."));
+		ThrowException(ValidationError(this, boost::assign::list_of("states"), "State filter is invalid."));
 	}
 }
 
@@ -118,6 +118,6 @@ void User::ValidateTypes(const Array::Ptr& value, const ValidationUtils& utils)
 	if ((tfilter & ~(1 << NotificationDowntimeStart | 1 << NotificationDowntimeEnd | 1 << NotificationDowntimeRemoved |
 	    1 << NotificationCustom | 1 << NotificationAcknowledgement | 1 << NotificationProblem | 1 << NotificationRecovery |
 	    1 << NotificationFlappingStart | 1 << NotificationFlappingEnd)) != 0) {
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("types"), "Type filter is invalid."));
+		ThrowException(ValidationError(this, boost::assign::list_of("types"), "Type filter is invalid."));
 	}
 }

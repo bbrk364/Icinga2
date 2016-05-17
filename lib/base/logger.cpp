@@ -156,7 +156,7 @@ String Logger::SeverityToString(LogSeverity severity)
 		case LogCritical:
 			return "critical";
 		default:
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid severity."));
+			ThrowException(std::invalid_argument("Invalid severity."));
 	}
 }
 
@@ -178,7 +178,7 @@ LogSeverity Logger::StringToSeverity(const String& severity)
 	else if (severity == "critical")
 		return LogCritical;
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid severity: " + severity));
+		ThrowException(std::invalid_argument("Invalid severity: " + severity));
 }
 
 void Logger::DisableConsoleLog(void)
@@ -223,6 +223,6 @@ void Logger::ValidateSeverity(const String& value, const ValidationUtils& utils)
 	try {
 		StringToSeverity(value);
 	} catch (...) {
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("severity"), "Invalid severity specified: " + value));
+		ThrowException(ValidationError(this, boost::assign::list_of("severity"), "Invalid severity specified: " + value));
 	}
 }

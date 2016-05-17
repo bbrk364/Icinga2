@@ -39,7 +39,7 @@ Value ScriptGlobal::Get(const String& name, const Value *defaultValue)
 		if (defaultValue)
 			return *defaultValue;
 
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Tried to access undefined script variable '" + name + "'"));
+		ThrowException(std::invalid_argument("Tried to access undefined script variable '" + name + "'"));
 	}
 
 	return m_Globals->Get(name);
@@ -69,7 +69,7 @@ void ScriptGlobal::WriteToFile(const String& filename)
 	String tempFilename = Utility::CreateTempFile(filename + ".XXXXXX", 0600, fp);
 
 	if (!fp)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not open '" + tempFilename + "' file"));
+		ThrowException(std::runtime_error("Could not open '" + tempFilename + "' file"));
 
 	StdioStream::Ptr sfp = new StdioStream(&fp, false);
 
@@ -100,7 +100,7 @@ void ScriptGlobal::WriteToFile(const String& filename)
 #endif /* _WIN32 */
 
 	if (rename(tempFilename.CStr(), filename.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 			<< boost::errinfo_api_function("rename")
 			<< boost::errinfo_errno(errno)
 			<< boost::errinfo_file_name(tempFilename));

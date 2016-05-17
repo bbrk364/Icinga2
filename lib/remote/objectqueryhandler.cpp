@@ -75,7 +75,7 @@ Dictionary::Ptr ObjectQueryHandler::SerializeObjectAttrs(const Object::Ptr& obje
 			int fid = type->GetFieldId(userAttr);
 
 			if (fid < 0)
-				BOOST_THROW_EXCEPTION(ScriptError("Invalid field specified: " + userAttr));
+				ThrowException(ScriptError("Invalid field specified: " + userAttr));
 
 			fids.push_back(fid);
 		}

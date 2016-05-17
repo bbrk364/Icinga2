@@ -83,7 +83,7 @@ Value MacroProcessor::ResolveMacros(const Value& str, const ResolverList& resolv
 	} else if (str.IsObjectType<Function>()) {
 		result = EvaluateFunction(str, resolvers, cr, escapeFn, resolvedMacros, useResolvedMacros, 0);
 	} else {
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Macro is not a string or array."));
+		ThrowException(std::invalid_argument("Macro is not a string or array."));
 	}
 
 	return result;
@@ -182,7 +182,7 @@ Value MacroProcessor::InternalResolveMacrosShim(const std::vector<Value>& args, 
     bool useResolvedMacros, int recursionLevel)
 {
 	if (args.size() < 1)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Too few arguments for function"));
+		ThrowException(std::invalid_argument("Too few arguments for function"));
 
 	String missingMacro;
 
@@ -195,7 +195,7 @@ Value MacroProcessor::InternalResolveArgumentsShim(const std::vector<Value>& arg
     bool useResolvedMacros, int recursionLevel)
 {
 	if (args.size() < 2)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Too few arguments for function"));
+		ThrowException(std::invalid_argument("Too few arguments for function"));
 
 	return MacroProcessor::ResolveArguments(args[0], args[1], resolvers, cr,
 	    resolvedMacros, useResolvedMacros, recursionLevel);
@@ -230,7 +230,7 @@ Value MacroProcessor::InternalResolveMacros(const String& str, const ResolverLis
 	CONTEXT("Resolving macros for string '" + str + "'");
 
 	if (recursionLevel > 15)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Infinite recursion detected while resolving macros"));
+		ThrowException(std::runtime_error("Infinite recursion detected while resolving macros"));
 
 	size_t offset, pos_first, pos_second;
 	offset = 0;
@@ -242,7 +242,7 @@ Value MacroProcessor::InternalResolveMacros(const String& str, const ResolverLis
 		pos_second = result.FindFirstOf("$", pos_first + 1);
 
 		if (pos_second == String::NPos)
-			BOOST_THROW_EXCEPTION(std::runtime_error("Closing $ not found in macro format string."));
+			ThrowException(std::runtime_error("Closing $ not found in macro format string."));
 
 		String name = result.SubStr(pos_first + 1, pos_second - pos_first - 1);
 
@@ -312,12 +312,12 @@ Value MacroProcessor::InternalResolveMacros(const String& str, const ResolverLis
 		if (pos_first == 0 && pos_second == str.GetLength() - 1)
 			return resolved_macro;
 		else if (resolved_macro.IsObjectType<Array>())
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Mixing both strings and non-strings in macros is not allowed."));
+				ThrowException(std::invalid_argument("Mixing both strings and non-strings in macros is not allowed."));
 
 		if (resolved_macro.IsObjectType<Array>()) {
 			/* don't allow mixing strings and arrays in macro strings */
 			if (pos_first != 0 || pos_second != str.GetLength() - 1)
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Mixing both strings and non-strings in macros is not allowed."));
+				ThrowException(std::invalid_argument("Mixing both strings and non-strings in macros is not allowed."));
 
 			return resolved_macro;
 		}
@@ -372,7 +372,7 @@ void MacroProcessor::ValidateCustomVars(const ConfigObject::Ptr& object, const D
 					continue;
 
 				if (!ValidateMacroString(kv_var.second))
-					BOOST_THROW_EXCEPTION(ValidationError(object.get(), boost::assign::list_of<String>("vars")(kv.first)(kv_var.first), "Closing $ not found in macro format string '" + kv_var.second + "'."));
+					ThrowException(ValidationError(object.get(), boost::assign::list_of<String>("vars")(kv.first)(kv_var.first), "Closing $ not found in macro format string '" + kv_var.second + "'."));
 			}
 		} else if (varval.IsObjectType<Array>()) {
 			/* check all array entries */
@@ -384,7 +384,7 @@ void MacroProcessor::ValidateCustomVars(const ConfigObject::Ptr& object, const D
 					continue;
 
 				if (!ValidateMacroString(arrval)) {
-					BOOST_THROW_EXCEPTION(ValidationError(object.get(), boost::assign::list_of<String>("vars")(kv.first), "Closing $ not found in macro format string '" + arrval + "'."));
+					ThrowException(ValidationError(object.get(), boost::assign::list_of<String>("vars")(kv.first), "Closing $ not found in macro format string '" + arrval + "'."));
 				}
 			}
 		} else {
@@ -392,7 +392,7 @@ void MacroProcessor::ValidateCustomVars(const ConfigObject::Ptr& object, const D
 				continue;
 
 			if (!ValidateMacroString(varval))
-				BOOST_THROW_EXCEPTION(ValidationError(object.get(), boost::assign::list_of<String>("vars")(kv.first), "Closing $ not found in macro format string '" + varval + "'."));
+				ThrowException(ValidationError(object.get(), boost::assign::list_of<String>("vars")(kv.first), "Closing $ not found in macro format string '" + varval + "'."));
 		}
 	}
 }
@@ -530,7 +530,7 @@ Value MacroProcessor::ResolveArguments(const Value& command, const Dictionary::P
 
 			if (!missingMacro.IsEmpty()) {
 				if (required) {
-					BOOST_THROW_EXCEPTION(ScriptError("Non-optional macro '" + missingMacro + "' used in argument '" +
+					ThrowException(ScriptError("Non-optional macro '" + missingMacro + "' used in argument '" +
 					    arg.Key + "' is missing."));
 				}
 

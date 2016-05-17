@@ -763,7 +763,7 @@ void StatusDataWriter::UpdateObjectsCache(void)
 #endif /* _WIN32 */
 
 	if (rename(tempObjectsPath.CStr(), objectsPath.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(tempObjectsPath));
@@ -845,7 +845,7 @@ void StatusDataWriter::StatusTimerHandler(void)
 #endif /* _WIN32 */
 
 	if (rename(tempStatusPath.CStr(), statusPath.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(tempStatusPath));

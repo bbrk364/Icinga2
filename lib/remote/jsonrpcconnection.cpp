@@ -192,7 +192,7 @@ void JsonRpcConnection::MessageHandler(const String& jsonString)
 		ApiFunction::Ptr afunc = ApiFunction::GetByName(method);
 
 		if (!afunc)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Function '" + method + "' does not exist."));
+			ThrowException(std::invalid_argument("Function '" + method + "' does not exist."));
 
 		resultMessage->Set("result", afunc->Invoke(origin, message->Get("params")));
 	} catch (const std::exception& ex) {

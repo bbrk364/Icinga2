@@ -186,11 +186,11 @@ static void ParseIpMask(const String& ip, char mask[16], int *bits)
 	int proto;
 
 	if (!ParseIp(uip, mask, &proto))
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid IP address specified."));
+		ThrowException(std::invalid_argument("Invalid IP address specified."));
 
 	if (proto == AF_INET) {
 		if (*bits > 32 || *bits < 0)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Mask must be between 0 and 32 for IPv4 CIDR masks."));
+			ThrowException(std::invalid_argument("Mask must be between 0 and 32 for IPv4 CIDR masks."));
 
 		*bits += 96;
 	}
@@ -199,7 +199,7 @@ static void ParseIpMask(const String& ip, char mask[16], int *bits)
 		*bits = 128;
 
 	if (*bits > 128 || *bits < 0)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Mask must be between 0 and 128 for IPv6 CIDR masks."));
+		ThrowException(std::invalid_argument("Mask must be between 0 and 128 for IPv6 CIDR masks."));
 
 	for (int i = 0; i < 16; i++) {
 		int lbits = std::max(0, *bits - i * 8);
@@ -208,7 +208,7 @@ static void ParseIpMask(const String& ip, char mask[16], int *bits)
 			continue;
 
 		if (mask[i] & (0xff >> lbits))
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Masked-off bits must all be zero."));
+			ThrowException(std::invalid_argument("Masked-off bits must all be zero."));
 	}
 }
 
@@ -271,7 +271,7 @@ String Utility::DirName(const String& path)
 #endif /* _WIN32 */
 
 	if (dir == NULL)
-		BOOST_THROW_EXCEPTION(std::bad_alloc());
+		ThrowException(std::bad_alloc());
 
 	String result;
 
@@ -281,7 +281,7 @@ String Utility::DirName(const String& path)
 	if (dir[0] != 0 && !PathRemoveFileSpec(dir)) {
 		free(dir);
 
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 		    << boost::errinfo_api_function("PathRemoveFileSpec")
 		    << errinfo_win32_error(GetLastError()));
 	}
@@ -309,7 +309,7 @@ String Utility::BaseName(const String& path)
 	String result;
 
 	if (dir == NULL)
-		BOOST_THROW_EXCEPTION(std::bad_alloc());
+		ThrowException(std::bad_alloc());
 
 #ifndef _WIN32
 	result = basename(dir);
@@ -438,7 +438,7 @@ static bool GlobHelper(const String& pathSpec, int type, std::vector<String>& fi
 		if (errorCode == ERROR_FILE_NOT_FOUND)
 			return false;
 
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 			<< boost::errinfo_api_function("FindFirstFile")
 			<< errinfo_win32_error(errorCode)
 			<< boost::errinfo_file_name(pathSpec));
@@ -457,7 +457,7 @@ static bool GlobHelper(const String& pathSpec, int type, std::vector<String>& fi
 	} while (FindNextFile(handle, &wfd));
 
 	if (!FindClose(handle)) {
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 			<< boost::errinfo_api_function("FindClose")
 			<< errinfo_win32_error(GetLastError()));
 	}
@@ -526,7 +526,7 @@ bool Utility::Glob(const String& pathSpec, const boost::function<void (const Str
 		if (rc == GLOB_NOMATCH)
 			return false;
 
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("glob")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(pathSpec));
@@ -598,7 +598,7 @@ bool Utility::GlobRecursive(const String& path, const String& pattern, const boo
 		if (errorCode == ERROR_FILE_NOT_FOUND)
 			return false;
 
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 		    << boost::errinfo_api_function("FindFirstFile")
 			<< errinfo_win32_error(errorCode)
 		    << boost::errinfo_file_name(pathSpec));
@@ -624,7 +624,7 @@ bool Utility::GlobRecursive(const String& path, const String& pattern, const boo
 	} while (FindNextFile(handle, &wfd));
 
 	if (!FindClose(handle)) {
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 		    << boost::errinfo_api_function("FindClose")
 		    << errinfo_win32_error(GetLastError()));
 	}
@@ -634,7 +634,7 @@ bool Utility::GlobRecursive(const String& path, const String& pattern, const boo
 	dirp = opendir(path.CStr());
 
 	if (dirp == NULL)
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("opendir")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(path));
@@ -647,7 +647,7 @@ bool Utility::GlobRecursive(const String& path, const String& pattern, const boo
 		if (!pent && errno != 0) {
 			closedir(dirp);
 
-			BOOST_THROW_EXCEPTION(posix_error()
+			ThrowException(posix_error()
 			    << boost::errinfo_api_function("readdir")
 			    << boost::errinfo_errno(errno)
 			    << boost::errinfo_file_name(path));
@@ -711,7 +711,7 @@ void Utility::MkDir(const String& path, int mode)
 	if (mkdir(path.CStr()) < 0 && errno != EEXIST) {
 #endif /* _WIN32 */
 
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("mkdir")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(path));
@@ -747,7 +747,7 @@ void Utility::RemoveDirRecursive(const String& path)
 
 	BOOST_FOREACH(const String& path, paths) {
 		if (remove(path.CStr()) < 0)
-			BOOST_THROW_EXCEPTION(posix_error()
+			ThrowException(posix_error()
 			    << boost::errinfo_api_function("remove")
 			    << boost::errinfo_errno(errno)
 			    << boost::errinfo_file_name(path));
@@ -758,7 +758,7 @@ void Utility::RemoveDirRecursive(const String& path)
 #else /* _WIN32 */
 	if (_rmdir(path.CStr()) < 0)
 #endif /* _WIN32 */
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rmdir")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(path));
@@ -829,7 +829,7 @@ void Utility::SetNonBlocking(int fd, bool nb)
 	int flags = fcntl(fd, F_GETFL, 0);
 
 	if (flags < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("fcntl")
 		    << boost::errinfo_errno(errno));
 	}
@@ -840,7 +840,7 @@ void Utility::SetNonBlocking(int fd, bool nb)
 		flags &= ~O_NONBLOCK;
 
 	if (fcntl(fd, F_SETFL, flags) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("fcntl")
 		    << boost::errinfo_errno(errno));
 	}
@@ -851,7 +851,7 @@ void Utility::SetCloExec(int fd, bool cloexec)
 	int flags = fcntl(fd, F_GETFD, 0);
 
 	if (flags < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("fcntl")
 		    << boost::errinfo_errno(errno));
 	}
@@ -862,7 +862,7 @@ void Utility::SetCloExec(int fd, bool cloexec)
 		flags &= ~FD_CLOEXEC;
 
 	if (fcntl(fd, F_SETFD, flags) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("fcntl")
 		    << boost::errinfo_errno(errno));
 	}
@@ -980,7 +980,7 @@ String Utility::FormatDateTime(const char *format, double ts)
 	tm *temp = localtime(&tempts);
 
 	if (temp == NULL) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("localtime")
 		    << boost::errinfo_errno(errno));
 	}
@@ -988,7 +988,7 @@ String Utility::FormatDateTime(const char *format, double ts)
 	tmthen = *temp;
 #else /* _MSC_VER */
 	if (localtime_r(&tempts, &tmthen) == NULL) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("localtime_r")
 		    << boost::errinfo_errno(errno));
 	}
@@ -1294,7 +1294,7 @@ tm Utility::LocalTime(time_t ts)
 	tm *result = localtime(&ts);
 
 	if (result == NULL) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("localtime")
 		    << boost::errinfo_errno(errno));
 	}
@@ -1304,7 +1304,7 @@ tm Utility::LocalTime(time_t ts)
 	tm result;
 
 	if (localtime_r(&ts, &result) == NULL) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("localtime_r")
 		    << boost::errinfo_errno(errno));
 	}
@@ -1334,7 +1334,7 @@ Value Utility::LoadJsonFile(const String& path)
 	fp.close();
 
 	if (fp.fail())
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not read JSON file '" + path + "'."));
+		ThrowException(std::runtime_error("Could not read JSON file '" + path + "'."));
 
 	return JsonDecode(json);
 }
@@ -1353,7 +1353,7 @@ void Utility::SaveJsonFile(const String& path, int mode, const Value& value)
 #endif /* _WIN32 */
 
 	if (rename(tempFilename.CStr(), path.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(tempFilename));
@@ -1377,7 +1377,7 @@ static int HexDecode(char hc)
 	else if (hc >= 'A' && hc <= 'F')
 		return hc - 'A' + 10;
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid hex character."));
+		ThrowException(std::invalid_argument("Invalid hex character."));
 }
 
 String Utility::EscapeString(const String& s, const String& chars, const bool illegal)
@@ -1411,7 +1411,7 @@ String Utility::UnescapeString(const String& s)
 	for (String::SizeType i = 0; i < s.GetLength(); i++) {
 		if (s[i] == '%') {
 			if (i + 2 > s.GetLength() - 1)
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid escape sequence."));
+				ThrowException(std::invalid_argument("Invalid escape sequence."));
 
 			char ch = HexDecode(s[i + 1]) * 16 + HexDecode(s[i + 2]);
 			result << ch;
@@ -1734,7 +1734,7 @@ String Utility::CreateTempFile(const String& path, int mode, std::fstream& fp)
 #endif /*_WIN32*/
 
 	if (fd < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("mkstemp")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(path));
@@ -1752,7 +1752,7 @@ String Utility::CreateTempFile(const String& path, int mode, std::fstream& fp)
 	String resultPath = String(targetPath.begin(), targetPath.end() - 1);
 
 	if (chmod(resultPath.CStr(), mode) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("chmod")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(resultPath));

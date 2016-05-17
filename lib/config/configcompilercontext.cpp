@@ -40,7 +40,7 @@ void ConfigCompilerContext::OpenObjectsFile(const String& filename)
 	m_ObjectsTempFile = Utility::CreateTempFile(filename + ".XXXXXX", 0600, *fp);
 
 	if (!*fp)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not open '" + m_ObjectsTempFile + "' file"));
+		ThrowException(std::runtime_error("Could not open '" + m_ObjectsTempFile + "' file"));
 
 	m_ObjectsFP = new StdioStream(fp, true);
 }
@@ -68,7 +68,7 @@ void ConfigCompilerContext::FinishObjectsFile(void)
 #endif /* _WIN32 */
 
 	if (rename(m_ObjectsTempFile.CStr(), m_ObjectsPath.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(m_ObjectsTempFile));

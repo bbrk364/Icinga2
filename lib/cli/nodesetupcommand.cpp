@@ -201,7 +201,7 @@ int NodeSetupCommand::SetupMaster(const boost::program_options::variables_map& v
 #endif /* _WIN32 */
 
 	if (rename(tempApiPath.CStr(), apipath.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(tempApiPath));
@@ -417,7 +417,7 @@ int NodeSetupCommand::SetupNode(const boost::program_options::variables_map& vm,
 #endif /* _WIN32 */
 
 	if (rename(tempApiPath.CStr(), apipath.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(tempApiPath));

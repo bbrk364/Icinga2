@@ -62,7 +62,7 @@ Dictionary::Ptr NotificationNameComposer::ParseName(const String& name) const
 	boost::algorithm::split(tokens, name, boost::is_any_of("!"));
 
 	if (tokens.size() < 2)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid Notification name."));
+		ThrowException(std::invalid_argument("Invalid Notification name."));
 
 	Dictionary::Ptr result = new Dictionary();
 	result->Set("host_name", tokens[0]);
@@ -117,7 +117,7 @@ void Notification::OnAllConfigLoaded(void)
 		m_Checkable = host->GetServiceByShortName(GetServiceName());
 
 	if (!m_Checkable)
-		BOOST_THROW_EXCEPTION(ScriptError("Notification object refers to a host/service which doesn't exist.", GetDebugInfo()));
+		ThrowException(ScriptError("Notification object refers to a host/service which doesn't exist.", GetDebugInfo()));
 
 	GetCheckable()->RegisterNotification(this);
 }
@@ -644,7 +644,7 @@ void Notification::Validate(int types, const ValidationUtils& utils)
 	Array::Ptr groups = GetUserGroupsRaw();
 
 	if ((!users || users->GetLength() == 0) && (!groups || groups->GetLength() == 0))
-		BOOST_THROW_EXCEPTION(ValidationError(this, std::vector<String>(), "Validation failed: No users/user_groups specified."));
+		ThrowException(ValidationError(this, std::vector<String>(), "Validation failed: No users/user_groups specified."));
 }
 
 void Notification::ValidateStates(const Array::Ptr& value, const ValidationUtils& utils)
@@ -654,10 +654,10 @@ void Notification::ValidateStates(const Array::Ptr& value, const ValidationUtils
 	int sfilter = FilterArrayToInt(value, 0);
 
 	if (GetServiceName().IsEmpty() && (sfilter & ~(StateFilterUp | StateFilterDown)) != 0)
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("states"), "State filter is invalid."));
+		ThrowException(ValidationError(this, boost::assign::list_of("states"), "State filter is invalid."));
 
 	if (!GetServiceName().IsEmpty() && (sfilter & ~(StateFilterOK | StateFilterWarning | StateFilterCritical | StateFilterUnknown)) != 0)
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("types"), "State filter is invalid."));
+		ThrowException(ValidationError(this, boost::assign::list_of("types"), "State filter is invalid."));
 }
 
 void Notification::ValidateTypes(const Array::Ptr& value, const ValidationUtils& utils)
@@ -669,7 +669,7 @@ void Notification::ValidateTypes(const Array::Ptr& value, const ValidationUtils&
 	if ((tfilter & ~(1 << NotificationDowntimeStart | 1 << NotificationDowntimeEnd | 1 << NotificationDowntimeRemoved |
 	    1 << NotificationCustom | 1 << NotificationAcknowledgement | 1 << NotificationProblem | 1 << NotificationRecovery |
 	    1 << NotificationFlappingStart | 1 << NotificationFlappingEnd)) != 0)
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("types"), "Type filter is invalid."));
+		ThrowException(ValidationError(this, boost::assign::list_of("types"), "Type filter is invalid."));
 }
 
 Endpoint::Ptr Notification::GetCommandEndpoint(void) const

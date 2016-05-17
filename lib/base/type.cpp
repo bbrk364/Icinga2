@@ -72,7 +72,7 @@ Object::Ptr Type::Instantiate(const std::vector<Value>& args) const
 	ObjectFactory factory = GetFactory();
 
 	if (!factory)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Type does not have a factory function."));
+		ThrowException(std::runtime_error("Type does not have a factory function."));
 
 	return factory(args);
 }
@@ -125,7 +125,7 @@ Value Type::GetField(int id) const
 	else if (real_id == 2)
 		return GetBaseType();
 
-	BOOST_THROW_EXCEPTION(std::runtime_error("Invalid field ID."));
+	ThrowException(std::runtime_error("Invalid field ID."));
 }
 
 std::vector<String> Type::GetLoadDependencies(void) const

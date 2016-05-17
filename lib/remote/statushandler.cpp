@@ -46,7 +46,7 @@ public:
 		StatsFunction::Ptr func = StatsFunctionRegistry::GetInstance()->GetItem(name);
 
 		if (!func)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid status function name."));
+			ThrowException(std::invalid_argument("Invalid status function name."));
 
 		Dictionary::Ptr result = new Dictionary();
 

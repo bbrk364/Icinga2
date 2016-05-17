@@ -45,5 +45,5 @@ double Convert::ToDateTimeValue(const Value& val)
 	else if (val.IsObjectType<DateTime>())
 		return static_cast<DateTime::Ptr>(val)->GetValue();
 	else
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Not a DateTime value."));
+		ThrowException(std::invalid_argument("Not a DateTime value."));
 }

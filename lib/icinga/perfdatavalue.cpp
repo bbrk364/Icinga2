@@ -54,7 +54,7 @@ PerfdataValue::Ptr PerfdataValue::Parse(const String& perfdata)
 	size_t eqp = perfdata.FindLastOf('=');
 
 	if (eqp == String::NPos)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid performance data value: " + perfdata));
+		ThrowException(std::invalid_argument("Invalid performance data value: " + perfdata));
 
 	String label = perfdata.SubStr(0, eqp);
 
@@ -114,7 +114,7 @@ PerfdataValue::Ptr PerfdataValue::Parse(const String& perfdata)
 		counter = true;
 		unit = "";
 	} else if (unit != "") {
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid performance data unit: " + unit));
+		ThrowException(std::invalid_argument("Invalid performance data unit: " + unit));
 	}
 
 	warn = ParseWarnCritMinMaxToken(tokens, 1, "warning");

@@ -22,6 +22,7 @@
 
 #include "base/i2-base.hpp"
 #include "base/debug.hpp"
+#include "base/throw.hpp"
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -66,7 +67,7 @@ template<typename T>
 intrusive_ptr<Object> DefaultObjectFactory(const std::vector<Value>& args)
 {
 	if (!args.empty())
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Constructor does not take any arguments."));
+		ThrowException(std::invalid_argument("Constructor does not take any arguments."));
 
 	return new T();
 }

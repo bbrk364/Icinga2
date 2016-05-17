@@ -119,7 +119,7 @@ bool Notification::EvaluateApplyRule(const Checkable::Ptr& checkable, const Appl
 
 	if (vinstances.IsObjectType<Array>()) {
 		if (!rule.GetFVVar().IsEmpty())
-			BOOST_THROW_EXCEPTION(ScriptError("Dictionary iterator requires value to be a dictionary.", di));
+			ThrowException(ScriptError("Dictionary iterator requires value to be a dictionary.", di));
 
 		Array::Ptr arr = vinstances;
 
@@ -137,7 +137,7 @@ bool Notification::EvaluateApplyRule(const Checkable::Ptr& checkable, const Appl
 		}
 	} else if (vinstances.IsObjectType<Dictionary>()) {
 		if (rule.GetFVVar().IsEmpty())
-			BOOST_THROW_EXCEPTION(ScriptError("Array iterator requires value to be an array.", di));
+			ThrowException(ScriptError("Array iterator requires value to be an array.", di));
 	
 		Dictionary::Ptr dict = vinstances;
 

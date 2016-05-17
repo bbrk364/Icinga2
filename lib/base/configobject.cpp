@@ -131,7 +131,7 @@ void ConfigObject::ModifyAttribute(const String& attr, const Value& value, bool 
 	Field field = type->GetFieldInfo(fid);
 
 	if (field.Attributes & FANoUserModify)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Attribute cannot be modified."));
+		ThrowException(std::invalid_argument("Attribute cannot be modified."));
 
 	if (field.Attributes & FAConfig) {
 		if (!original_attributes) {
@@ -156,7 +156,7 @@ void ConfigObject::ModifyAttribute(const String& attr, const Value& value, bool 
 
 		for (std::vector<String>::size_type i = 1; i < tokens.size() - 1; i++) {
 			if (!current.IsObjectType<Dictionary>())
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Value must be a dictionary."));
+				ThrowException(std::invalid_argument("Value must be a dictionary."));
 
 			Dictionary::Ptr dict = current;
 
@@ -172,7 +172,7 @@ void ConfigObject::ModifyAttribute(const String& attr, const Value& value, bool 
 		}
 
 		if (!current.IsObjectType<Dictionary>())
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Value must be a dictionary."));
+			ThrowException(std::invalid_argument("Value must be a dictionary."));
 
 		Dictionary::Ptr dict = current;
 
@@ -258,13 +258,13 @@ void ConfigObject::RestoreAttribute(const String& attr, bool updateVersion)
 		Value current = newValue;
 
 		if (current.IsEmpty())
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Cannot restore non-existent object attribute"));
+			ThrowException(std::invalid_argument("Cannot restore non-existent object attribute"));
 
 		String prefix = tokens[0];
 
 		for (std::vector<String>::size_type i = 1; i < tokens.size() - 1; i++) {
 			if (!current.IsObjectType<Dictionary>())
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Value must be a dictionary."));
+				ThrowException(std::invalid_argument("Value must be a dictionary."));
 
 			Dictionary::Ptr dict = current;
 
@@ -272,13 +272,13 @@ void ConfigObject::RestoreAttribute(const String& attr, bool updateVersion)
 			prefix += "." + key;
 
 			if (!dict->Contains(key))
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Cannot restore non-existent object attribute"));
+				ThrowException(std::invalid_argument("Cannot restore non-existent object attribute"));
 
 			current = dict->Get(key);
 		}
 
 		if (!current.IsObjectType<Dictionary>())
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Value must be a dictionary."));
+			ThrowException(std::invalid_argument("Value must be a dictionary."));
 
 		Dictionary::Ptr dict = current;
 
@@ -489,7 +489,7 @@ void ConfigObject::DumpObjects(const String& filename, int attributeTypes)
 	String tempFilename = Utility::CreateTempFile(filename + ".XXXXXX", 0600, fp);
 
 	if (!fp)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not open '" + tempFilename + "' file"));
+		ThrowException(std::runtime_error("Could not open '" + tempFilename + "' file"));
 
 	StdioStream::Ptr sfp = new StdioStream(&fp, false);
 
@@ -522,7 +522,7 @@ void ConfigObject::DumpObjects(const String& filename, int attributeTypes)
 #endif /* _WIN32 */
 
 	if (rename(tempFilename.CStr(), filename.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(tempFilename));
@@ -649,7 +649,7 @@ void ConfigObject::DumpModifiedAttributes(const boost::function<void(const Confi
 
 					for (std::vector<String>::size_type i = 1; i < tokens.size() - 1; i++) {
 						if (!current.IsObjectType<Dictionary>())
-							BOOST_THROW_EXCEPTION(std::invalid_argument("Value must be a dictionary."));
+							ThrowException(std::invalid_argument("Value must be a dictionary."));
 
 						Dictionary::Ptr dict = current;
 						const String& key = tokens[i];
@@ -661,7 +661,7 @@ void ConfigObject::DumpModifiedAttributes(const boost::function<void(const Confi
 					}
 
 					if (!current.IsObjectType<Dictionary>())
-						BOOST_THROW_EXCEPTION(std::invalid_argument("Value must be a dictionary."));
+						ThrowException(std::invalid_argument("Value must be a dictionary."));
 
 					Dictionary::Ptr dict = current;
 					const String& key = tokens[tokens.size() - 1];

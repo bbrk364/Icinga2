@@ -22,6 +22,7 @@
 
 #include "base/object.hpp"
 #include "base/string.hpp"
+#include "base/throw.hpp"
 #include <boost/variant/variant.hpp>
 #include <boost/variant/get.hpp>
 
@@ -146,7 +147,7 @@ public:
 			return intrusive_ptr<T>();
 
 		if (!IsObject())
-			BOOST_THROW_EXCEPTION(std::runtime_error("Cannot convert value of type '" + GetTypeName() + "' to an object."));
+			ThrowException(std::runtime_error("Cannot convert value of type '" + GetTypeName() + "' to an object."));
 
 		const Object::Ptr& object = boost::get<Object::Ptr>(m_Value);
 
@@ -155,7 +156,7 @@ public:
 		intrusive_ptr<T> tobject = dynamic_pointer_cast<T>(object);
 
 		if (!tobject)
-			BOOST_THROW_EXCEPTION(std::bad_cast());
+			ThrowException(std::bad_cast());
 
 		return tobject;
 	}

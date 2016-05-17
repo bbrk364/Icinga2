@@ -102,7 +102,7 @@ private:
 	virtual void ClearConfigTable(const String& table) override;
 	void ClearCustomVarTable(const String& table);
 
-	void ExceptionHandler(boost::exception_ptr exp);
+	void ExceptionHandler(ExceptionPtr exp);
 
 	void FinishConnect(double startTime);
 };

@@ -17,54 +17,43 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ******************************************************************************/
 
-#include "base/unixsocket.hpp"
-#include "base/exception.hpp"
+#ifndef THROW_H
+#define THROW_H
 
-#ifndef _WIN32
-using namespace icinga;
+#include "base/i2-base.hpp"
+#include <boost/throw_exception.hpp>
 
-UnixSocket::UnixSocket(void)
+namespace icinga
 {
-	int fd = socket(AF_UNIX, SOCK_STREAM, 0);
 
-	if (fd < 0) {
-		ThrowException(posix_error()
-		    << boost::errinfo_api_function("socket")
-		    << boost::errinfo_errno(errno));
-	}
+typedef std::exception_ptr ExceptionPtr;
 
-	SetFD(fd);
-}
-
-void UnixSocket::Bind(const String& path)
-{
-	unlink(path.CStr());
-
-	sockaddr_un s_un;
-	memset(&s_un, 0, sizeof(s_un));
-	s_un.sun_family = AF_UNIX;
-	strncpy(s_un.sun_path, path.CStr(), sizeof(s_un.sun_path));
-	s_un.sun_path[sizeof(s_un.sun_path) - 1] = '\0';
-
-	if (bind(GetFD(), (sockaddr *)&s_un, SUN_LEN(&s_un)) < 0) {
-		ThrowException(posix_error()
-		    << boost::errinfo_api_function("bind")
-		    << boost::errinfo_errno(errno));
-	}
-}
-
-void UnixSocket::Connect(const String& path)
-{
-	sockaddr_un s_un;
-	memset(&s_un, 0, sizeof(s_un));
-	s_un.sun_family = AF_UNIX;
-	strncpy(s_un.sun_path, path.CStr(), sizeof(s_un.sun_path));
-	s_un.sun_path[sizeof(s_un.sun_path) - 1] = '\0';
-
-	if (connect(GetFD(), (sockaddr *)&s_un, SUN_LEN(&s_un)) < 0 && errno != EINPROGRESS) {
-		ThrowException(posix_error()
-		    << boost::errinfo_api_function("connect")
-		    << boost::errinfo_errno(errno));
-	}
-}
+template<typename T>
+#ifdef _WIN32
+__declspec(noreturn)
+#else /* _WIN32 */
+__attribute__ ((noreturn))
 #endif /* _WIN32 */
+void ThrowException(const T& ex)
+{
+	throw ex;
+}
+
+inline ExceptionPtr CurrentException(void)
+{
+	return std::current_exception();
+}
+
+#ifdef _WIN32
+__declspec(noreturn)
+#else /* _WIN32 */
+__attribute__ ((noreturn))
+#endif /* _WIN32 */
+inline void RethrowException(ExceptionPtr eptr)
+{
+	std::rethrow_exception(eptr);
+}
+
+}
+
+#endif /* THROW_H */

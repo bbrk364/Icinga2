@@ -193,7 +193,7 @@ void NodeUtility::RemoveNode(const String& name)
 		Log(LogCritical, "cli")
 		    << "Cannot remove file '" << repoPath
 		    << "'. Failed with error code " << errno << ", \"" << Utility::FormatErrorNumber(errno) + "\".";
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("unlink")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(repoPath));
@@ -206,7 +206,7 @@ void NodeUtility::RemoveNode(const String& name)
 			Log(LogCritical, "cli")
 			    << "Cannot remove file '" << settingsPath
 			    << "'. Failed with error code " << errno << ", \"" << Utility::FormatErrorNumber(errno) + "\".";
-			BOOST_THROW_EXCEPTION(posix_error()
+			ThrowException(posix_error()
 			    << boost::errinfo_api_function("unlink")
 			    << boost::errinfo_errno(errno)
 			    << boost::errinfo_file_name(settingsPath));
@@ -406,7 +406,7 @@ bool NodeUtility::WriteNodeConfigObjects(const String& filename, const Array::Pt
 #endif /* _WIN32 */
 
 	if (rename(tempFilename.CStr(), filename.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(tempFilename));
@@ -667,7 +667,7 @@ void NodeUtility::UpdateConstant(const String& name, const String& value)
 #endif /* _WIN32 */
 
 	if (rename(tempFile.CStr(), constantsFile.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 			<< boost::errinfo_api_function("rename")
 			<< boost::errinfo_errno(errno)
 			<< boost::errinfo_file_name(constantsFile));

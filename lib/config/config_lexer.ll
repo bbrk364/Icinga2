@@ -77,7 +77,7 @@ do {							\
 				}
 
 <STRING>\n			{
-	BOOST_THROW_EXCEPTION(ScriptError("Unterminated string literal", DebugInfoRange(yyextra->m_LocationBegin, *yylloc)));
+	ThrowException(ScriptError("Unterminated string literal", DebugInfoRange(yyextra->m_LocationBegin, *yylloc)));
 				}
 
 <STRING>\\[0-7]{1,3}		{
@@ -88,7 +88,7 @@ do {							\
 
 	if (result > 0xff) {
 		/* error, constant is out-of-bounds */
-		BOOST_THROW_EXCEPTION(ScriptError("Constant is out of bounds: " + String(yytext), *yylloc));
+		ThrowException(ScriptError("Constant is out of bounds: " + String(yytext), *yylloc));
 	}
 
 	yyextra->m_LexBuffer << static_cast<char>(result);
@@ -98,7 +98,7 @@ do {							\
 	/* generate error - bad escape sequence; something
 	 * like '\48' or '\0777777'
 	 */
-	BOOST_THROW_EXCEPTION(ScriptError("Bad escape sequence found: " + String(yytext), *yylloc));
+	ThrowException(ScriptError("Bad escape sequence found: " + String(yytext), *yylloc));
 				}
 <STRING>\\n			{ yyextra->m_LexBuffer << "\n"; }
 <STRING>\\\\			{ yyextra->m_LexBuffer << "\\"; }
@@ -109,7 +109,7 @@ do {							\
 <STRING>\\f			{ yyextra->m_LexBuffer << "\f"; }
 <STRING>\\\n			{ yyextra->m_LexBuffer << yytext[1]; }
 <STRING>\\.			{
-	BOOST_THROW_EXCEPTION(ScriptError("Bad escape sequence found: " + String(yytext), *yylloc));
+	ThrowException(ScriptError("Bad escape sequence found: " + String(yytext), *yylloc));
 				}
 
 <STRING>[^\\\n\"]+		{
@@ -120,7 +120,7 @@ do {							\
 		       	       }
 
 <STRING><<EOF>>			{
-	BOOST_THROW_EXCEPTION(ScriptError("End-of-file while in string literal", DebugInfoRange(yyextra->m_LocationBegin, *yylloc)));
+	ThrowException(ScriptError("End-of-file while in string literal", DebugInfoRange(yyextra->m_LocationBegin, *yylloc)));
 				}
 
 \{\{\{				{
@@ -156,7 +156,7 @@ do {							\
 }
 
 <C_COMMENT><<EOF>>              {
-	BOOST_THROW_EXCEPTION(ScriptError("End-of-file while in comment", *yylloc));
+	ThrowException(ScriptError("End-of-file while in comment", *yylloc));
 				}
 
 

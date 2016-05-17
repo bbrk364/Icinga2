@@ -65,7 +65,7 @@ Dictionary::Ptr ScheduledDowntimeNameComposer::ParseName(const String& name) con
 	boost::algorithm::split(tokens, name, boost::is_any_of("!"));
 
 	if (tokens.size() < 2)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid ScheduledDowntime name."));
+		ThrowException(std::invalid_argument("Invalid ScheduledDowntime name."));
 
 	Dictionary::Ptr result = new Dictionary();
 	result->Set("host_name", tokens[0]);
@@ -93,7 +93,7 @@ void ScheduledDowntime::OnAllConfigLoaded(void)
 	ObjectImpl<ScheduledDowntime>::OnAllConfigLoaded();
 
 	if (!GetCheckable())
-		BOOST_THROW_EXCEPTION(ScriptError("ScheduledDowntime '" + GetName() + "' references a host/service which doesn't exist.", GetDebugInfo()));
+		ThrowException(ScriptError("ScheduledDowntime '" + GetName() + "' references a host/service which doesn't exist.", GetDebugInfo()));
 }
 
 void ScheduledDowntime::Start(bool runtimeCreated)
@@ -215,13 +215,13 @@ void ScheduledDowntime::ValidateRanges(const Dictionary::Ptr& value, const Valid
 			int stride;
 			LegacyTimePeriod::ParseTimeRange(kv.first, &begin_tm, &end_tm, &stride, &reference);
 		} catch (const std::exception& ex) {
-			BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("ranges"), "Invalid time specification '" + kv.first + "': " + ex.what()));
+			ThrowException(ValidationError(this, boost::assign::list_of("ranges"), "Invalid time specification '" + kv.first + "': " + ex.what()));
 		}
 
 		try {
 			LegacyTimePeriod::ProcessTimeRanges(kv.second, &reference, segments);
 		} catch (const std::exception& ex) {
-			BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("ranges"), "Invalid time range definition '" + kv.second + "': " + ex.what()));
+			ThrowException(ValidationError(this, boost::assign::list_of("ranges"), "Invalid time range definition '" + kv.second + "': " + ex.what()));
 		}
 	}
 }

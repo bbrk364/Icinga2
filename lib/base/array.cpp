@@ -224,7 +224,7 @@ Value Array::GetFieldByName(const String& field, bool sandboxed, const DebugInfo
 	ObjectLock olock(this);
 
 	if (index < 0 || index >= GetLength())
-		BOOST_THROW_EXCEPTION(ScriptError("Array index '" + Convert::ToString(index) + "' is out of bounds.", debugInfo));
+		ThrowException(ScriptError("Array index '" + Convert::ToString(index) + "' is out of bounds.", debugInfo));
 
 	return Get(index);
 }

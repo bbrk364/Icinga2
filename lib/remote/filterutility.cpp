@@ -70,7 +70,7 @@ Value ConfigObjectTargetProvider::GetTargetByName(const String& type, const Stri
 	ConfigObject::Ptr obj = ConfigObject::GetObject(type, name);
 
 	if (!obj)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Object does not exist."));
+		ThrowException(std::invalid_argument("Object does not exist."));
 
 	return obj;
 }
@@ -184,7 +184,7 @@ void FilterUtility::CheckPermission(const ApiUser::Ptr& user, const String& perm
 	}
 
 	if (!foundPermission)
-		BOOST_THROW_EXCEPTION(ScriptError("Missing permission: " + requiredPermission));
+		ThrowException(ScriptError("Missing permission: " + requiredPermission));
 }
 
 std::vector<Value> FilterUtility::GetFilterTargets(const QueryDescription& qd, const Dictionary::Ptr& query, const ApiUser::Ptr& user)
@@ -236,15 +236,15 @@ std::vector<Value> FilterUtility::GetFilterTargets(const QueryDescription& qd, c
 
 	if (query->Contains("filter") || result.empty()) {
 		if (!query->Contains("type"))
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Type must be specified when using a filter."));
+			ThrowException(std::invalid_argument("Type must be specified when using a filter."));
 
 		String type = HttpUtility::GetLastParameter(query, "type");
 
 		if (!provider->IsValidType(type))
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid type specified."));
+			ThrowException(std::invalid_argument("Invalid type specified."));
 
 		if (qd.Types.find(type) == qd.Types.end())
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid type specified for this query."));
+			ThrowException(std::invalid_argument("Invalid type specified for this query."));
 
 		ScriptFrame frame;
 		frame.Sandboxed = true;

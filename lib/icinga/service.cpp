@@ -50,7 +50,7 @@ Dictionary::Ptr ServiceNameComposer::ParseName(const String& name) const
 	boost::algorithm::split(tokens, name, boost::is_any_of("!"));
 
 	if (tokens.size() < 2)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid Service name."));
+		ThrowException(std::invalid_argument("Invalid Service name."));
 
 	Dictionary::Ptr result = new Dictionary();
 	result->Set("host_name", tokens[0]);
@@ -69,7 +69,7 @@ void Service::OnAllConfigLoaded(void)
 		Zone::Ptr zone = Zone::GetByName(zoneName);
 
 		if (zone && zone->IsGlobal())
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Service '" + GetName() + "' cannot be put into global zone '" + zone->GetName() + "'."));
+			ThrowException(std::invalid_argument("Service '" + GetName() + "' cannot be put into global zone '" + zone->GetName() + "'."));
 	}
 
 	m_Host = Host::GetByName(GetHostName());

@@ -121,5 +121,5 @@ void Checkable::ValidateCheckInterval(double value, const ValidationUtils& utils
 	ObjectImpl<Checkable>::ValidateCheckInterval(value, utils);
 
 	if (value <= 0)
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("check_interval"), "Interval must be greater than 0."));
+		ThrowException(ValidationError(this, boost::assign::list_of("check_interval"), "Interval must be greater than 0."));
 }

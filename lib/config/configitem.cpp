@@ -35,6 +35,7 @@
 #include "base/json.hpp"
 #include "base/exception.hpp"
 #include "base/function.hpp"
+#include "base/configwriter.hpp"
 #include <sstream>
 #include <fstream>
 #include <boost/foreach.hpp>
@@ -170,7 +171,7 @@ ConfigObject::Ptr ConfigItem::Commit(bool discard)
 	/* Make sure the type is valid. */
 	Type::Ptr type = Type::GetByName(GetType());
 	if (!type || !ConfigObject::TypeInstance->IsAssignableFrom(type))
-		BOOST_THROW_EXCEPTION(ScriptError("Type '" + GetType() + "' does not exist.", m_DebugInfo));
+		ThrowException(ScriptError("Type '" + GetType() + "' does not exist.", m_DebugInfo));
 
 	if (IsAbstract())
 		return ConfigObject::Ptr();
@@ -219,13 +220,20 @@ ConfigObject::Ptr ConfigItem::Commit(bool discard)
 	NameComposer *nc = dynamic_cast<NameComposer *>(type.get());
 
 	if (nc) {
+		Dictionary::Ptr jobj = Serialize(dobj, FAConfig);
+		jobj->Remove("type");
+		std::ostringstream msgbuf;
+		ConfigWriter::EmitValue(msgbuf, 1, jobj);
+		Log(LogWarning, "ConfigItem")
+		    << "object "<< m_Type << " " << msgbuf.str();
+
 		if (name.IsEmpty())
-			BOOST_THROW_EXCEPTION(ScriptError("Object name must not be empty.", m_DebugInfo));
+			ThrowException(ScriptError("Object name must not be empty.", m_DebugInfo));
 
 		name = nc->MakeName(name, dobj);
 
 		if (name.IsEmpty())
-			BOOST_THROW_EXCEPTION(std::runtime_error("Could not determine name for object"));
+			ThrowException(std::runtime_error("Could not determine name for object"));
 	}
 
 	if (name != item_name)
@@ -317,7 +325,7 @@ void ConfigItem::Register(void)
 			msgbuf << "A configuration item of type '" << GetType()
 			       << "' and name '" << GetName() << "' already exists ("
 			       << it->second->GetDebugInfo() << "), new declaration: " << GetDebugInfo();
-			BOOST_THROW_EXCEPTION(ScriptError(msgbuf.str()));
+			ThrowException(ScriptError(msgbuf.str()));
 		}
 
 		m_Items[m_Type][m_Name] = this;
@@ -605,7 +613,7 @@ bool ConfigItem::RunWithActivationContext(const Function::Ptr& function)
 	ActivationScope scope;
 
 	if (!function)
-		BOOST_THROW_EXCEPTION(ScriptError("'function' argument must not be null."));
+		ThrowException(ScriptError("'function' argument must not be null."));
 
 	{
 		ScriptFrame frame;
@@ -653,7 +661,7 @@ void ConfigItem::RemoveIgnoredItems(const String& allowedConfigPath)
 		    << "Removing ignored item path '" << path << "'.";
 
 		if (unlink(path.CStr()) < 0) {
-			BOOST_THROW_EXCEPTION(posix_error()
+			ThrowException(posix_error()
 			    << boost::errinfo_api_function("unlink")
 			    << boost::errinfo_errno(errno)
 			    << boost::errinfo_file_name(path));

@@ -219,5 +219,5 @@ void LivestatusListener::ValidateSocketType(const String& value, const Validatio
 	ObjectImpl<LivestatusListener>::ValidateSocketType(value, utils);
 
 	if (value != "unix" && value != "tcp")
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("socket_type"), "Socket type '" + value + "' is invalid."));
+		ThrowException(ValidationError(this, boost::assign::list_of("socket_type"), "Socket type '" + value + "' is invalid."));
 }

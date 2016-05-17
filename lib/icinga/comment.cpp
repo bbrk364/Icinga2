@@ -73,7 +73,7 @@ Dictionary::Ptr CommentNameComposer::ParseName(const String& name) const
 	boost::algorithm::split(tokens, name, boost::is_any_of("!"));
 
 	if (tokens.size() < 2)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid Comment name."));
+		ThrowException(std::invalid_argument("Invalid Comment name."));
 
 	Dictionary::Ptr result = new Dictionary();
 	result->Set("host_name", tokens[0]);
@@ -100,7 +100,7 @@ void Comment::OnAllConfigLoaded(void)
 		m_Checkable = host->GetServiceByShortName(GetServiceName());
 
 	if (!m_Checkable)
-		BOOST_THROW_EXCEPTION(ScriptError("Comment '" + GetName() + "' references a host/service which doesn't exist.", GetDebugInfo()));
+		ThrowException(ScriptError("Comment '" + GetName() + "' references a host/service which doesn't exist.", GetDebugInfo()));
 }
 
 void Comment::Start(bool runtimeCreated)
@@ -190,13 +190,13 @@ String Comment::AddComment(const Checkable::Ptr& checkable, CommentType entryTyp
 			Log(LogCritical, "Comment", error);
 		}
 
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not create comment."));
+		ThrowException(std::runtime_error("Could not create comment."));
 	}
 
 	Comment::Ptr comment = Comment::GetByName(fullName);
 
 	if (!comment)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not create comment."));
+		ThrowException(std::runtime_error("Could not create comment."));
 
 	Log(LogNotice, "Comment")
 	    << "Added comment '" << comment->GetName() << "'.";
@@ -222,7 +222,7 @@ void Comment::RemoveComment(const String& id, const MessageOrigin::Ptr& origin)
 			Log(LogCritical, "Comment", error);
 		}
 
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not remove comment."));
+		ThrowException(std::runtime_error("Could not remove comment."));
 	}
 }
 

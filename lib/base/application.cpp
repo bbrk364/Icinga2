@@ -135,7 +135,7 @@ void Application::InitializeBase(void)
 
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0) {
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 			<< boost::errinfo_api_function("WSAStartup")
 			<< errinfo_win32_error(WSAGetLastError()));
 	}
@@ -420,7 +420,7 @@ String Application::GetExePath(const String& argv0)
 #ifndef _WIN32
 	char buffer[MAXPATHLEN];
 	if (getcwd(buffer, sizeof(buffer)) == NULL) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("getcwd")
 		    << boost::errinfo_errno(errno));
 	}
@@ -459,13 +459,13 @@ String Application::GetExePath(const String& argv0)
 
 			if (!foundPath) {
 				executablePath.Clear();
-				BOOST_THROW_EXCEPTION(std::runtime_error("Could not determine executable path."));
+				ThrowException(std::runtime_error("Could not determine executable path."));
 			}
 		}
 	}
 
 	if (realpath(executablePath.CStr(), buffer) == NULL) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("realpath")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(executablePath));
@@ -476,7 +476,7 @@ String Application::GetExePath(const String& argv0)
 	char FullExePath[MAXPATHLEN];
 
 	if (!GetModuleFileName(NULL, FullExePath, sizeof(FullExePath)))
-		BOOST_THROW_EXCEPTION(win32_error()
+		ThrowException(win32_error()
 		    << boost::errinfo_api_function("GetModuleFileName")
 		    << errinfo_win32_error(GetLastError()));
 
@@ -544,7 +544,7 @@ void Application::AttachDebugger(const String& filename, bool interactive)
 	pid_t pid = fork();
 
 	if (pid < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("fork")
 		    << boost::errinfo_errno(errno));
 	}
@@ -554,7 +554,7 @@ void Application::AttachDebugger(const String& filename, bool interactive)
 			int fd = open(filename.CStr(), O_CREAT | O_RDWR | O_APPEND, 0600);
 
 			if (fd < 0) {
-				BOOST_THROW_EXCEPTION(posix_error()
+				ThrowException(posix_error()
 				    << boost::errinfo_api_function("open")
 				    << boost::errinfo_errno(errno)
 				    << boost::errinfo_file_name(filename));
@@ -609,7 +609,7 @@ void Application::AttachDebugger(const String& filename, bool interactive)
 
 	int status;
 	if (waitpid(pid, &status, 0) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("waitpid")
 		    << boost::errinfo_errno(errno));
 	}
@@ -918,7 +918,7 @@ void Application::UpdatePidFile(const String& filename, pid_t pid)
 	if (m_PidFile == NULL) {
 		Log(LogCritical, "Application")
 		    << "Could not open PID file '" << filename << "'.";
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not open PID file '" + filename + "'"));
+		ThrowException(std::runtime_error("Could not open PID file '" + filename + "'"));
 	}
 
 #ifndef _WIN32
@@ -943,7 +943,7 @@ void Application::UpdatePidFile(const String& filename, pid_t pid)
 		Log(LogCritical, "Application")
 		    << "ftruncate() failed with error code " << errno << ", \"" << Utility::FormatErrorNumber(errno) << "\"";
 
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("ftruncate")
 		    << boost::errinfo_errno(errno));
 	}
@@ -999,7 +999,7 @@ pid_t Application::ReadPidFile(const String& filename)
 	if (fcntl(fd, F_GETLK, &lock) < 0) {
 		int error = errno;
 		fclose(pidfile);
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("fcntl")
 		    << boost::errinfo_errno(error));
 	}
@@ -1405,5 +1405,5 @@ void Application::ValidateName(const String& value, const ValidationUtils& utils
 	ObjectImpl<Application>::ValidateName(value, utils);
 
 	if (value != "app")
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("name"), "Application object must be named 'app'."));
+		ThrowException(ValidationError(this, boost::assign::list_of("name"), "Application object must be named 'app'."));
 }

@@ -78,7 +78,7 @@ static variant_t CreateClrType(const String& assemblyName, const String& typeNam
 
 		return pObjectHandle->Unwrap();
 	} catch (_com_error& error) {
-		BOOST_THROW_EXCEPTION(std::runtime_error("Could not load .NET type: " + String(error.Description())));
+		ThrowException(std::runtime_error("Could not load .NET type: " + String(error.Description())));
 	}
 }
 

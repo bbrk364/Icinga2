@@ -367,7 +367,7 @@ bool RepositoryUtility::WriteObjectToRepositoryChangeLog(const String& path, con
 #endif /* _WIN32 */
 
 	if (rename(tempFilename.CStr(), path.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(tempFilename));
@@ -508,7 +508,7 @@ bool RepositoryUtility::WriteObjectToRepository(const String& path, const String
 #endif /* _WIN32 */
 
 	if (rename(tempFilename.CStr(), path.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(tempFilename));

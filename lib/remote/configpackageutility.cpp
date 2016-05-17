@@ -40,7 +40,7 @@ void ConfigPackageUtility::CreatePackage(const String& name)
 	String path = GetPackageDir() + "/" + name;
 
 	if (Utility::PathExists(path))
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Package already exists."));
+		ThrowException(std::invalid_argument("Package already exists."));
 
 	Utility::MkDirP(path, 0700);
 	WritePackageConfig(name);
@@ -51,7 +51,7 @@ void ConfigPackageUtility::DeletePackage(const String& name)
 	String path = GetPackageDir() + "/" + name;
 
 	if (!Utility::PathExists(path))
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Package does not exist."));
+		ThrowException(std::invalid_argument("Package does not exist."));
 
 	Utility::RemoveDirRecursive(path);
 	Application::RequestRestart();
@@ -83,7 +83,7 @@ String ConfigPackageUtility::CreateStage(const String& packageName, const Dictio
 	String path = GetPackageDir() + "/" + packageName;
 
 	if (!Utility::PathExists(path))
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Package does not exist."));
+		ThrowException(std::invalid_argument("Package does not exist."));
 
 	path += "/" + stageName;
 
@@ -117,7 +117,7 @@ String ConfigPackageUtility::CreateStage(const String& packageName, const Dictio
 
 	if (foundDotDot) {
 		Utility::RemoveDirRecursive(path);
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Path must not contain '..'."));
+		ThrowException(std::invalid_argument("Path must not contain '..'."));
 	}
 
 	return stageName;
@@ -220,10 +220,10 @@ void ConfigPackageUtility::DeleteStage(const String& packageName, const String& 
 	String path = GetPackageDir() + "/" + packageName + "/" + stageName;
 
 	if (!Utility::PathExists(path))
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Stage does not exist."));
+		ThrowException(std::invalid_argument("Stage does not exist."));
 
 	if (GetActiveStage(packageName) == stageName)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Active stage cannot be deleted."));
+		ThrowException(std::invalid_argument("Active stage cannot be deleted."));
 
 	Utility::RemoveDirRecursive(path);
 }
@@ -268,7 +268,7 @@ void ConfigPackageUtility::CollectPaths(const String& path, std::vector<std::pai
 	struct stat statbuf;
 	int rc = lstat(path.CStr(), &statbuf);
 	if (rc < 0)
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("lstat")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(path));
@@ -278,7 +278,7 @@ void ConfigPackageUtility::CollectPaths(const String& path, std::vector<std::pai
 	struct _stat statbuf;
 	int rc = _stat(path.CStr(), &statbuf);
 	if (rc < 0)
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("_stat")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(path));

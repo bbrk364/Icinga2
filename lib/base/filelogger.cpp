@@ -63,7 +63,7 @@ void FileLogger::ReopenLogFile(void)
 		stream->open(path.CStr(), std::fstream::app | std::fstream::out);
 
 		if (!stream->good())
-			BOOST_THROW_EXCEPTION(std::runtime_error("Could not open logfile '" + path + "'"));
+			ThrowException(std::runtime_error("Could not open logfile '" + path + "'"));
 	} catch (...) {
 		delete stream;
 		throw;

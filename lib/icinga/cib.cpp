@@ -255,7 +255,7 @@ std::pair<Dictionary::Ptr, Array::Ptr> CIB::GetFeatureStats(void)
 		StatsFunction::Ptr func = StatsFunctionRegistry::GetInstance()->GetItem(name);
 
 		if (!func)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Function '" + name + "' does not exist."));
+			ThrowException(std::invalid_argument("Function '" + name + "' does not exist."));
 
 		func->Invoke(status, perfdata);
 	}

@@ -65,7 +65,7 @@ void TcpSocket::Bind(const String& node, const String& service, int family)
 		Log(LogCritical, "TcpSocket")
 		    << "getaddrinfo() failed with error code " << rc << ", \"" << gai_strerror(rc) << "\"";
 
-		BOOST_THROW_EXCEPTION(socket_error()
+		ThrowException(socket_error()
 		    << boost::errinfo_api_function("getaddrinfo")
 		    << errinfo_getaddrinfo_error(rc));
 	}
@@ -121,11 +121,11 @@ void TcpSocket::Bind(const String& node, const String& service, int family)
 		    << "Invalid socket: " << Utility::FormatErrorNumber(error);
 
 #ifndef _WIN32
-		BOOST_THROW_EXCEPTION(socket_error()
+		ThrowException(socket_error()
 		    << boost::errinfo_api_function(func)
 		    << boost::errinfo_errno(error));
 #else /* _WIN32 */
-		BOOST_THROW_EXCEPTION(socket_error()
+		ThrowException(socket_error()
 		    << boost::errinfo_api_function(func)
 		    << errinfo_win32_error(error));
 #endif /* _WIN32 */
@@ -156,7 +156,7 @@ void TcpSocket::Connect(const String& node, const String& service)
 		Log(LogCritical, "TcpSocket")
 		    << "getaddrinfo() failed with error code " << rc << ", \"" << gai_strerror(rc) << "\"";
 
-		BOOST_THROW_EXCEPTION(socket_error()
+		ThrowException(socket_error()
 		    << boost::errinfo_api_function("getaddrinfo")
 		    << errinfo_getaddrinfo_error(rc));
 	}
@@ -204,11 +204,11 @@ void TcpSocket::Connect(const String& node, const String& service)
 		    << "Invalid socket: " << Utility::FormatErrorNumber(error);
 
 #ifndef _WIN32
-		BOOST_THROW_EXCEPTION(socket_error()
+		ThrowException(socket_error()
 		    << boost::errinfo_api_function(func)
 		    << boost::errinfo_errno(error));
 #else /* _WIN32 */
-		BOOST_THROW_EXCEPTION(socket_error()
+		ThrowException(socket_error()
 		    << boost::errinfo_api_function(func)
 		    << errinfo_win32_error(error));
 #endif /* _WIN32 */

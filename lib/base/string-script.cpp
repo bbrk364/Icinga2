@@ -47,10 +47,10 @@ static String StringSubstr(const std::vector<Value>& args)
 	String self = vframe->Self;
 
 	if (args.empty())
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Too few arguments"));
+		ThrowException(std::invalid_argument("Too few arguments"));
 
 	if (static_cast<double>(args[0]) < 0 || static_cast<double>(args[0]) >= self.GetLength())
-		BOOST_THROW_EXCEPTION(std::invalid_argument("String index is out of range"));
+		ThrowException(std::invalid_argument("String index is out of range"));
 
 	if (args.size() > 1)
 		return self.SubStr(args[0], args[1]);
@@ -92,13 +92,13 @@ static int StringFind(const std::vector<Value>& args)
 	String self = vframe->Self;
 
 	if (args.empty())
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Too few arguments"));
+		ThrowException(std::invalid_argument("Too few arguments"));
 
 	String::SizeType result;
 
 	if (args.size() > 1) {
 		if (static_cast<double>(args[1]) < 0)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("String index is out of range"));
+			ThrowException(std::invalid_argument("String index is out of range"));
 
 		result = self.Find(args[0], args[1]);
 	} else

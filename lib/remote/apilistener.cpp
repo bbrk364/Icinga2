@@ -54,7 +54,7 @@ ApiListener::ApiListener(void)
 void ApiListener::OnConfigLoaded(void)
 {
 	if (m_Instance)
-		BOOST_THROW_EXCEPTION(ScriptError("Only one ApiListener object is allowed.", GetDebugInfo()));
+		ThrowException(ScriptError("Only one ApiListener object is allowed.", GetDebugInfo()));
 
 	m_Instance = this;
 
@@ -63,14 +63,14 @@ void ApiListener::OnConfigLoaded(void)
 	try {
 		cert = GetX509Certificate(GetCertPath());
 	} catch (const std::exception&) {
-		BOOST_THROW_EXCEPTION(ScriptError("Cannot get certificate from cert path: '"
+		ThrowException(ScriptError("Cannot get certificate from cert path: '"
 		    + GetCertPath() + "'.", GetDebugInfo()));
 	}
 
 	try {
 		SetIdentity(GetCertificateCN(cert));
 	} catch (const std::exception&) {
-		BOOST_THROW_EXCEPTION(ScriptError("Cannot get certificate common name from cert path: '"
+		ThrowException(ScriptError("Cannot get certificate common name from cert path: '"
 		    + GetCertPath() + "'.", GetDebugInfo()));
 	}
 
@@ -80,7 +80,7 @@ void ApiListener::OnConfigLoaded(void)
 	try {
 		m_SSLContext = MakeSSLContext(GetCertPath(), GetKeyPath(), GetCaPath());
 	} catch (const std::exception&) {
-		BOOST_THROW_EXCEPTION(ScriptError("Cannot make SSL context for cert path: '"
+		ThrowException(ScriptError("Cannot make SSL context for cert path: '"
 		    + GetCertPath() + "' key path: '" + GetKeyPath() + "' ca path: '" + GetCaPath() + "'.", GetDebugInfo()));
 	}
 
@@ -88,7 +88,7 @@ void ApiListener::OnConfigLoaded(void)
 		try {
 			AddCRLToSSLContext(m_SSLContext, GetCrlPath());
 		} catch (const std::exception&) {
-			BOOST_THROW_EXCEPTION(ScriptError("Cannot add certificate revocation list to SSL context for crl path: '"
+			ThrowException(ScriptError("Cannot add certificate revocation list to SSL context for crl path: '"
 			    + GetCrlPath() + "'.", GetDebugInfo()));
 		}
 	}
@@ -99,7 +99,7 @@ void ApiListener::OnAllConfigLoaded(void)
 	m_LocalEndpoint = Endpoint::GetByName(GetIdentity());
 
 	if (!m_LocalEndpoint)
-		BOOST_THROW_EXCEPTION(ScriptError("Endpoint object for '" + GetIdentity() + "' is missing.", GetDebugInfo()));
+		ThrowException(ScriptError("Endpoint object for '" + GetIdentity() + "' is missing.", GetDebugInfo()));
 }
 
 /**

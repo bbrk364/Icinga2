@@ -46,7 +46,7 @@ ScriptFrame::~ScriptFrame(void)
 void ScriptFrame::IncreaseStackDepth(void)
 {
 	if (Depth + 1 > 300)
-		BOOST_THROW_EXCEPTION(ScriptError("Stack overflow while evaluating expression: Recursion level too deep."));
+		ThrowException(ScriptError("Stack overflow while evaluating expression: Recursion level too deep."));
 
 	Depth++;
 }

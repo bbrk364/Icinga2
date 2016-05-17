@@ -180,7 +180,7 @@ Array::Ptr ScriptUtils::Intersection(const std::vector<Value>& arguments)
 void ScriptUtils::Log(const std::vector<Value>& arguments)
 {
 	if (arguments.size() != 1 && arguments.size() != 3)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid number of arguments for log()"));
+		ThrowException(std::invalid_argument("Invalid number of arguments for log()"));
 
 	LogSeverity severity;
 	String facility;
@@ -224,7 +224,7 @@ Array::Ptr ScriptUtils::Range(const std::vector<Value>& arguments)
 			increment = arguments[2];
 			break;
 		default:
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid number of arguments for range()"));
+			ThrowException(std::invalid_argument("Invalid number of arguments for range()"));
 	}
 
 	Array::Ptr result = new Array();
@@ -280,7 +280,7 @@ Array::Ptr ScriptUtils::GetObjects(const Type::Ptr& type)
 	ConfigType::Ptr dtype = ConfigType::GetByName(type->GetName());
 
 	if (!dtype)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid type name"));
+		ThrowException(std::invalid_argument("Invalid type name"));
 
 	Array::Ptr result = new Array();
 
@@ -293,7 +293,7 @@ Array::Ptr ScriptUtils::GetObjects(const Type::Ptr& type)
 void ScriptUtils::Assert(const Value& arg)
 {
 	if (!arg.ToBool())
-		BOOST_THROW_EXCEPTION(std::runtime_error("Assertion failed"));
+		ThrowException(std::runtime_error("Assertion failed"));
 }
 
 String ScriptUtils::MsiGetComponentPathShim(const String& component)

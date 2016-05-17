@@ -56,7 +56,7 @@ bool HttpRequest::Parse(StreamReadContext& src, bool may_wait)
 			Log(LogDebug, "HttpRequest")
 			    << "line: " << line << ", tokens: " << tokens.size();
 			if (tokens.size() != 3)
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid HTTP request"));
+				ThrowException(std::invalid_argument("Invalid HTTP request"));
 
 			RequestMethod = tokens[0];
 			RequestUrl = new class Url(tokens[1]);
@@ -66,7 +66,7 @@ bool HttpRequest::Parse(StreamReadContext& src, bool may_wait)
 			else if (tokens[2] == "HTTP/1.1") {
 				ProtocolVersion = HttpVersion11;
 			} else
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Unsupported HTTP version"));
+				ThrowException(std::invalid_argument("Unsupported HTTP version"));
 
 			m_State = HttpRequestHeaders;
 		} else if (m_State == HttpRequestHeaders) {
@@ -84,7 +84,7 @@ bool HttpRequest::Parse(StreamReadContext& src, bool may_wait)
 			} else {
 				String::SizeType pos = line.FindFirstOf(":");
 				if (pos == String::NPos)
-					BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid HTTP request"));
+					ThrowException(std::invalid_argument("Invalid HTTP request"));
 
 				String key = line.SubStr(0, pos).ToLower().Trim();
 				String value = line.SubStr(pos + 1).Trim();
@@ -121,12 +121,12 @@ bool HttpRequest::Parse(StreamReadContext& src, bool may_wait)
 			}
 		} else {
 			if (src.Eof)
-				BOOST_THROW_EXCEPTION(std::invalid_argument("Unexpected EOF in HTTP body"));
+				ThrowException(std::invalid_argument("Unexpected EOF in HTTP body"));
 
 			if (src.MustRead) {
 				if (!src.FillFromStream(m_Stream, false)) {
 					src.Eof = true;
-					BOOST_THROW_EXCEPTION(std::invalid_argument("Unexpected EOF in HTTP body"));
+					ThrowException(std::invalid_argument("Unexpected EOF in HTTP body"));
 				}
 
 				src.MustRead = false;

@@ -53,7 +53,7 @@ Dictionary::Ptr DependencyNameComposer::ParseName(const String& name) const
 	boost::algorithm::split(tokens, name, boost::is_any_of("!"));
 
 	if (tokens.size() < 2)
-		BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid Dependency name."));
+		ThrowException(std::invalid_argument("Invalid Dependency name."));
 
 	Dictionary::Ptr result = new Dictionary();
 	result->Set("child_host_name", tokens[0]);
@@ -99,7 +99,7 @@ void Dependency::OnAllConfigLoaded(void)
 	}
 	
 	if (!m_Child)
-		BOOST_THROW_EXCEPTION(ScriptError("Dependency '" + GetName() + "' references a child host/service which doesn't exist.", GetDebugInfo()));
+		ThrowException(ScriptError("Dependency '" + GetName() + "' references a child host/service which doesn't exist.", GetDebugInfo()));
 
 	m_Child->AddDependency(this);
 
@@ -118,7 +118,7 @@ void Dependency::OnAllConfigLoaded(void)
 	}
 	
 	if (!m_Parent)
-		BOOST_THROW_EXCEPTION(ScriptError("Dependency '" + GetName() + "' references a parent host/service which doesn't exist.", GetDebugInfo()));
+		ThrowException(ScriptError("Dependency '" + GetName() + "' references a parent host/service which doesn't exist.", GetDebugInfo()));
 
 	m_Parent->AddReverseDependency(this);
 }
@@ -227,9 +227,9 @@ void Dependency::ValidateStates(const Array::Ptr& value, const ValidationUtils& 
 	int sfilter = FilterArrayToInt(value, 0);
 
 	if (GetParentServiceName().IsEmpty() && (sfilter & ~(StateFilterUp | StateFilterDown)) != 0)
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("states"), "State filter is invalid for host dependency."));
+		ThrowException(ValidationError(this, boost::assign::list_of("states"), "State filter is invalid for host dependency."));
 
 	if (!GetParentServiceName().IsEmpty() && (sfilter & ~(StateFilterOK | StateFilterWarning | StateFilterCritical | StateFilterUnknown)) != 0)
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("states"), "State filter is invalid for service dependency."));
+		ThrowException(ValidationError(this, boost::assign::list_of("states"), "State filter is invalid for service dependency."));
 }
 

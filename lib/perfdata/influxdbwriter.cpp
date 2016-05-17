@@ -317,14 +317,14 @@ void InfluxdbWriter::ValidateHostTemplate(const Dictionary::Ptr& value, const Va
 
 	String measurement = value->Get("measurement");
 	if (!MacroProcessor::ValidateMacroString(measurement))
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("host_template")("measurement"), "Closing $ not found in macro format string '" + measurement + "'."));
+		ThrowException(ValidationError(this, boost::assign::list_of("host_template")("measurement"), "Closing $ not found in macro format string '" + measurement + "'."));
 
 	Dictionary::Ptr tags = value->Get("tags");
 	if (tags) {
 		ObjectLock olock(tags);
 		BOOST_FOREACH(const Dictionary::Pair& pair, tags) {
 			if (!MacroProcessor::ValidateMacroString(pair.second))
-				BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of<String>("host_template")("tags")(pair.first), "Closing $ not found in macro format string '" + pair.second));
+				ThrowException(ValidationError(this, boost::assign::list_of<String>("host_template")("tags")(pair.first), "Closing $ not found in macro format string '" + pair.second));
 		}
 	}
 }
@@ -335,14 +335,14 @@ void InfluxdbWriter::ValidateServiceTemplate(const Dictionary::Ptr& value, const
 
 	String measurement = value->Get("measurement");
 	if (!MacroProcessor::ValidateMacroString(measurement))
-		BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of("service_template")("measurement"), "Closing $ not found in macro format string '" + measurement + "'."));
+		ThrowException(ValidationError(this, boost::assign::list_of("service_template")("measurement"), "Closing $ not found in macro format string '" + measurement + "'."));
 
 	Dictionary::Ptr tags = value->Get("tags");
 	if (tags) {
 		ObjectLock olock(tags);
 		BOOST_FOREACH(const Dictionary::Pair& pair, tags) {
 			if (!MacroProcessor::ValidateMacroString(pair.second))
-				BOOST_THROW_EXCEPTION(ValidationError(this, boost::assign::list_of<String>("service_template")("tags")(pair.first), "Closing $ not found in macro format string '" + pair.second));
+				ThrowException(ValidationError(this, boost::assign::list_of<String>("service_template")("tags")(pair.first), "Closing $ not found in macro format string '" + pair.second));
 		}
 	}
 }

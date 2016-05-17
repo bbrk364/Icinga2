@@ -53,7 +53,7 @@ TlsStream::TlsStream(const Socket::Ptr& socket, const String& hostname, Connecti
 		msgbuf << "SSL_new() failed with code " << ERR_peek_error() << ", \"" << ERR_error_string(ERR_peek_error(), errbuf) << "\"";
 		Log(LogCritical, "TlsStream", msgbuf.str());
 
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 			<< boost::errinfo_api_function("SSL_new")
 			<< errinfo_openssl_error(ERR_peek_error()));
 	}
@@ -255,7 +255,7 @@ void TlsStream::OnEvent(int revents)
 void TlsStream::HandleError(void) const
 {
 	if (m_ErrorOccurred) {
-		BOOST_THROW_EXCEPTION(openssl_error()
+		ThrowException(openssl_error()
 		    << boost::errinfo_api_function("TlsStream::OnEvent")
 		    << errinfo_openssl_error(m_ErrorCode));
 	}
@@ -272,7 +272,7 @@ void TlsStream::Handshake(void)
 		m_CV.wait(lock);
 
 	if (m_Eof)
-		BOOST_THROW_EXCEPTION(std::runtime_error("Socket was closed during TLS handshake."));
+		ThrowException(std::runtime_error("Socket was closed during TLS handshake."));
 
 	HandleError();
 }

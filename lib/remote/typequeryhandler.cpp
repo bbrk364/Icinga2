@@ -59,7 +59,7 @@ public:
 		Type::Ptr ptype = Type::GetByName(name);
 
 		if (!ptype)
-			BOOST_THROW_EXCEPTION(std::invalid_argument("Type does not exist."));
+			ThrowException(std::invalid_argument("Type does not exist."));
 
 		return ptype;
 	}

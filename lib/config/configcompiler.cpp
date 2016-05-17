@@ -152,7 +152,7 @@ Expression *ConfigCompiler::HandleInclude(const String& relativeBase, const Stri
 	if (!Utility::Glob(includePath, boost::bind(&ConfigCompiler::CollectIncludes, boost::ref(expressions), _1, zone, package), GlobFile) && includePath.FindFirstOf("*?") == String::NPos) {
 		std::ostringstream msgbuf;
 		msgbuf << "Include file '" + path + "' does not exist";
-		BOOST_THROW_EXCEPTION(ScriptError(msgbuf.str(), debuginfo));
+		ThrowException(ScriptError(msgbuf.str(), debuginfo));
 	}
 
 	DictExpression *expr = new DictExpression(expressions);
@@ -265,7 +265,7 @@ Expression *ConfigCompiler::CompileFile(const String& path, const String& zone,
 	std::ifstream stream(path.CStr(), std::ifstream::in);
 
 	if (!stream)
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 			<< boost::errinfo_api_function("std::ifstream::open")
 			<< boost::errinfo_errno(errno)
 			<< boost::errinfo_file_name(path));

@@ -106,13 +106,13 @@ void CheckResultReader::ProcessCheckResultFile(const String& path) const
 
 	/* Remove the checkresult files. */
 	if (unlink(path.CStr()) < 0)
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("unlink")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(path));
 
 	if (unlink(crfile.CStr()) < 0)
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("unlink")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(crfile));

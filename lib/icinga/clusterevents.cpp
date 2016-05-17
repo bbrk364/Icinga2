@@ -734,7 +734,7 @@ Value ClusterEvents::UpdateRepositoryAPIHandler(const MessageOrigin::Ptr& origin
 #endif /* _WIN32 */
 
 	if (rename(tempRepositoryFile.CStr(), repositoryFile.CStr()) < 0) {
-		BOOST_THROW_EXCEPTION(posix_error()
+		ThrowException(posix_error()
 		    << boost::errinfo_api_function("rename")
 		    << boost::errinfo_errno(errno)
 		    << boost::errinfo_file_name(tempRepositoryFile));
