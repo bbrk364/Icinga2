@@ -48,7 +48,7 @@ REGISTER_STATSFUNCTION(ApiListener, &ApiListener::StatsFunc);
 REGISTER_APIFUNCTION(Hello, icinga, &ApiListener::HelloAPIHandler);
 
 ApiListener::ApiListener(void)
-	: m_SyncQueue(0, 4), m_LogMessageCount(0)
+	: m_SyncQueue(0, 4), m_LogMessageCount(0), m_SSLContext(boost::asio::ssl::context::sslv23)
 { }
 
 void ApiListener::OnConfigLoaded(void)
@@ -59,6 +59,10 @@ void ApiListener::OnConfigLoaded(void)
 	m_Instance = this;
 
 	/* set up SSL context */
+	m_SSLContext.load_verify_file(GetCaPath());
+	m_SSLContext.use_certificate_chain_file(GetCertPath());
+	m_SSLContext.use_private_key_file(GetKeyPath(), pem);
+
 	boost::shared_ptr<X509> cert;
 	try {
 		cert = GetX509Certificate(GetCertPath());
@@ -76,13 +80,6 @@ void ApiListener::OnConfigLoaded(void)
 
 	Log(LogInformation, "ApiListener")
 	    << "My API identity: " << GetIdentity();
-
-	try {
-		m_SSLContext = MakeSSLContext(GetCertPath(), GetKeyPath(), GetCaPath());
-	} catch (const std::exception&) {
-		BOOST_THROW_EXCEPTION(ScriptError("Cannot make SSL context for cert path: '"
-		    + GetCertPath() + "' key path: '" + GetKeyPath() + "' ca path: '" + GetCaPath() + "'.", GetDebugInfo()));
-	}
 
 	if (!GetCrlPath().IsEmpty()) {
 		try {
@@ -171,6 +168,21 @@ bool ApiListener::IsMaster(void) const
 	return master == GetLocalEndpoint();
 }
 
+void ApiListener::StartAccept(const TcpAcceptorPtr& acceptor)
+{
+	SslSocketPtr socket = boost::make_shared<SslSocketPtr>(IOService::GetInstance, m_SSLContext);
+	acceptor.async_accept(socket->lowest_layer(), boost::bind(&ApiListener::HandleAccept, this, socket, boost::asio::placeholders::error));
+}
+
+void ApiListener::HandleAccept(const SslSocketPtr& socket, const boost::system::error_code& error)
+{
+	if (!error) {
+		NewClientHandler(socket, String(), RoleServer);
+	}
+
+	StartAccept();
+}
+
 /**
  * Creates a new JSON-RPC listener on the specified port.
  *
@@ -191,39 +203,14 @@ bool ApiListener::AddListener(const String& node, const String& service)
 	Log(LogInformation, "ApiListener")
 	    << "Adding new listener on port '" << service << "'";
 
-	TcpSocket::Ptr server = new TcpSocket();
+	boost::asio::ip::tcp::endpoint bindAddress(boost::asio::ip::address:from_string(node), port);
+	TcpAcceptorPtr acceptor = boost::make_shared<TcpAcceptorPtr>(IOService::GetInstance(), bindAddress);
 
-	try {
-		server->Bind(node, service, AF_UNSPEC);
-	} catch (const std::exception&) {
-		Log(LogCritical, "ApiListener")
-		    << "Cannot bind TCP socket for host '" << node << "' on port '" << service << "'.";
-		return false;
-	}
+	StartAccept(acceptor);
 
-	boost::thread thread(boost::bind(&ApiListener::ListenerThreadProc, this, server));
-	thread.detach();
-
-	m_Servers.insert(server);
+	m_Acceptors.insert(acceptor);
 
 	return true;
-}
-
-void ApiListener::ListenerThreadProc(const Socket::Ptr& server)
-{
-	Utility::SetThreadName("API Listener");
-
-	server->Listen();
-
-	for (;;) {
-		try {
-			Socket::Ptr client = server->Accept();
-			boost::thread thread(boost::bind(&ApiListener::NewClientHandler, this, client, String(), RoleServer));
-			thread.detach();
-		} catch (const std::exception&) {
-			Log(LogCritical, "ApiListener", "Cannot accept new connection.");
-		}
-	}
 }
 
 /**

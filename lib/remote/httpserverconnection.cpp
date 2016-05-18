@@ -66,11 +66,6 @@ ApiUser::Ptr HttpServerConnection::GetApiUser(void) const
 	return m_ApiUser;
 }
 
-TlsStream::Ptr HttpServerConnection::GetStream(void) const
-{
-	return m_Stream;
-}
-
 void HttpServerConnection::Disconnect(void)
 {
 	Log(LogDebug, "HttpServerConnection", "Http client disconnected");

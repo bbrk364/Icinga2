@@ -28,15 +28,15 @@ set(base_SOURCES
   array-script.cpp boolean.cpp boolean-script.cpp console.cpp context.cpp
   convert.cpp datetime.cpp datetime.thpp datetime-script.cpp debuginfo.cpp dictionary.cpp dictionary-script.cpp
   configobject.cpp configobject.thpp configobject-script.cpp configtype.cpp configwriter.cpp dependencygraph.cpp
-  exception.cpp fifo.cpp filelogger.cpp filelogger.thpp initialize.cpp json.cpp
+  exception.cpp fifo.cpp filelogger.cpp filelogger.thpp initialize.cpp ioservice.cpp json.cpp
   json-script.cpp loader.cpp logger.cpp logger.thpp math-script.cpp
-  netstring.cpp networkstream.cpp number.cpp number-script.cpp object.cpp
+  netstring.cpp number.cpp number-script.cpp object.cpp
   object-script.cpp objecttype.cpp primitivetype.cpp process.cpp ringbuffer.cpp scriptframe.cpp
   function.cpp function-script.cpp functionwrapper.cpp scriptglobal.cpp
-  scriptutils.cpp serializer.cpp socket.cpp socketevents.cpp socketevents-epoll.cpp socketevents-poll.cpp stacktrace.cpp
+  scriptutils.cpp serializer.cpp stacktrace.cpp
   statsfunction.cpp stdiostream.cpp stream.cpp streamlogger.cpp streamlogger.thpp string.cpp string-script.cpp
-  sysloglogger.cpp sysloglogger.thpp tcpsocket.cpp threadpool.cpp timer.cpp
-  tlsstream.cpp tlsutility.cpp type.cpp typetype-script.cpp unixsocket.cpp utility.cpp value.cpp
+  sysloglogger.cpp sysloglogger.thpp threadpool.cpp timer.cpp
+  tlsutility.cpp type.cpp typetype-script.cpp utility.cpp value.cpp
   value-operators.cpp workqueue.cpp
 )
 

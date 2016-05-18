@@ -21,19 +21,13 @@
 #define JSONRPCCONNECTION_H
 
 #include "remote/endpoint.hpp"
-#include "base/tlsstream.hpp"
 #include "base/timer.hpp"
 #include "base/workqueue.hpp"
+#include "base/ioservice.hpp"
 #include "remote/i2-remote.hpp"
 
 namespace icinga
 {
-
-enum ClientRole
-{
-	ClientInbound,
-	ClientOutbound
-};
 
 enum ClientType
 {
@@ -53,7 +47,7 @@ class I2_REMOTE_API JsonRpcConnection : public Object
 public:
 	DECLARE_PTR_TYPEDEFS(JsonRpcConnection);
 
-	JsonRpcConnection(const String& identity, bool authenticated, const TlsStream::Ptr& stream, ConnectionRole role);
+	JsonRpcConnection(const String& identity, bool authenticated, const SslSocketPtr& socket);
 
 	void Start(void);
 
@@ -61,8 +55,6 @@ public:
 	String GetIdentity(void) const;
 	bool IsAuthenticated(void) const;
 	Endpoint::Ptr GetEndpoint(void) const;
-	TlsStream::Ptr GetStream(void) const;
-	ConnectionRole GetRole(void) const;
 
 	void Disconnect(void);
 
@@ -76,15 +68,13 @@ private:
 	String m_Identity;
 	bool m_Authenticated;
 	Endpoint::Ptr m_Endpoint;
-	TlsStream::Ptr m_Stream;
-	ConnectionRole m_Role;
+	SslSocketPtr m_Socket;
+	boost::asio::strand m_Strand;
 	double m_Timestamp;
 	double m_Seen;
 	double m_NextHeartbeat;
 	double m_HeartbeatTimeout;
 	boost::mutex m_DataHandlerMutex;
-
-	StreamReadContext m_Context;
 
 	bool ProcessMessage(void);
 	void MessageHandlerWrapper(const String& jsonString);

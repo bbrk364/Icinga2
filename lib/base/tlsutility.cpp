@@ -160,10 +160,10 @@ boost::shared_ptr<SSL_CTX> MakeSSLContext(const String& pubkey, const String& pr
  * @param context The SSL context.
  * @param crlPath The path to the CRL file.
  */
-void AddCRLToSSLContext(const boost::shared_ptr<SSL_CTX>& context, const String& crlPath)
+void AddCRLToSSLContext(boost::asio::ssl::context& context, const String& crlPath)
 {
 	char errbuf[120];
-	X509_STORE *x509_store = SSL_CTX_get_cert_store(context.get());
+	X509_STORE *x509_store = SSL_CTX_get_cert_store(context.native_handle());
 
 	X509_LOOKUP *lookup;
 	lookup = X509_STORE_add_lookup(x509_store, X509_LOOKUP_file());

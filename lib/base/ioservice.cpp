@@ -17,40 +17,31 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ******************************************************************************/
 
-#ifndef NETWORKSTREAM_H
-#define NETWORKSTREAM_H
+#include "base/ioservice.hpp"
+#include <boost/thread/thread.hpp>
+#include <boost/thread/once.hpp>
 
-#include "base/i2-base.hpp"
-#include "base/stream.hpp"
-#include "base/socket.hpp"
+using namespace icinga;
 
-namespace icinga
+static boost::once_flag l_IOOnceFlag = BOOST_ONCE_INIT;
+
+void IOService::StaticInitialize(void)
 {
-
-/**
- * A network stream.
- *
- * @ingroup base
- */
-class I2_BASE_API NetworkStream : public Stream
-{
-public:
-	DECLARE_PTR_TYPEDEFS(NetworkStream);
-
-	NetworkStream(const Socket::Ptr& socket);
-
-	virtual size_t Read(void *buffer, size_t count, bool allow_partial = false) override;
-	virtual void Write(const void *buffer, size_t count) override;
-
-	virtual void Close(void) override;
-
-	virtual bool IsEof(void) const override;
-
-private:
-	Socket::Ptr m_Socket;
-	bool m_Eof;
-};
-
+	for (int i = 0; i < 4; i++) {
+		boost::thread t(boost::bind(&boost::asio::io_service::run, boost::ref(GetInstanceInternal())));
+		t.detach();
+	}
 }
 
-#endif /* NETWORKSTREAM_H */
+boost::asio::io_service& IOService::GetInstanceInternal(void)
+{
+	static boost::asio::io_service service;
+	return service;
+}
+
+boost::asio::io_service& IOService::GetInstance(void)
+{
+	boost::call_once(l_IOOnceFlag, &IOService::StaticInitialize);
+
+	return GetInstanceInternal();
+}

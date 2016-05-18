@@ -42,9 +42,9 @@ static size_t l_JsonRpcConnectionWorkQueueCount;
 static int l_JsonRpcConnectionNextID;
 
 JsonRpcConnection::JsonRpcConnection(const String& identity, bool authenticated,
-    const TlsStream::Ptr& stream, ConnectionRole role)
+    const TlsStream::Ptr& stream)
 	: m_ID(l_JsonRpcConnectionNextID++), m_Identity(identity), m_Authenticated(authenticated), m_Stream(stream),
-	  m_Role(role), m_Timestamp(Utility::GetTime()), m_Seen(Utility::GetTime()),
+	  m_Timestamp(Utility::GetTime()), m_Seen(Utility::GetTime()),
 	  m_NextHeartbeat(0), m_HeartbeatTimeout(0)
 {
 	boost::call_once(l_JsonRpcConnectionOnceFlag, &JsonRpcConnection::StaticInitialize);
@@ -92,14 +92,9 @@ Endpoint::Ptr JsonRpcConnection::GetEndpoint(void) const
 	return m_Endpoint;
 }
 
-TlsStream::Ptr JsonRpcConnection::GetStream(void) const
+ssl_socket::lowest_layer_type& JsonRpcConnection::GetSocket(void)
 {
-	return m_Stream;
-}
-
-ConnectionRole JsonRpcConnection::GetRole(void) const
-{
-	return m_Role;
+	return m_Socket.lowest_layer();
 }
 
 void JsonRpcConnection::SendMessage(const Dictionary::Ptr& message)

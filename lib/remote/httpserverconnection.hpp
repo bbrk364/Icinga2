@@ -22,7 +22,6 @@
 
 #include "remote/httprequest.hpp"
 #include "remote/apiuser.hpp"
-#include "base/tlsstream.hpp"
 #include "base/timer.hpp"
 #include "base/workqueue.hpp"
 
@@ -39,19 +38,17 @@ class I2_REMOTE_API HttpServerConnection : public Object
 public:
 	DECLARE_PTR_TYPEDEFS(HttpServerConnection);
 
-	HttpServerConnection(const String& identity, bool authenticated, const TlsStream::Ptr& stream);
+	HttpServerConnection(const String& identity, bool authenticated, const SslSocketPtr& socket);
 
 	void Start(void);
 
 	ApiUser::Ptr GetApiUser(void) const;
 	bool IsAuthenticated(void) const;
-	TlsStream::Ptr GetStream(void) const;
 
 	void Disconnect(void);
 
 private:
 	ApiUser::Ptr m_ApiUser;
-	TlsStream::Ptr m_Stream;
 	double m_Seen;
 	HttpRequest m_CurrentRequest;
 	boost::mutex m_DataHandlerMutex;

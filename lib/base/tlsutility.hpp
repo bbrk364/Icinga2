@@ -23,6 +23,7 @@
 #include "base/i2-base.hpp"
 #include "base/object.hpp"
 #include "base/string.hpp"
+#include "base/ioservice.hpp"
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
@@ -39,7 +40,7 @@ namespace icinga
 
 void I2_BASE_API InitializeOpenSSL(void);
 boost::shared_ptr<SSL_CTX> I2_BASE_API MakeSSLContext(const String& pubkey = String(), const String& privkey = String(), const String& cakey = String());
-void I2_BASE_API AddCRLToSSLContext(const boost::shared_ptr<SSL_CTX>& context, const String& crlPath);
+void I2_BASE_API AddCRLToSSLContext(boost::asio::ssl::context& context, const String& crlPath);
 String I2_BASE_API GetCertificateCN(const boost::shared_ptr<X509>& certificate);
 boost::shared_ptr<X509> I2_BASE_API GetX509Certificate(const String& pemfile);
 int I2_BASE_API MakeX509CSR(const String& cn, const String& keyfile, const String& csrfile = String(), const String& certfile = String(), const String& serialFile = String(), bool ca = false);

@@ -22,7 +22,6 @@
 #include "base/application.hpp"
 #include "base/logger.hpp"
 #include "base/exception.hpp"
-#include "base/socket.hpp"
 #include "base/utility.hpp"
 #include "base/json.hpp"
 #include "base/objectlock.hpp"

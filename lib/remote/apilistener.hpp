@@ -28,8 +28,6 @@
 #include "base/configobject.hpp"
 #include "base/timer.hpp"
 #include "base/workqueue.hpp"
-#include "base/tcpsocket.hpp"
-#include "base/tlsstream.hpp"
 #include <set>
 
 namespace icinga
@@ -62,8 +60,6 @@ public:
 	ApiListener(void);
 
 	static ApiListener::Ptr GetInstance(void);
-
-	boost::shared_ptr<SSL_CTX> GetSSLContext(void) const;
 
 	Endpoint::Ptr GetMaster(void) const;
 	bool IsMaster(void) const;
@@ -106,8 +102,8 @@ protected:
 	virtual void Start(bool runtimeCreated) override;
 
 private:
-	boost::shared_ptr<SSL_CTX> m_SSLContext;
-	std::set<TcpSocket::Ptr> m_Servers;
+	boost::asio::ssl::context m_SSLContext;
+	std::set<TcpAcceptorPtr> m_Acceptors;
 	std::set<JsonRpcConnection::Ptr> m_AnonymousClients;
 	std::set<HttpServerConnection::Ptr> m_HttpClients;
 	Timer::Ptr m_Timer;
@@ -120,9 +116,8 @@ private:
 	bool AddListener(const String& node, const String& service);
 	void AddConnection(const Endpoint::Ptr& endpoint);
 
-	void NewClientHandler(const Socket::Ptr& client, const String& hostname, ConnectionRole role);
-	void NewClientHandlerInternal(const Socket::Ptr& client, const String& hostname, ConnectionRole role);
-	void ListenerThreadProc(const Socket::Ptr& server);
+	void NewClientHandler(const SslSocketPtr& client, const String& hostname, ConnectionRole role);
+	void NewClientHandlerInternal(const SslSocketPtr& client, const String& hostname, ConnectionRole role);
 
 	WorkQueue m_RelayQueue;
 	WorkQueue m_SyncQueue;
@@ -158,6 +153,10 @@ private:
 	void DeleteConfigObject(const ConfigObject::Ptr& object, const MessageOrigin::Ptr& origin,
 	    const JsonRpcConnection::Ptr& client = JsonRpcConnection::Ptr());
 	void SendRuntimeConfigObjects(const JsonRpcConnection::Ptr& aclient);
+
+	/* asio */
+	void StartAccept(const TcpAcceptorPtr& acceptor);
+	void HandleAccept(const SslSocketPtr& socket, const boost::system::error_code& error);
 
 	void SyncClient(const JsonRpcConnection::Ptr& aclient, const Endpoint::Ptr& endpoint, bool needSync);
 };

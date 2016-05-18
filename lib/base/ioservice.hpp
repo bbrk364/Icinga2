@@ -17,31 +17,33 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ******************************************************************************/
 
-#ifndef TCPSOCKET_H
-#define TCPSOCKET_H
+#ifndef IOSERVICE_H
+#define IOSERVICE_H
 
 #include "base/i2-base.hpp"
-#include "base/socket.hpp"
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <boost/smart_ptr/make_shared.hpp>
 
 namespace icinga
 {
 
-/**
- * A TCP socket.
- *
- * @ingroup base
- */
-class I2_BASE_API TcpSocket : public Socket
+typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket> SslSocket;
+typedef boost::shared_ptr<SslSocket> SslSocketPtr;
+
+typedef boost::asio::ip::tcp::acceptor TcpAcceptor;
+typedef boost::shared_ptr<TcpAcceptor> TcpAcceptorPtr;
+
+class IOService
 {
 public:
-	DECLARE_PTR_TYPEDEFS(TcpSocket);
+	static boost::asio::io_service& GetInstance(void);
 
-	void Bind(const String& service, int family);
-	void Bind(const String& node, const String& service, int family);
-
-	void Connect(const String& node, const String& service);
+private:
+	static void StaticInitialize(void);
+	static boost::asio::io_service& GetInstanceInternal(void);
 };
 
 }
 
-#endif /* TCPSOCKET_H */
+#endif /* IOSERVICE_H */
