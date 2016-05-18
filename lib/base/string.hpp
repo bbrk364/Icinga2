@@ -261,6 +261,8 @@ public:
 		return (m_Data.find(str) != std::string::npos);
 	}
 
+	unsigned int TimeConstantCompare(const String&) const;
+
 	inline void swap(String& str)
 	{
 		m_Data.swap(str.m_Data);
@@ -301,6 +303,7 @@ public:
 	{
 		return m_Data.rbegin();
 	}
+	}
 
 	inline ConstReverseIterator RBegin(void) const
 	{
@@ -323,6 +326,7 @@ public:
 
 private:
 	std::string m_Data;
+	unsigned int PrivCompare(const String&) const;
 };
 
 inline std::ostream& operator<<(std::ostream& stream, const String& str)

@@ -42,6 +42,14 @@ BOOST_AUTO_TEST_CASE(equal)
 	BOOST_CHECK(String("hello") != "helloworld");
 }
 
+BOOST_AUTO_TEST_CASE(timeSafeEqual)
+{
+	BOOST_CHECK(String("Hey").TimeConstantCompare(String("Hey"))   == 0);
+	BOOST_CHECK(String("Hey").TimeConstantCompare(String("Hello")) != 0);
+	BOOST_CHECK(String("Hey").TimeConstantCompare(String("Heyyy")) != 0);
+	BOOST_CHECK(String("").TimeConstantCompare(String(""))         == 0);
+}
+
 BOOST_AUTO_TEST_CASE(clear)
 {
 	String s = "hello";

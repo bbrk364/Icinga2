@@ -19,6 +19,7 @@
 
 #include "base/string.hpp"
 #include "base/value.hpp"
+#include "base/tlsutility.hpp"
 #include "base/primitivetype.hpp"
 #include "base/dictionary.hpp"
 #include <ostream>
@@ -28,6 +29,26 @@ using namespace icinga;
 REGISTER_BUILTIN_TYPE(String, String::GetPrototype());
 
 const String::SizeType String::NPos = std::string::npos;
+
+unsigned int TimeConstantCompare(const String& s) const {
+	String hashA = I2_BASE_API::SHA256(this), hashB = I2_BASE_API::SHA256(s);
+	return !(hashA.PrivCompare(hashB, 256) == s.PrivCompare(this);
+}
+
+unsigned int PrivCompare(const String& s, const int size = -1) const
+{
+	ConstIterator itA = this.Begin(), itB = s.Begin();
+	int end = (size != -1 ? size) :
+	    (this.GetLength() < s.GetLength() ? s.GetLength() : this.GetLength());
+
+	int res = 0;
+	for(int i = 0; i < end; i++) {
+		res |= *itA ^ *itB;
+		itA++; itB++;
+	}
+
+	return res && (this.GetLength() == s.GetLength());
+}
 
 String& String::operator+=(const Value& rhs)
 {
