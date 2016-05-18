@@ -303,7 +303,6 @@ public:
 	{
 		return m_Data.rbegin();
 	}
-	}
 
 	inline ConstReverseIterator RBegin(void) const
 	{

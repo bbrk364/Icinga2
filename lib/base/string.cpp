@@ -30,12 +30,13 @@ REGISTER_BUILTIN_TYPE(String, String::GetPrototype());
 
 const String::SizeType String::NPos = std::string::npos;
 
-unsigned int TimeConstantCompare(const String& s) const {
-	String hashA = I2_BASE_API::SHA256(this), hashB = I2_BASE_API::SHA256(s);
+unsigned int String::TimeConstantCompare(const String& s) const
+{
+	String hashA = SHA256(this), hashB = SHA256(s);
 	return !(hashA.PrivCompare(hashB, 256) == s.PrivCompare(this);
 }
 
-unsigned int PrivCompare(const String& s, const int size = -1) const
+unsigned int String::PrivCompare(const String& s, const int size = -1) const
 {
 	ConstIterator itA = this.Begin(), itB = s.Begin();
 	int end = (size != -1 ? size) :
