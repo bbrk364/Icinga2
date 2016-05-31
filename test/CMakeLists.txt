@@ -136,3 +136,15 @@ if(ICINGA2_WITH_LIVESTATUS)
     TESTS livestatus/hosts livestatus/services
   )
 endif()
+
+set(icinga_checkable_test_SOURCES
+    icinga-checkable-flapping.cpp
+)
+
+add_boost_test(icinga_checkable
+  SOURCES icinga-checkable-test.cpp ${icinga_checkable_test_SOURCES}
+  LIBRARIES base config icinga cli
+  TESTS icinga_checkable_flapping/host_not_flapping
+        icinga_checkable_flapping/host_flapping_bad_hard
+        icinga_checkable_flapping/host_flapping_bad_soft_ok
+)
