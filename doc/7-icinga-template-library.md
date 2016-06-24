@@ -66,10 +66,15 @@ Check command for the built-in `ido` check.
 
 Custom attributes passed as [command parameters](3-monitoring-basics.md#command-passing-parameters):
 
-Name         | Description
--------------|---------------
-ido_type     | **Required.** The type of the IDO connection object. Can be either "IdoMysqlConnection" or "IdoPgsqlConnection".
-ido_name     | **Required.** The name of the IDO connection object.
+Name                         | Description
+-----------------------------|-----------------------------
+ido_type                     | **Required.** The type of the IDO connection object. Can be either "IdoMysqlConnection" or "IdoPgsqlConnection".
+ido_name                     | **Required.** The name of the IDO connection object.
+ido_queries_warning          | **Optional.** Warning threshold for queries/s. Applies if the rate is lower than the threshold.
+ido_queries_critical         | **Optional.** Critical threshold for queries/s. Applies if the rate is lower than the threshold.
+ido_pending_queries_warning  | **Optional.** Warning threshold for pending queries. Applies if pending queries are higher than the threshold. Supersedes the `ido_queries` thresholds above.
+ido_pending_queries_critical | **Optional.** Critical threshold for pending queries. Applies if pending queries are higher than the threshold. Supersedes the `ido_queries` thresholds above.
+
 
 ### <a id="itl-random"></a> random
 

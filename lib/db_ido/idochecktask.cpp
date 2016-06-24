@@ -55,6 +55,23 @@ void IdoCheckTask::ScriptFunc(const Checkable::Ptr& checkable, const CheckResult
 	String idoType = MacroProcessor::ResolveMacros("$ido_type$", resolvers, checkable->GetLastCheckResult(),
 	    NULL, MacroProcessor::EscapeCallback(), resolvedMacros, useResolvedMacros);
 
+	String missingQueriesWarning;
+	String missingQueriesCritical;
+	String missingPendingQueriesWarning;
+	String missingPendingQueriesCritical;
+
+	double queriesWarning = MacroProcessor::ResolveMacros("$ido_queries_warning$", resolvers, checkable->GetLastCheckResult(),
+	    &missingQueriesWarning, MacroProcessor::EscapeCallback(), resolvedMacros, useResolvedMacros);
+
+	double queriesCritical = MacroProcessor::ResolveMacros("$ido_queries_critical$", resolvers, checkable->GetLastCheckResult(),
+	    &missingQueriesCritical, MacroProcessor::EscapeCallback(), resolvedMacros, useResolvedMacros);
+
+	double pendingQueriesWarning = MacroProcessor::ResolveMacros("$ido_pending_queries_warning$", resolvers, checkable->GetLastCheckResult(),
+	    &missingPendingQueriesWarning, MacroProcessor::EscapeCallback(), resolvedMacros, useResolvedMacros);
+
+	double pendingQueriesCritical = MacroProcessor::ResolveMacros("$ido_pending_queries_critical$", resolvers, checkable->GetLastCheckResult(),
+	    &missingPendingQueriesCritical, MacroProcessor::EscapeCallback(), resolvedMacros, useResolvedMacros);
+
 	if (resolvedMacros && !useResolvedMacros)
 		return;
 
@@ -101,6 +118,8 @@ void IdoCheckTask::ScriptFunc(const Checkable::Ptr& checkable, const CheckResult
 
 	double qps = conn->GetQueryCount(60) / 60.0;
 
+	double pendingQueries = conn->GetPendingQueryCount();
+
 	if (!conn->GetConnected()) {
 		if (conn->GetShouldConnect()) {
 			cr->SetOutput("Could not connect to the database server.");
@@ -114,24 +133,47 @@ void IdoCheckTask::ScriptFunc(const Checkable::Ptr& checkable, const CheckResult
 		std::ostringstream msgbuf;
 
 		if (Utility::CompareVersion(IDO_CURRENT_SCHEMA_VERSION, schema_version) < 0) {
-			msgbuf << "Outdated schema version: '" << schema_version << "'. Latest version: '" << IDO_CURRENT_SCHEMA_VERSION << "'.";
+			msgbuf << "Outdated schema version: '" << schema_version << "'. Latest version: '"
+			    << IDO_CURRENT_SCHEMA_VERSION << "'."
+			    << " Queries per second: " << std::fixed << std::setprecision(3) << qps
+			    << " Pending queries: " << std::fixed << std::setprecision(3) << pendingQueries << ".";
 			cr->SetState(ServiceWarning);
 		} else {
-			msgbuf << "Connected to the database server (Schema version: '" << schema_version << "').";
-			cr->SetState(ServiceOK);
-		}
+			msgbuf << "Connected to the database server (Schema version: '" << schema_version << "')."
+			    << " Queries per second: " << std::fixed << std::setprecision(3) << qps
+			    << " Pending queries: " << std::fixed << std::setprecision(3) << pendingQueries << ".";
 
-		msgbuf << " Queries per second: " << std::fixed << std::setprecision(3) << qps;
+			cr->SetState(ServiceOK);
+
+			/* Check whether the thresholds have been resolved and compare them */
+			if (missingQueriesCritical.IsEmpty() && qps < queriesCritical) {
+				cr->SetState(ServiceCritical);
+				msgbuf << " " << qps << " queries/s lower than critical threshold (" << queriesCritical << " queries/s).";
+			} else if (missingQueriesWarning.IsEmpty() && qps < queriesWarning) {
+				cr->SetState(ServiceWarning);
+				msgbuf << " " << qps << " queries/s lower than warning threshold (" << queriesWarning << " queries/s).";
+			}
+
+			if (missingPendingQueriesCritical.IsEmpty() && pendingQueries > pendingQueriesCritical) {
+				cr->SetState(ServiceCritical);
+				msgbuf << " " << pendingQueries << " pending queries greater than critical threshold ("
+				    << pendingQueriesCritical << " queries).";
+			} else if (missingPendingQueriesWarning.IsEmpty() && pendingQueries > pendingQueriesWarning) {
+				cr->SetState(ServiceWarning);
+				msgbuf << " " << pendingQueries << " pending queries greater than warning threshold ("
+				    << pendingQueriesWarning << " queries).";
+			}
+		}
 
 		cr->SetOutput(msgbuf.str());
 	}
 
 	Array::Ptr perfdata = new Array();
-	perfdata->Add(new PerfdataValue("queries", qps));
+	perfdata->Add(new PerfdataValue("queries", qps, false, "", queriesWarning, queriesCritical));
 	perfdata->Add(new PerfdataValue("queries_1min", conn->GetQueryCount(60)));
 	perfdata->Add(new PerfdataValue("queries_5mins", conn->GetQueryCount(5 * 60)));
 	perfdata->Add(new PerfdataValue("queries_15mins", conn->GetQueryCount(15 * 60)));
-	perfdata->Add(new PerfdataValue("pending_queries", conn->GetPendingQueryCount()));
+	perfdata->Add(new PerfdataValue("pending_queries", pendingQueries, false, "", pendingQueriesWarning, pendingQueriesCritical));
 	cr->SetPerformanceData(perfdata);
 
 	checkable->ProcessCheckResult(cr);
