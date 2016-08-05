@@ -55,7 +55,6 @@
 #	include <VersionHelpers.h>
 #	include <windows.h>
 #	include <io.h>
-#	include <msi.h>
 #	include <shlobj.h>
 #endif /*_WIN32*/
 
@@ -1907,24 +1906,63 @@ int Utility::MksTemp(char *tmpl)
 
 String Utility::GetIcingaInstallPath(void)
 {
-	char szProduct[39];
+	typedef long(__stdcall *pMsiGetProductInfo)(
+		char szProduct[39],
+		char szProperty[65535],
+		char lpValueBuf[65535],
+		DWORD *pcchValueBuf);
+	typedef long(__stdcall *pMsiEnumProducts)(
+		DWORD iProductIndex,
+		char lpProductBuf[65535]);
+	
+	/* First lets see if Icinga2 is installed using the Msi
+	   If debugging Icinga2 using Visual Studio, this must be done to get the registry setup. */
+	HINSTANCE hInst = LoadLibrary("msi.dll");
+	if (hInst){
+		pMsiGetProductInfo MsiGetProductInfo = (pMsiGetProductInfo)GetProcAddress(hInst, "MsiGetProductInfoA");
+		pMsiEnumProducts MsiEnumProducts = (pMsiEnumProducts)GetProcAddress(hInst, "MsiEnumProductsA");
 
-	for (int i = 0; MsiEnumProducts(i, szProduct) == ERROR_SUCCESS; i++) {
-		char szName[128];
-		DWORD cbName = sizeof(szName);
-		if (MsiGetProductInfo(szProduct, INSTALLPROPERTY_INSTALLEDPRODUCTNAME, szName, &cbName) != ERROR_SUCCESS)
-			continue;
+		char szProduct[39];
 
-		if (strcmp(szName, "Icinga 2") != 0)
-			continue;
+		for (int i = 0; MsiEnumProducts(i, szProduct) == ERROR_SUCCESS; i++) {
 
-		char szLocation[1024];
-		DWORD cbLocation = sizeof(szLocation);
-		if (MsiGetProductInfo(szProduct, INSTALLPROPERTY_INSTALLLOCATION, szLocation, &cbLocation) == ERROR_SUCCESS)
-			return szLocation;
+			char szName[128];
+			DWORD cbName = sizeof(szName);
+			// INSTALLPROPERTY_INSTALLEDPRODUCTNAME from msi.h is hardcoded here as InstalledProductName
+			if (MsiGetProductInfo(szProduct, "InstalledProductName", szName, &cbName) != ERROR_SUCCESS)
+				continue;
+
+			if (strcmp(szName, "Icinga 2") != 0)
+				continue;
+
+			char szLocation[1024];
+			DWORD cbLocation = sizeof(szLocation);
+			// INSTALLPROPERTY_INSTALLLOCATION from msi.h is hardcoded here as InstallLocation
+			if (MsiGetProductInfo(szProduct, "InstallLocation", szLocation, &cbLocation) == ERROR_SUCCESS)
+				FreeLibrary(hInst);
+				return szLocation;
+		}
+		Log(LogWarning, "utility", "Unable to find 'Icinga 2' installed as an MSI");
+		FreeLibrary(hInst);
 	}
 
-	return "";
+	/* It seems we either lack Msi.dll or Icinga 2 was not found installed as an MSI */
+	Log(LogDebug, "utility", "Using fallback to find the Icinga2 install path");
+
+	char result[MAX_PATH + 1];
+	if (GetModuleFileName(NULL, result, MAX_PATH)== 0) {
+		return "";
+	}
+	std::string strExe = result;
+	/* Get the directory of the executable */
+	std::string path = Utility::DirName(strExe);
+
+	/* If the executable is in the root of the volume then return immediately with an empty string */
+	if ( sizeof(path) < 4)
+		return "";
+
+	/* Return the parent directory of the current directory */
+	return Utility::DirName(path);
 }
 
 String Utility::GetIcingaDataPath(void)
