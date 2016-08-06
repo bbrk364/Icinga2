@@ -31,9 +31,6 @@
 #include <boost/regex.hpp>
 #include <algorithm>
 #include <set>
-#ifdef _WIN32
-#include <msi.h>
-#endif /* _WIN32 */
 
 using namespace icinga;
 
@@ -304,13 +301,40 @@ void ScriptUtils::Assert(const Value& arg)
 String ScriptUtils::MsiGetComponentPathShim(const String& component)
 {
 #ifdef _WIN32
-	TCHAR productCode[39];
-	if (MsiGetProductCode(component.CStr(), productCode) != ERROR_SUCCESS)
+	typedef long(WINAPI *pMsiGetProductCode)(
+		TCHAR szProduct[39],
+		TCHAR lpProductBuf[39]);
+
+	typedef long(WINAPI *pMsiGetComponentPath)(
+		TCHAR* szProductCode,
+		TCHAR* szComponent,
+		TCHAR* lpPathBuf,
+		DWORD *path);
+
+	HINSTANCE hInst = LoadLibrary("msi.dll");
+	if (!hInst){
 		return "";
+	}
+	pMsiGetProductCode MsiGetProductCode = (pMsiGetProductCode)GetProcAddress(hInst, "MsiGetProductCodeA");
+	pMsiGetComponentPath MsiGetComponentPath = (pMsiGetComponentPath)GetProcAddress(hInst, "MsiGetComponentPathA");
+
+	if (!MsiGetProductCode && !MsiGetComponentPath) {
+		FreeLibrary(hInst);
+		return "";
+	}
+	TCHAR productCode[39];
+	TCHAR * componentStr = strdup(component.CStr());
+
+	/* Is the Msi present? */
+	if (MsiGetProductCode(componentStr, productCode) != ERROR_SUCCESS) {
+		FreeLibrary(hInst);
+		return "";
+	}
 	TCHAR path[2048];
 	DWORD szPath = sizeof(path);
 	path[0] = '\0';
-	MsiGetComponentPath(productCode, component.CStr(), path, &szPath);
+	MsiGetComponentPath(productCode, componentStr, path, &szPath);
+	FreeLibrary(hInst);
 	return path;
 #else /* _WIN32 */
 	return String();
