@@ -39,6 +39,7 @@ validator ApiUser {
 			required permission;
 			String permission;
 			Function filter;
+			Function transform;
 		};
 	};
 };

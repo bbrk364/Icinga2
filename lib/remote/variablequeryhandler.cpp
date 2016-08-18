@@ -92,9 +92,10 @@ bool VariableQueryHandler::HandleRequest(const ApiUser::Ptr& user, HttpRequest& 
 		params->Set("variable", request.RequestUrl->GetPath()[2]);
 
 	std::vector<Value> objs;
+	boost::shared_ptr<Expression> transform;
 
 	try {
-		objs = FilterUtility::GetFilterTargets(qd, params, user, "variable");
+		objs = FilterUtility::GetFilterTargets(qd, params, user, &transform, "variable");
 	} catch (const std::exception& ex) {
 		HttpUtility::SendJsonError(response, 404,
 		    "No variables found.",
@@ -106,12 +107,13 @@ bool VariableQueryHandler::HandleRequest(const ApiUser::Ptr& user, HttpRequest& 
 
 	BOOST_FOREACH(const Dictionary::Ptr& var, objs) {
 		Dictionary::Ptr result1 = new Dictionary();
-		results->Add(result1);
 
 		Dictionary::Ptr resultAttrs = new Dictionary();
 		result1->Set("name", var->Get("name"));
 		result1->Set("type", var->Get("type"));
 		result1->Set("value", Serialize(var->Get("value"), 0));
+
+		results->Add(FilterUtility::TransformResult(transform, result1));
 	}
 
 	Dictionary::Ptr result = new Dictionary();

@@ -131,7 +131,7 @@ static void FilteredAddTarget(ScriptFrame& permissionFrame, Expression *permissi
 		result.push_back(target);
 }
 
-void FilterUtility::CheckPermission(const ApiUser::Ptr& user, const String& permission, Expression **permissionFilter)
+void FilterUtility::CheckPermission(const ApiUser::Ptr& user, const String& permission, boost::shared_ptr<Expression> *transform, Expression **permissionFilter)
 {
 	if (permissionFilter)
 		*permissionFilter = NULL;
@@ -141,6 +141,8 @@ void FilterUtility::CheckPermission(const ApiUser::Ptr& user, const String& perm
 
 	bool foundPermission = false;
 	String requiredPermission = permission.ToLower();
+	Expression *transformInput = new IndexerExpression(new GetScopeExpression(ScopeLocal), MakeLiteral("__value"));
+	bool transformFound = false;
 
 	Array::Ptr permissions = user->GetPermissions();
 	if (permissions) {
@@ -148,10 +150,13 @@ void FilterUtility::CheckPermission(const ApiUser::Ptr& user, const String& perm
 		BOOST_FOREACH(const Value& item, permissions) {
 			String permission;
 			Function::Ptr filter;
+			Function::Ptr transformFunc;
+
 			if (item.IsObjectType<Dictionary>()) {
 				Dictionary::Ptr dict = item;
 				permission = dict->Get("permission");
 				filter = dict->Get("filter");
+				transformFunc = dict->Get("transform");
 			} else
 				permission = item;
 
@@ -172,14 +177,27 @@ void FilterUtility::CheckPermission(const ApiUser::Ptr& user, const String& perm
 				else
 					*permissionFilter = new LogicalOrExpression(*permissionFilter, fexpr);
 			}
+
+			if (transform && transformFunc) {
+				transformFound = true;
+
+				std::vector<Expression *> args;
+				args.push_back(transformInput);
+				transformInput = new FunctionCallExpression(MakeLiteral(transformFunc), args);
+			}
 		}
 	}
+
+	if (!transformFound)
+		delete transformInput;
+	else
+		*transform = boost::shared_ptr<Expression>(transformInput);
 
 	if (!foundPermission)
 		BOOST_THROW_EXCEPTION(ScriptError("Missing permission: " + requiredPermission));
 }
 
-std::vector<Value> FilterUtility::GetFilterTargets(const QueryDescription& qd, const Dictionary::Ptr& query, const ApiUser::Ptr& user, const String& variableName)
+std::vector<Value> FilterUtility::GetFilterTargets(const QueryDescription& qd, const Dictionary::Ptr& query, const ApiUser::Ptr& user, boost::shared_ptr<Expression> *transform, const String& variableName)
 {
 	std::vector<Value> result;
 
@@ -191,7 +209,7 @@ std::vector<Value> FilterUtility::GetFilterTargets(const QueryDescription& qd, c
 		provider = new ConfigObjectTargetProvider();
 
 	Expression *permissionFilter;
-	CheckPermission(user, qd.Permission, &permissionFilter);
+	CheckPermission(user, qd.Permission, transform, &permissionFilter);
 
 	ScriptFrame permissionFrame;
 
@@ -279,3 +297,9 @@ std::vector<Value> FilterUtility::GetFilterTargets(const QueryDescription& qd, c
 	return result;
 }
 
+Value FilterUtility::TransformResult(const boost::shared_ptr<Expression>& transform, const Value& value)
+{
+	ScriptFrame frame;
+	frame.Locals->Set("__value", value);
+	return transform->Evaluate(frame);
+}

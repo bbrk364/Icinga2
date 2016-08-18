@@ -198,21 +198,21 @@ More information about filters can be found in the [filters](12-icinga2-api.md#i
 
 Available permissions for specific URL endpoints:
 
-  Permissions                   | URL Endpoint  | Supports Filters
-  ------------------------------|---------------|-----------------
-  actions/&lt;action&gt;        | /v1/actions   | Yes
-  config/query                  | /v1/config    | No
-  config/modify                 | /v1/config    | No
-  console                       | /v1/console   | No
-  events/&lt;type&gt;           | /v1/events    | No
-  objects/query/&lt;type&gt;    | /v1/objects   | Yes
-  objects/create/&lt;type&gt;   | /v1/objects   | No
-  objects/modify/&lt;type&gt;   | /v1/objects   | Yes
-  objects/delete/&lt;type&gt;   | /v1/objects   | Yes
-  status/query                  | /v1/status    | Yes
-  templates/&lt;type&gt;        | /v1/templates | Yes
-  types                         | /v1/types     | Yes
-  variables                     | /v1/variables | Yes
+  Permissions                   | URL Endpoint  | Supports Filters | Supports Transform
+  ------------------------------|---------------|------------------|-------------------
+  actions/&lt;action&gt;        | /v1/actions   | Yes              | No
+  config/query                  | /v1/config    | No               | No
+  config/modify                 | /v1/config    | No               | No
+  console                       | /v1/console   | No               | No
+  events/&lt;type&gt;           | /v1/events    | No               | No
+  objects/query/&lt;type&gt;    | /v1/objects   | Yes              | Yes
+  objects/create/&lt;type&gt;   | /v1/objects   | No               | No
+  objects/modify/&lt;type&gt;   | /v1/objects   | Yes              | No
+  objects/delete/&lt;type&gt;   | /v1/objects   | Yes              | No
+  status/query                  | /v1/status    | Yes              | Yes
+  templates/&lt;type&gt;        | /v1/templates | Yes              | Yes
+  types                         | /v1/types     | Yes              | Yes
+  variables                     | /v1/variables | Yes              | Yes
 
 The required actions or types can be replaced by using a wildcard match ("\*").
 

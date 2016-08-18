@@ -86,9 +86,10 @@ bool TypeQueryHandler::HandleRequest(const ApiUser::Ptr& user, HttpRequest& requ
 		params->Set("name", request.RequestUrl->GetPath()[2]);
 
 	std::vector<Value> objs;
+	boost::shared_ptr<Expression> transform;
 
 	try {
-		objs = FilterUtility::GetFilterTargets(qd, params, user);
+		objs = FilterUtility::GetFilterTargets(qd, params, user, &transform);
 	} catch (const std::exception& ex) {
 		HttpUtility::SendJsonError(response, 404,
 		    "No objects found.",
@@ -100,7 +101,6 @@ bool TypeQueryHandler::HandleRequest(const ApiUser::Ptr& user, HttpRequest& requ
 
 	BOOST_FOREACH(const Type::Ptr& obj, objs) {
 		Dictionary::Ptr result1 = new Dictionary();
-		results->Add(result1);
 
 		Dictionary::Ptr resultAttrs = new Dictionary();
 		result1->Set("name", obj->GetName());
@@ -150,6 +150,8 @@ bool TypeQueryHandler::HandleRequest(const ApiUser::Ptr& user, HttpRequest& requ
 			attributeInfo->Set("no_user_modify", static_cast<bool>(field.Attributes & FANoUserModify));
 			attributeInfo->Set("no_user_view", static_cast<bool>(field.Attributes & FANoUserView));
 		}
+
+		results->Add(FilterUtility::TransformResult(transform, result1));
 	}
 
 	Dictionary::Ptr result = new Dictionary();

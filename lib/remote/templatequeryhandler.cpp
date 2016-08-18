@@ -108,9 +108,10 @@ bool TemplateQueryHandler::HandleRequest(const ApiUser::Ptr& user, HttpRequest& 
 	}
 
 	std::vector<Value> objs;
+	boost::shared_ptr<Expression> transform;
 
 	try {
-		objs = FilterUtility::GetFilterTargets(qd, params, user, "tmpl");
+		objs = FilterUtility::GetFilterTargets(qd, params, user, &transform, "tmpl");
 	} catch (const std::exception& ex) {
 		HttpUtility::SendJsonError(response, 404,
 		    "No templates found.",
@@ -121,7 +122,7 @@ bool TemplateQueryHandler::HandleRequest(const ApiUser::Ptr& user, HttpRequest& 
 	Array::Ptr results = new Array();
 
 	BOOST_FOREACH(const Dictionary::Ptr& obj, objs) {
-		results->Add(obj);
+		results->Add(FilterUtility::TransformResult(transform, obj));
 	}
 
 	Dictionary::Ptr result = new Dictionary();

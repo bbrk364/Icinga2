@@ -68,9 +68,10 @@ class I2_REMOTE_API FilterUtility
 {
 public:
 	static Type::Ptr TypeFromPluralName(const String& pluralName);
-	static void CheckPermission(const ApiUser::Ptr& user, const String& permission, Expression **filter = NULL);
+	static void CheckPermission(const ApiUser::Ptr& user, const String& permission, boost::shared_ptr<Expression> *transform = NULL, Expression **filter = NULL);
+	static Value TransformResult(const boost::shared_ptr<Expression>& transform, const Value& result);
 	static std::vector<Value> GetFilterTargets(const QueryDescription& qd, const Dictionary::Ptr& query,
-	    const ApiUser::Ptr& user, const String& variableName = String());
+	    const ApiUser::Ptr& user, boost::shared_ptr<Expression> *transform = NULL, const String& variableName = String());
 	static bool EvaluateFilter(ScriptFrame& frame, Expression *filter,
 	    const Object::Ptr& target, const String& variableName = String());
 };

@@ -137,9 +137,10 @@ bool ObjectQueryHandler::HandleRequest(const ApiUser::Ptr& user, HttpRequest& re
 	}
 
 	std::vector<Value> objs;
+	boost::shared_ptr<Expression> transform;
 
 	try {
-		objs = FilterUtility::GetFilterTargets(qd, params, user);
+		objs = FilterUtility::GetFilterTargets(qd, params, user, &transform);
 	} catch (const std::exception& ex) {
 		HttpUtility::SendJsonError(response, 404,
 		    "No objects found.",
@@ -174,7 +175,6 @@ bool ObjectQueryHandler::HandleRequest(const ApiUser::Ptr& user, HttpRequest& re
 
 	BOOST_FOREACH(const ConfigObject::Ptr& obj, objs) {
 		Dictionary::Ptr result1 = new Dictionary();
-		results->Add(result1);
 
 		result1->Set("name", obj->GetName());
 		result1->Set("type", obj->GetReflectionType()->GetName());
@@ -248,6 +248,8 @@ bool ObjectQueryHandler::HandleRequest(const ApiUser::Ptr& user, HttpRequest& re
 				return true;
 			}
 		}
+
+		results->Add(FilterUtility::TransformResult(transform, result1));
 	}
 
 	Dictionary::Ptr result = new Dictionary();
