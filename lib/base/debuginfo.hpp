@@ -22,6 +22,8 @@
 
 #include "base/i2-base.hpp"
 #include "base/string.hpp"
+#include <boost/flyweight.hpp>
+#include <boost/flyweight/intermodule_holder.hpp>
 
 namespace icinga
 {
@@ -33,7 +35,7 @@ namespace icinga
  */
 struct I2_BASE_API DebugInfo
 {
-	String Path;
+	boost::flyweight<String, boost::flyweights::intermodule_holder> Path;
 
 	int FirstLine;
 	int FirstColumn;

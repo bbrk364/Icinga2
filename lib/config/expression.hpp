@@ -51,7 +51,7 @@ public:
 
 			amsg->Reserve(6);
 			amsg->Add(message);
-			amsg->Add(di.Path);
+			amsg->Add(di.Path.get());
 			amsg->Add(di.FirstLine);
 			amsg->Add(di.FirstColumn);
 			amsg->Add(di.LastLine);

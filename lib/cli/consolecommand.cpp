@@ -380,8 +380,8 @@ incomplete:
 
 			DebugInfo di = ex.GetDebugInfo();
 
-			if (lines.find(di.Path) != lines.end()) {
-				String text = lines[di.Path];
+			if (lines.find(di.Path.get()) != lines.end()) {
+				String text = lines[di.Path.get()];
 
 				std::vector<String> ulines;
 				boost::algorithm::split(ulines, text, boost::is_any_of("\n"));
@@ -408,7 +408,7 @@ incomplete:
 						offset = 4;
 
 					if (i >= di.FirstLine && i <= di.LastLine) {
-						std::cout << String(di.Path.GetLength() + offset, ' ');
+						std::cout << String(di.Path.get().GetLength() + offset, ' ');
 						std::cout << String(start, ' ') << String(len, '^') << "\n";
 					}
 				}

@@ -146,7 +146,7 @@ String icinga::DiagnosticInformation(const std::exception& ex, bool verbose, Sta
 
 	const ScriptError *dex = dynamic_cast<const ScriptError *>(&ex);
 
-	if (dex && !dex->GetDebugInfo().Path.IsEmpty())
+	if (dex && !dex->GetDebugInfo().Path.get().IsEmpty())
 		ShowCodeLocation(result, dex->GetDebugInfo());
 
 	if (vex) {
@@ -178,14 +178,14 @@ String icinga::DiagnosticInformation(const std::exception& ex, bool verbose, Sta
 		if (messages && messages->GetLength() > 0) {
 			Array::Ptr message = messages->Get(messages->GetLength() - 1);
 
-			di.Path = message->Get(1);
+			di.Path = static_cast<String>(message->Get(1));
 			di.FirstLine = message->Get(2);
 			di.FirstColumn = message->Get(3);
 			di.LastLine = message->Get(4);
 			di.LastColumn = message->Get(5);
 		}
 
-		if (!di.Path.IsEmpty())
+		if (!di.Path.get().IsEmpty())
 			ShowCodeLocation(result, di);
 	}
 

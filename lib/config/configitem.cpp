@@ -284,7 +284,7 @@ ConfigObject::Ptr ConfigItem::Commit(bool discard)
 	persistentItem->Set("debug_hints", dhint);
 
 	Array::Ptr di = new Array();
-	di->Add(m_DebugInfo.Path);
+	di->Add(m_DebugInfo.Path.get());
 	di->Add(m_DebugInfo.FirstLine);
 	di->Add(m_DebugInfo.FirstColumn);
 	di->Add(m_DebugInfo.LastLine);

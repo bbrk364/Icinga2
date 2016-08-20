@@ -140,7 +140,7 @@ bool ConsoleHandler::ExecuteScriptHelper(HttpRequest& request, HttpResponse& res
 		std::ostringstream msgbuf;
 
 		msgbuf << di.Path << ": " << lsf.Lines[di.Path] << "\n"
-		    << String(di.Path.GetLength() + 2, ' ')
+		    << String(di.Path.get().GetLength() + 2, ' ')
 		    << String(di.FirstColumn, ' ') << String(di.LastColumn - di.FirstColumn + 1, '^') << "\n"
 		    << ex.what() << "\n";
 
@@ -149,7 +149,7 @@ bool ConsoleHandler::ExecuteScriptHelper(HttpRequest& request, HttpResponse& res
 		resultInfo->Set("incomplete_expression", ex.IsIncompleteExpression());
 
 		Dictionary::Ptr debugInfo = new Dictionary();
-		debugInfo->Set("path", di.Path);
+		debugInfo->Set("path", di.Path.get());
 		debugInfo->Set("first_line", di.FirstLine);
 		debugInfo->Set("first_column", di.FirstColumn);
 		debugInfo->Set("last_line", di.LastLine);

@@ -59,13 +59,13 @@ DebugInfo icinga::DebugInfoRange(const DebugInfo& start, const DebugInfo& end)
 
 void icinga::ShowCodeLocation(std::ostream& out, const DebugInfo& di, bool verbose)
 {
-	if (di.Path.IsEmpty())
+	if (di.Path.get().IsEmpty())
 		return;
 
 	out << "Location: " << di << "\n";
 
 	std::ifstream ifs;
-	ifs.open(di.Path.CStr(), std::ifstream::in);
+	ifs.open(di.Path.get().CStr(), std::ifstream::in);
 
 	int lineno = 0;
 	char line[1024];
