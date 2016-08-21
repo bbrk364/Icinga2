@@ -28,14 +28,14 @@ using namespace icinga;
 static void ConfigObjectModifyAttribute(const String& attr, const Value& value)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	ConfigObject::Ptr self = vframe->Self;
+	ConfigObject::Ptr self = vframe->GetSelf();
 	return self->ModifyAttribute(attr, value);
 }
 
 static void ConfigObjectRestoreAttribute(const String& attr)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	ConfigObject::Ptr self = vframe->Self;
+	ConfigObject::Ptr self = vframe->GetSelf();
 	return self->RestoreAttribute(attr);
 }
 

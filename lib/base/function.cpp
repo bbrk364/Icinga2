@@ -42,7 +42,7 @@ Value Function::Invoke(const std::vector<Value>& arguments)
 Value Function::Invoke(const Value& otherThis, const std::vector<Value>& arguments)
 {
 	ScriptFrame frame;
-	frame.Self = otherThis;
+	frame.SetSelf(otherThis);
 	return m_Callback(arguments);
 }
 

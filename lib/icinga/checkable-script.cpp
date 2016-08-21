@@ -29,7 +29,7 @@ using namespace icinga;
 static void CheckableProcessCheckResult(const CheckResult::Ptr& cr)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Checkable::Ptr self = vframe->Self;
+	Checkable::Ptr self = vframe->GetSelf();
 	self->ProcessCheckResult(cr);
 }
 

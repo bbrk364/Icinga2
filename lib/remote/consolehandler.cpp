@@ -125,9 +125,9 @@ bool ConsoleHandler::ExecuteScriptHelper(HttpRequest& request, HttpResponse& res
 		expr = ConfigCompiler::CompileText(fileName, command);
 
 		ScriptFrame frame;
-		frame.Locals = lsf.Locals;
-		frame.Self = lsf.Locals;
-		frame.Sandboxed = sandboxed;
+		frame.SetLocals(lsf.Locals);
+		frame.SetSelf(lsf.Locals);
+		frame.SetSandboxed(sandboxed);
 
 		exprResult = expr->Evaluate(frame);
 
@@ -188,9 +188,9 @@ bool ConsoleHandler::AutocompleteScriptHelper(HttpRequest& request, HttpResponse
 	Dictionary::Ptr resultInfo = new Dictionary();
 
 	ScriptFrame frame;
-	frame.Locals = lsf.Locals;
-	frame.Self = lsf.Locals;
-	frame.Sandboxed = sandboxed;
+	frame.SetLocals(lsf.Locals);
+	frame.SetSelf(lsf.Locals);
+	frame.SetSandboxed(sandboxed);
 
 	resultInfo->Set("code", 200);
 	resultInfo->Set("status", "Auto-completed successfully.");
@@ -264,9 +264,9 @@ std::vector<String> ConsoleHandler::GetAutocompletionSuggestions(const String& w
 		AddSuggestion(matches, word, keyword);
 	}
 
-	{
-		ObjectLock olock(frame.Locals);
-		BOOST_FOREACH(const Dictionary::Pair& kv, frame.Locals) {
+	if (frame.HasLocals()) {
+		ObjectLock olock(frame.GetLocals());
+		BOOST_FOREACH(const Dictionary::Pair& kv, frame.GetLocals()) {
 			AddSuggestion(matches, word, kv.first);
 		}
 	}

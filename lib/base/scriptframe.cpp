@@ -44,13 +44,13 @@ void ScriptFrame::StaticInitialize(void)
 }
 
 ScriptFrame::ScriptFrame(void)
-	: Locals(new Dictionary()), Self(ScriptGlobal::GetGlobals()), Sandboxed(false), Depth(0)
+	: m_Self(ScriptGlobal::GetGlobals()), m_Sandboxed(false), m_Depth(0), m_InitLocals(true)
 {
 	InitializeFrame();
 }
 
 ScriptFrame::ScriptFrame(const Value& self)
-	: Locals(new Dictionary()), Self(self), Sandboxed(false), Depth(0)
+	: m_Self(self), m_Sandboxed(false), m_Depth(0), m_InitLocals(true)
 {
 	InitializeFrame();
 }
@@ -62,7 +62,7 @@ void ScriptFrame::InitializeFrame(void)
 	if (frames && !frames->empty()) {
 		ScriptFrame *frame = frames->top();
 
-		Sandboxed = frame->Sandboxed;
+		m_Sandboxed = frame->m_Sandboxed;
 	}
 
 	PushFrame(this);
@@ -76,15 +76,15 @@ ScriptFrame::~ScriptFrame(void)
 
 void ScriptFrame::IncreaseStackDepth(void)
 {
-	if (Depth + 1 > 300)
+	if (m_Depth + 1 > 300)
 		BOOST_THROW_EXCEPTION(ScriptError("Stack overflow while evaluating expression: Recursion level too deep."));
 
-	Depth++;
+	m_Depth++;
 }
 
 void ScriptFrame::DecreaseStackDepth(void)
 {
-	Depth--;
+	m_Depth--;
 }
 
 ScriptFrame *ScriptFrame::GetCurrentFrame(void)
@@ -118,7 +118,7 @@ void ScriptFrame::PushFrame(ScriptFrame *frame)
 
 	if (!frames->empty()) {
 		ScriptFrame *parent = frames->top();
-		frame->Depth += parent->Depth;
+		frame->m_Depth += parent->m_Depth;
 	}
 
 	frames->push(frame);
@@ -143,3 +143,43 @@ void ScriptFrame::AddImport(const Object::Ptr& import)
 	m_Imports = imports;
 }
 
+bool ScriptFrame::HasLocals(void) const
+{
+	return m_Locals != NULL;
+}
+
+Dictionary::Ptr& ScriptFrame::GetLocals(void)
+{
+	if (m_InitLocals) {
+		m_Locals = new Dictionary();
+		m_InitLocals = false;
+	}
+
+	return m_Locals;
+}
+
+void ScriptFrame::SetLocals(const Dictionary::Ptr& locals)
+{
+	m_Locals = locals;
+	m_InitLocals = false;
+}
+
+Value& ScriptFrame::GetSelf(void)
+{
+	return m_Self;
+}
+
+void ScriptFrame::SetSelf(const Value& self)
+{
+	m_Self = self;
+}
+
+bool ScriptFrame::IsSandboxed(void) const
+{
+	return m_Sandboxed;
+}
+
+void ScriptFrame::SetSandboxed(bool sandboxed)
+{
+	m_Sandboxed = sandboxed;
+}

@@ -28,7 +28,7 @@ using namespace icinga;
 static String DateTimeFormat(const String& format)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	DateTime::Ptr self = static_cast<DateTime::Ptr>(vframe->Self);
+	DateTime::Ptr self = static_cast<DateTime::Ptr>(vframe->GetSelf());
 
 	return self->Format(format);
 }

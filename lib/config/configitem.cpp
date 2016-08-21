@@ -186,7 +186,7 @@ ConfigObject::Ptr ConfigItem::Commit(bool discard)
 
 	ScriptFrame frame(dobj);
 	if (m_Scope)
-		m_Scope->CopyTo(frame.Locals);
+		m_Scope->CopyTo(frame.GetLocals());
 	try {
 		m_Expression->Evaluate(frame, &debugHints);
 	} catch (const std::exception& ex) {

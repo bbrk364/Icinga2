@@ -31,7 +31,7 @@ static Value FunctionCall(const std::vector<Value>& args)
 		BOOST_THROW_EXCEPTION(std::invalid_argument("Too few arguments for call()"));
 
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Function::Ptr self = static_cast<Function::Ptr>(vframe->Self);
+	Function::Ptr self = static_cast<Function::Ptr>(vframe->GetSelf());
 
 	std::vector<Value> uargs(args.begin() + 1, args.end());
 	return self->Invoke(args[0], uargs);
@@ -40,7 +40,7 @@ static Value FunctionCall(const std::vector<Value>& args)
 static Value FunctionCallV(const Value& thisArg, const Array::Ptr& args)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Function::Ptr self = static_cast<Function::Ptr>(vframe->Self);
+	Function::Ptr self = static_cast<Function::Ptr>(vframe->GetSelf());
 
 	std::vector<Value> uargs;
 

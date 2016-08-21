@@ -31,11 +31,6 @@ namespace icinga
 
 struct I2_BASE_API ScriptFrame
 {
-	Dictionary::Ptr Locals;
-	Value Self;
-	bool Sandboxed;
-	int Depth;
-
 	ScriptFrame(void);
 	ScriptFrame(const Value& self);
 	~ScriptFrame(void);
@@ -50,7 +45,24 @@ struct I2_BASE_API ScriptFrame
 	static Array::Ptr GetImports(void);
 	static void AddImport(const Object::Ptr& import);
 
+	bool HasLocals(void) const;
+
+	Dictionary::Ptr& GetLocals(void);
+	void SetLocals(const Dictionary::Ptr& locals);
+
+	Value& GetSelf(void);
+	void SetSelf(const Value& self);
+
+	bool IsSandboxed(void) const;
+	void SetSandboxed(bool sandboxed);
+
 private:
+	Dictionary::Ptr m_Locals;
+	Value m_Self;
+	bool m_Sandboxed;
+	int m_Depth;
+	bool m_InitLocals;
+
 	static boost::thread_specific_ptr<std::stack<ScriptFrame *> > m_ScriptFrames;
 	static Array::Ptr m_Imports;
 

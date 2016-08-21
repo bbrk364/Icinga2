@@ -56,7 +56,7 @@ bool Notification::EvaluateApplyRuleInstance(const Checkable::Ptr& checkable, co
 	ConfigItemBuilder::Ptr builder = new ConfigItemBuilder(di);
 	builder->SetType("Notification");
 	builder->SetName(name);
-	builder->SetScope(frame.Locals->ShallowClone());
+	builder->SetScope(frame.GetLocals()->ShallowClone());
 	builder->SetIgnoreOnError(rule.GetIgnoreOnError());
 
 	Host::Ptr host;
@@ -97,10 +97,10 @@ bool Notification::EvaluateApplyRule(const Checkable::Ptr& checkable, const Appl
 
 	ScriptFrame frame;
 	if (rule.GetScope())
-		rule.GetScope()->CopyTo(frame.Locals);
-	frame.Locals->Set("host", host);
+		rule.GetScope()->CopyTo(frame.GetLocals());
+	frame.GetLocals()->Set("host", host);
 	if (service)
-		frame.Locals->Set("service", service);
+		frame.GetLocals()->Set("service", service);
 
 	Value vinstances;
 
@@ -130,7 +130,7 @@ bool Notification::EvaluateApplyRule(const Checkable::Ptr& checkable, const Appl
 			String name = rule.GetName();
 
 			if (!rule.GetFKVar().IsEmpty()) {
-				frame.Locals->Set(rule.GetFKVar(), instance);
+				frame.GetLocals()->Set(rule.GetFKVar(), instance);
 				name += instance;
 			}
 
@@ -144,8 +144,8 @@ bool Notification::EvaluateApplyRule(const Checkable::Ptr& checkable, const Appl
 		Dictionary::Ptr dict = vinstances;
 
 		BOOST_FOREACH(const String& key, dict->GetKeys()) {
-			frame.Locals->Set(rule.GetFKVar(), key);
-			frame.Locals->Set(rule.GetFVVar(), dict->Get(key));
+			frame.GetLocals()->Set(rule.GetFKVar(), key);
+			frame.GetLocals()->Set(rule.GetFVVar(), dict->Get(key));
 
 			if (EvaluateApplyRuleInstance(checkable, rule.GetName() + key, frame, rule))
 				match = true;

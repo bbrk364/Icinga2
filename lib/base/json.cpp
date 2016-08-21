@@ -67,28 +67,25 @@ static void EncodeArray(yajl_gen handle, const Array::Ptr& arr)
 
 static void Encode(yajl_gen handle, const Value& value)
 {
-	String str;
-
 	switch (value.GetType()) {
 		case ValueNumber:
-			if (yajl_gen_double(handle, static_cast<double>(value)) == yajl_gen_invalid_number)
+			if (yajl_gen_double(handle, value.Get<double>()) == yajl_gen_invalid_number)
 				yajl_gen_double(handle, 0);
 
 			break;
 		case ValueBoolean:
-			yajl_gen_bool(handle, value.ToBool());
+			yajl_gen_bool(handle, value.Get<bool>());
 
 			break;
 		case ValueString:
-			str = value;
-			yajl_gen_string(handle, reinterpret_cast<const unsigned char *>(str.CStr()), str.GetLength());
+			yajl_gen_string(handle, reinterpret_cast<const unsigned char *>(value.Get<String>().CStr()), value.Get<String>().GetLength());
 
 			break;
 		case ValueObject:
 			if (value.IsObjectType<Dictionary>())
-				EncodeDictionary(handle, value);
+				EncodeDictionary(handle, static_pointer_cast<Dictionary>(value.Get<Object::Ptr>()));
 			else if (value.IsObjectType<Array>())
-				EncodeArray(handle, value);
+				EncodeArray(handle, static_pointer_cast<Array>(value.Get<Object::Ptr>()));
 			else
 				yajl_gen_null(handle);
 

@@ -31,20 +31,20 @@ using namespace icinga;
 static int StringLen(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	String self = vframe->Self;
+	String self = vframe->GetSelf();
 	return self.GetLength();
 }
 
 static String StringToString(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	return vframe->Self;
+	return vframe->GetSelf();
 }
 
 static String StringSubstr(const std::vector<Value>& args)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	String self = vframe->Self;
+	String self = vframe->GetSelf();
 
 	if (args.empty())
 		BOOST_THROW_EXCEPTION(std::invalid_argument("Too few arguments"));
@@ -61,21 +61,21 @@ static String StringSubstr(const std::vector<Value>& args)
 static String StringUpper(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	String self = vframe->Self;
+	String self = vframe->GetSelf();
 	return boost::to_upper_copy(self);
 }
 
 static String StringLower(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	String self = vframe->Self;
+	String self = vframe->GetSelf();
 	return boost::to_lower_copy(self);
 }
 
 static Array::Ptr StringSplit(const String& delims)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	String self = vframe->Self;
+	String self = vframe->GetSelf();
 	std::vector<String> tokens;
 	boost::algorithm::split(tokens, self, boost::is_any_of(delims));
 
@@ -89,7 +89,7 @@ static Array::Ptr StringSplit(const String& delims)
 static int StringFind(const std::vector<Value>& args)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	String self = vframe->Self;
+	String self = vframe->GetSelf();
 
 	if (args.empty())
 		BOOST_THROW_EXCEPTION(std::invalid_argument("Too few arguments"));
@@ -113,14 +113,14 @@ static int StringFind(const std::vector<Value>& args)
 static bool StringContains(const String& str)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	String self = vframe->Self;
+	String self = vframe->GetSelf();
 	return self.Contains(str);
 }
 
 static Value StringReplace(const String& search, const String& replacement)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	String self = vframe->Self;
+	String self = vframe->GetSelf();
 
 	boost::algorithm::replace_all(self, search, replacement);
 	return self;
@@ -129,14 +129,14 @@ static Value StringReplace(const String& search, const String& replacement)
 static String StringReverse(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	String self = vframe->Self;
+	String self = vframe->GetSelf();
 	return self.Reverse();
 }
 
 static String StringTrim(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	String self = vframe->Self;
+	String self = vframe->GetSelf();
 	return self.Trim();
 }
 

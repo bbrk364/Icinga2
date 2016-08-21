@@ -65,7 +65,7 @@ public:
 		Value parent;
 
 		if (FindVarImportRef(frame, name, &parent, debugInfo)) {
-			*result = GetField(parent, name, frame.Sandboxed, debugInfo);
+			*result = GetField(parent, name, frame.IsSandboxed(), debugInfo);
 			return true;
 		}
 
@@ -179,7 +179,7 @@ public:
 			Array::Ptr arr = value;
 
 			for (Array::SizeType i = 0; i < arr->GetLength(); i++) {
-				frame.Locals->Set(fkvar, arr->Get(i));
+				frame.GetLocals()->Set(fkvar, arr->Get(i));
 				ExpressionResult res = expression->Evaluate(frame);
 				CHECK_RESULT_LOOP(res);
 			}
@@ -198,8 +198,8 @@ public:
 			}
 
 			BOOST_FOREACH(const String& key, keys) {
-				frame.Locals->Set(fkvar, key);
-				frame.Locals->Set(fvvar, dict->Get(key));
+				frame.GetLocals()->Set(fkvar, key);
+				frame.GetLocals()->Set(fvvar, dict->Get(key));
 				ExpressionResult res = expression->Evaluate(frame);
 				CHECK_RESULT_LOOP(res);
 			}
@@ -240,10 +240,10 @@ private:
 		ScriptFrame *frame = ScriptFrame::GetCurrentFrame();
 
 		if (closedVars)
-			closedVars->CopyTo(frame->Locals);
+			closedVars->CopyTo(frame->GetLocals());
 
 		for (std::vector<Value>::size_type i = 0; i < std::min(arguments.size(), funcargs.size()); i++)
-			frame->Locals->Set(funcargs[i], arguments[i]);
+			frame->GetLocals()->Set(funcargs[i], arguments[i]);
 
 		return expr->Evaluate(*frame);
 	}

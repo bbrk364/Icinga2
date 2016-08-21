@@ -156,7 +156,7 @@ char *ConsoleCommand::ConsoleCompleteHelper(const char *word, int state)
 			bool ready = false;
 			Array::Ptr suggestions;
 
-			l_ApiClient->AutocompleteScript(l_Session, word, l_ScriptFrame->Sandboxed,
+			l_ApiClient->AutocompleteScript(l_Session, word, l_ScriptFrame->IsSandboxed(),
 			    boost::bind(&ConsoleCommand::AutocompleteScriptCompletionHandler,
 			    boost::ref(mutex), boost::ref(cv), boost::ref(ready),
 			    _1, _2,
@@ -200,9 +200,9 @@ int ConsoleCommand::Run(const po::variables_map& vm, const std::vector<std::stri
 	session = Utility::NewUniqueID();
 
 	if (vm.count("sandbox"))
-		scriptFrame.Sandboxed = true;
+		scriptFrame.SetSandboxed(true);
 
-	scriptFrame.Self = scriptFrame.Locals;
+	scriptFrame.SetSelf(scriptFrame.GetLocals());
 
 	if (!vm.count("eval"))
 		std::cout << "Icinga 2 (version: " << Application::GetAppVersion() << ")\n";
@@ -348,7 +348,7 @@ incomplete:
 				bool ready = false;
 				boost::exception_ptr eptr;
 
-				l_ApiClient->ExecuteScript(l_Session, command, scriptFrame.Sandboxed,
+				l_ApiClient->ExecuteScript(l_Session, command, scriptFrame.IsSandboxed(),
 				    boost::bind(&ConsoleCommand::ExecuteScriptCompletionHandler,
 				    boost::ref(mutex), boost::ref(cv), boost::ref(ready),
 				    _1, _2,

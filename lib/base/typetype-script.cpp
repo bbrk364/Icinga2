@@ -36,7 +36,7 @@ static void InvokeAttributeHandlerHelper(const Function::Ptr& callback,
 static void TypeRegisterAttributeHandler(const String& fieldName, const Function::Ptr& callback)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Type::Ptr self = static_cast<Type::Ptr>(vframe->Self);
+	Type::Ptr self = static_cast<Type::Ptr>(vframe->GetSelf());
 	
 	int fid = self->GetFieldId(fieldName);
 	self->RegisterAttributeHandler(fid, boost::bind(&InvokeAttributeHandlerHelper, callback, _1, _2));

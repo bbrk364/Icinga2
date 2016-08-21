@@ -98,11 +98,11 @@ bool FilterUtility::EvaluateFilter(ScriptFrame& frame, Expression *filter,
 
 	Dictionary::Ptr vars;
 
-	if (frame.Self.IsEmpty()) {
+	if (frame.GetSelf().IsEmpty()) {
 		vars = new Dictionary();
-		frame.Self = vars;
+		frame.SetSelf(vars);
 	} else
-		vars = frame.Self;
+		vars = frame.GetSelf();
 
 	vars->Set("obj", target);
 	vars->Set(varName, target);
@@ -244,7 +244,7 @@ std::vector<Value> FilterUtility::GetFilterTargets(const QueryDescription& qd, c
 			BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid type specified for this query."));
 
 		ScriptFrame frame;
-		frame.Sandboxed = true;
+		frame.SetSandboxed(true);
 		Dictionary::Ptr uvars = new Dictionary();
 
 		Expression *ufilter = NULL;
@@ -262,7 +262,7 @@ std::vector<Value> FilterUtility::GetFilterTargets(const QueryDescription& qd, c
 			}
 		}
 
-		frame.Self = uvars;
+		frame.SetSelf(uvars);
 
 		try {
 			provider->FindTargets(type, boost::bind(&FilteredAddTarget,

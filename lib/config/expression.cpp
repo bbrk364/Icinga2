@@ -120,10 +120,10 @@ ExpressionResult VariableExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 {
 	Value value;
 
-	if (frame.Locals && frame.Locals->Get(m_Variable, &value))
+	if (frame.HasLocals() && frame.GetLocals()->Get(m_Variable, &value))
 		return value;
-	else if (frame.Self.IsObject() && frame.Locals != static_cast<Object::Ptr>(frame.Self) && static_cast<Object::Ptr>(frame.Self)->HasOwnField(m_Variable))
-		return VMOps::GetField(frame.Self, m_Variable, frame.Sandboxed, m_DebugInfo);
+	else if (frame.GetSelf().IsObject() && (!frame.HasLocals() || frame.GetLocals() != static_cast<Object::Ptr>(frame.GetSelf())) && static_cast<Object::Ptr>(frame.GetSelf())->HasOwnField(m_Variable))
+		return VMOps::GetField(frame.GetSelf(), m_Variable, frame.IsSandboxed(), m_DebugInfo);
 	else if (VMOps::FindVarImport(frame, m_Variable, &value, m_DebugInfo))
 		return value;
 	else
@@ -134,13 +134,13 @@ bool VariableExpression::GetReference(ScriptFrame& frame, bool init_dict, Value 
 {
 	*index = m_Variable;
 
-	if (frame.Locals && frame.Locals->Contains(m_Variable)) {
-		*parent = frame.Locals;
+	if (frame.HasLocals() && frame.GetLocals()->Contains(m_Variable)) {
+		*parent = frame.GetLocals();
 
 		if (dhint)
 			*dhint = NULL;
-	} else if (frame.Self.IsObject() && frame.Locals != static_cast<Object::Ptr>(frame.Self) && static_cast<Object::Ptr>(frame.Self)->HasOwnField(m_Variable)) {
-		*parent = frame.Self;
+	} else if (frame.GetSelf().IsObject() && (!frame.HasLocals() || frame.GetLocals() != static_cast<Object::Ptr>(frame.GetSelf())) && static_cast<Object::Ptr>(frame.GetSelf())->HasOwnField(m_Variable)) {
+		*parent = frame.GetSelf();
 
 		if (dhint && *dhint)
 			*dhint = new DebugHint((*dhint)->GetChild(m_Variable));
@@ -152,7 +152,7 @@ bool VariableExpression::GetReference(ScriptFrame& frame, bool init_dict, Value 
 		if (dhint)
 			*dhint = NULL;
 	} else
-		*parent = frame.Self;
+		*parent = frame.GetSelf();
 
 	return true;
 }
@@ -419,7 +419,7 @@ ExpressionResult FunctionCallExpression::DoEvaluate(ScriptFrame& frame, DebugHin
 	String index;
 
 	if (m_FName->GetReference(frame, false, &self, &index))
-		vfunc = VMOps::GetField(self, index, frame.Sandboxed, m_DebugInfo);
+		vfunc = VMOps::GetField(self, index, frame.IsSandboxed(), m_DebugInfo);
 	else {
 		ExpressionResult vfuncres = m_FName->Evaluate(frame);
 		CHECK_RESULT(vfuncres);
@@ -444,7 +444,7 @@ ExpressionResult FunctionCallExpression::DoEvaluate(ScriptFrame& frame, DebugHin
 
 	Function::Ptr func = vfunc;
 
-	if (!func->IsSideEffectFree() && frame.Sandboxed)
+	if (!func->IsSideEffectFree() && frame.IsSandboxed())
 		BOOST_THROW_EXCEPTION(ScriptError("Function is not marked as safe for sandbox mode.", m_DebugInfo));
 
 	std::vector<Value> arguments;
@@ -477,8 +477,8 @@ ExpressionResult DictExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint
 	Value self;
 
 	if (!m_Inline) {
-		self = frame.Self;
-		frame.Self = new Dictionary();
+		self = frame.GetSelf();
+		frame.SetSelf(new Dictionary());
 	}
 
 	Value result;
@@ -491,14 +491,14 @@ ExpressionResult DictExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint
 		}
 	} catch (...) {
 		if (!m_Inline)
-			std::swap(self, frame.Self);
+			std::swap(self, frame.GetSelf());
 		throw;
 	}
 
 	if (m_Inline)
 		return result;
 	else {
-		std::swap(self, frame.Self);
+		std::swap(self, frame.GetSelf());
 		return self;
 	}
 }
@@ -506,9 +506,9 @@ ExpressionResult DictExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint
 ExpressionResult GetScopeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
 	if (m_ScopeSpec == ScopeLocal)
-		return frame.Locals;
+		return frame.GetLocals();
 	else if (m_ScopeSpec == ScopeThis)
-		return frame.Self;
+		return frame.GetSelf();
 	else if (m_ScopeSpec == ScopeGlobal)
 		return ScriptGlobal::GetGlobals();
 	else
@@ -517,7 +517,7 @@ ExpressionResult GetScopeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 
 ExpressionResult SetExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	if (frame.Sandboxed)
+	if (frame.IsSandboxed())
 		BOOST_THROW_EXCEPTION(ScriptError("Assignments are not allowed in sandbox mode.", m_DebugInfo));
 
 	DebugHint *psdhint = dhint;
@@ -532,7 +532,7 @@ ExpressionResult SetExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 	CHECK_RESULT(operand2);
 
 	if (m_Op != OpSetLiteral) {
-		Value object = VMOps::GetField(parent, index, frame.Sandboxed, m_DebugInfo);
+		Value object = VMOps::GetField(parent, index, frame.IsSandboxed(), m_DebugInfo);
 
 		switch (m_Op) {
 			case OpSetAdd:
@@ -591,7 +591,7 @@ ExpressionResult ConditionalExpression::DoEvaluate(ScriptFrame& frame, DebugHint
 
 ExpressionResult WhileExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	if (frame.Sandboxed)
+	if (frame.IsSandboxed())
 		BOOST_THROW_EXCEPTION(ScriptError("While loops are not allowed in sandbox mode.", m_DebugInfo));
 
 	for (;;) {
@@ -634,7 +634,7 @@ ExpressionResult IndexerExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 	ExpressionResult operand2 = m_Operand2->Evaluate(frame, dhint);
 	CHECK_RESULT(operand2);
 
-	return VMOps::GetField(operand1.GetValue(), operand2.GetValue(), frame.Sandboxed, m_DebugInfo);
+	return VMOps::GetField(operand1.GetValue(), operand2.GetValue(), frame.IsSandboxed(), m_DebugInfo);
 }
 
 bool IndexerExpression::GetReference(ScriptFrame& frame, bool init_dict, Value *parent, String *index, DebugHint **dhint) const
@@ -647,18 +647,18 @@ bool IndexerExpression::GetReference(ScriptFrame& frame, bool init_dict, Value *
 	if (dhint)
 		psdhint = *dhint;
 
-	if (frame.Sandboxed)
+	if (frame.IsSandboxed())
 		init_dict = false;
 
 	if (m_Operand1->GetReference(frame, init_dict, &vparent, &vindex, &psdhint)) {
 		if (init_dict) {
-			Value old_value =  VMOps::GetField(vparent, vindex, frame.Sandboxed, m_Operand1->GetDebugInfo());
+			Value old_value =  VMOps::GetField(vparent, vindex, frame.IsSandboxed(), m_Operand1->GetDebugInfo());
 
 			if (old_value.IsEmpty() && !old_value.IsString())
 				VMOps::SetField(vparent, vindex, new Dictionary(), m_Operand1->GetDebugInfo());
 		}
 
-		*parent = VMOps::GetField(vparent, vindex, frame.Sandboxed, m_DebugInfo);
+		*parent = VMOps::GetField(vparent, vindex, frame.IsSandboxed(), m_DebugInfo);
 		free_psd = true;
 	} else {
 		ExpressionResult operand1 = m_Operand1->Evaluate(frame);
@@ -735,10 +735,10 @@ ExpressionResult ThrowExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 
 ExpressionResult ImportExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	if (frame.Sandboxed)
+	if (frame.IsSandboxed())
 		BOOST_THROW_EXCEPTION(ScriptError("Imports are not allowed in sandbox mode.", m_DebugInfo));
 
-	String type = VMOps::GetField(frame.Self, "type", frame.Sandboxed, m_DebugInfo);
+	String type = VMOps::GetField(frame.GetSelf(), "type", frame.IsSandboxed(), m_DebugInfo);
 	ExpressionResult nameres = m_Name->Evaluate(frame);
 	CHECK_RESULT(nameres);
 	Value name = nameres.GetValue();
@@ -754,7 +754,7 @@ ExpressionResult ImportExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 	Dictionary::Ptr scope = item->GetScope();
 
 	if (scope)
-		scope->CopyTo(frame.Locals);
+		scope->CopyTo(frame.GetLocals());
 
 	ExpressionResult result = item->GetExpression()->Evaluate(frame, dhint);
 	CHECK_RESULT(result);
@@ -769,7 +769,7 @@ ExpressionResult FunctionExpression::DoEvaluate(ScriptFrame& frame, DebugHint *d
 
 ExpressionResult ApplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	if (frame.Sandboxed)
+	if (frame.IsSandboxed())
 		BOOST_THROW_EXCEPTION(ScriptError("Apply rules are not allowed in sandbox mode.", m_DebugInfo));
 
 	ExpressionResult nameres = m_Name->Evaluate(frame);
@@ -781,7 +781,7 @@ ExpressionResult ApplyExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhin
 
 ExpressionResult ObjectExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	if (frame.Sandboxed)
+	if (frame.IsSandboxed())
 		BOOST_THROW_EXCEPTION(ScriptError("Object definitions are not allowed in sandbox mode.", m_DebugInfo));
 
 	String name;
@@ -799,7 +799,7 @@ ExpressionResult ObjectExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhi
 
 ExpressionResult ForExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	if (frame.Sandboxed)
+	if (frame.IsSandboxed())
 		BOOST_THROW_EXCEPTION(ScriptError("For loops are not allowed in sandbox mode.", m_DebugInfo));
 
 	ExpressionResult valueres = m_Value->Evaluate(frame, dhint);
@@ -810,7 +810,7 @@ ExpressionResult ForExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint)
 
 ExpressionResult LibraryExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	if (frame.Sandboxed)
+	if (frame.IsSandboxed())
 		BOOST_THROW_EXCEPTION(ScriptError("Loading libraries is not allowed in sandbox mode.", m_DebugInfo));
 
 	ExpressionResult libres = m_Operand->Evaluate(frame, dhint);
@@ -823,7 +823,7 @@ ExpressionResult LibraryExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dh
 
 ExpressionResult IncludeExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	if (frame.Sandboxed)
+	if (frame.IsSandboxed())
 		BOOST_THROW_EXCEPTION(ScriptError("Includes are not allowed in sandbox mode.", m_DebugInfo));
 
 	Expression *expr;
@@ -902,7 +902,7 @@ ExpressionResult BreakpointExpression::DoEvaluate(ScriptFrame& frame, DebugHint 
 
 ExpressionResult UsingExpression::DoEvaluate(ScriptFrame& frame, DebugHint *dhint) const
 {
-	if (frame.Sandboxed)
+	if (frame.IsSandboxed())
 		BOOST_THROW_EXCEPTION(ScriptError("Using directives are not allowed in sandbox mode.", m_DebugInfo));
 
 	ExpressionResult importres = m_Name->Evaluate(frame);

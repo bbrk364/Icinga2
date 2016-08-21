@@ -47,8 +47,8 @@ bool HostGroup::EvaluateObjectRule(const Host::Ptr& host, const ConfigItem::Ptr&
 
 	ScriptFrame frame;
 	if (group->GetScope())
-		group->GetScope()->CopyTo(frame.Locals);
-	frame.Locals->Set("host", host);
+		group->GetScope()->CopyTo(frame.GetLocals());
+	frame.GetLocals()->Set("host", host);
 
 	if (!group->GetFilter()->Evaluate(frame).GetValue().ToBool())
 		return false;

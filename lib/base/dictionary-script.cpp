@@ -29,49 +29,49 @@ using namespace icinga;
 static double DictionaryLen(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->Self);
+	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->GetSelf());
 	return self->GetLength();
 }
 
 static void DictionarySet(const String& key, const Value& value)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->Self);
+	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->GetSelf());
 	self->Set(key, value);
 }
 
 static Value DictionaryGet(const String& key)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->Self);
+	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->GetSelf());
 	return self->Get(key);
 }
 
 static void DictionaryRemove(const String& key)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->Self);
+	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->GetSelf());
 	self->Remove(key);
 }
 
 static bool DictionaryContains(const String& key)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->Self);
+	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->GetSelf());
 	return self->Contains(key);
 }
 
 static Dictionary::Ptr DictionaryShallowClone(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->Self);
+	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->GetSelf());
 	return self->ShallowClone();
 }
 
 static Array::Ptr DictionaryKeys(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->Self);
+	Dictionary::Ptr self = static_cast<Dictionary::Ptr>(vframe->GetSelf());
 	Array::Ptr keys = new Array();
 	ObjectLock olock(self);
 	BOOST_FOREACH(const Dictionary::Pair& kv, self) {

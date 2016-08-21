@@ -49,9 +49,9 @@ bool ServiceGroup::EvaluateObjectRule(const Service::Ptr& service, const ConfigI
 
 	ScriptFrame frame;
 	if (group->GetScope())
-		group->GetScope()->CopyTo(frame.Locals);
-	frame.Locals->Set("host", host);
-	frame.Locals->Set("service", service);
+		group->GetScope()->CopyTo(frame.GetLocals());
+	frame.GetLocals()->Set("host", host);
+	frame.GetLocals()->Set("service", service);
 
 	if (!group->GetFilter()->Evaluate(frame).GetValue().ToBool())
 		return false;

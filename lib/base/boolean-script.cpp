@@ -28,7 +28,7 @@ using namespace icinga;
 static String BooleanToString(void)
 {
 	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
-	bool self = vframe->Self;
+	bool self = vframe->GetSelf();
 	return self ? "true" : "false";
 }
 
