@@ -53,8 +53,10 @@ bool UserGroup::EvaluateObjectRule(const User::Ptr& user, const ConfigItem::Ptr&
 	if (!group->GetFilter()->Evaluate(frame).GetValue().ToBool())
 		return false;
 
+#ifdef I2_DEBUG
 	Log(LogDebug, "UserGroup")
 	    << "Assigning membership for group '" << group_name << "' to user '" << user->GetName() << "'";
+#endif /* I2_DEBUG */
 
 	Array::Ptr groups = user->GetGroups();
 	groups->Add(group_name);

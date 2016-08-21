@@ -53,8 +53,10 @@ bool HostGroup::EvaluateObjectRule(const Host::Ptr& host, const ConfigItem::Ptr&
 	if (!group->GetFilter()->Evaluate(frame).GetValue().ToBool())
 		return false;
 
+#ifdef I2_DEBUG
 	Log(LogDebug, "HostGroup")
 	    << "Assigning membership for group '" << group_name << "' to host '" << host->GetName() << "'";
+#endif /* I2_DEBUG */
 
 	Array::Ptr groups = host->GetGroups();
 	groups->Add(group_name);

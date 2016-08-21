@@ -56,8 +56,10 @@ bool ServiceGroup::EvaluateObjectRule(const Service::Ptr& service, const ConfigI
 	if (!group->GetFilter()->Evaluate(frame).GetValue().ToBool())
 		return false;
 
+#ifdef I2_DEBUG
 	Log(LogDebug, "ServiceGroup")
 	    << "Assigning membership for group '" << group_name << "' to service '" << service->GetName() << "'";
+#endif /* I2_DEBUG */
 
 	Array::Ptr groups = service->GetGroups();
 	groups->Add(group_name);
