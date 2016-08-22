@@ -55,6 +55,11 @@ set(ICINGA2_GIT_VERSION_INFO ON CACHE BOOL "Whether to use git describe")
 set(ICINGA2_UNITY_BUILD ON CACHE BOOL "Whether to perform a unity build")
 set(ICINGA2_LTO_BUILD OFF CACHE BOOL "Whether to use LTO")
 
+if(CMAKE_CROSSCOMPILING)
+  set(IMPORT_EXECUTABLES "IMPORTFILE-NOTFOUND" CACHE FILEPATH "Point it to the export file from a native build")
+  include(${IMPORT_EXECUTABLES})
+endif(CMAKE_CROSSCOMPILING)
+
 site_name(ICINGA2_BUILD_HOST_NAME)
 set(ICINGA2_BUILD_COMPILER_NAME "${CMAKE_CXX_COMPILER_ID}")
 
@@ -347,6 +352,16 @@ if(WIN32)
       ${OPENSSL_INCLUDE_DIR}/../bin/libeay32.dll ${OPENSSL_INCLUDE_DIR}/../bin/ssleay32.dll
     DESTINATION ${CMAKE_INSTALL_SBINDIR}
   )
+endif()
+
+set(ICINGA2_EXPORT_TARGETS mkembedconfig mkclass)
+
+if(ICINGA2_UNITY_BUILD)
+    list(APPEND ICINGA2_EXPORT_TARGETS mkunity)
+endif()
+
+if(NOT CMAKE_CROSSCOMPILING)
+    export(TARGETS ${ICINGA2_EXPORT_TARGETS} FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake)
 endif()
 
 include(CPack)

@@ -23,12 +23,14 @@ define_property(
 )
 
 if(ICINGA2_UNITY_BUILD)
-    add_executable(mkunity mkunity.c)
+    if (NOT CMAKE_CROSSCOMPILING)
+        add_executable(mkunity mkunity.c)
 
-    set_target_properties (
-      mkunity PROPERTIES
-      FOLDER Bin
-    )
+        set_target_properties (
+          mkunity PROPERTIES
+          FOLDER Bin
+        )
+    endif()
 
     function(MKUNITY_TARGET Prefix UnityInputRef)
         set(UnityInput ${${UnityInputRef}})

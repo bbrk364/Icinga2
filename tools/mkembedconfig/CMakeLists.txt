@@ -15,12 +15,14 @@
 # along with this program; if not, write to the Free Software Foundation
 # Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
 
-add_executable(mkembedconfig mkembedconfig.c)
+if(NOT CMAKE_CROSSCOMPILING)
+    add_executable(mkembedconfig mkembedconfig.c)
 
-set_target_properties (
-  mkembedconfig PROPERTIES
-  FOLDER Bin
-)
+    set_target_properties (
+      mkembedconfig PROPERTIES
+      FOLDER Bin
+    )
+endif()
 
 macro(MKEMBEDCONFIG_TARGET EmbedInput EmbedOutput)
     add_custom_command(
