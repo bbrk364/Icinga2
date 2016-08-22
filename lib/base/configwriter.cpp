@@ -210,7 +210,7 @@ void ConfigWriter::EmitFunctionCall(std::ostream& fp, const String& name, const 
 
 String ConfigWriter::EscapeIcingaString(const String& str)
 {
-	String result = str;
+	std::string result = str;
 	boost::algorithm::replace_all(result, "\\", "\\\\");
 	boost::algorithm::replace_all(result, "\n", "\\n");
 	boost::algorithm::replace_all(result, "\t", "\\t");

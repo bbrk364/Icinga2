@@ -462,10 +462,8 @@ String Application::GetExePath(const String& argv0)
 				}
 			}
 
-			if (!foundPath) {
-				executablePath.Clear();
+			if (!foundPath)
 				BOOST_THROW_EXCEPTION(std::runtime_error("Could not determine executable path."));
-			}
 		}
 	}
 

@@ -315,7 +315,14 @@ String Process::PrettyPrintArguments(const Process::Arguments& arguments)
 #ifdef _WIN32
 	return "'" + arguments + "'";
 #else /* _WIN32 */
-	return "'" + boost::algorithm::join(arguments, "' '") + "'";
+	std::string args;
+	BOOST_FOREACH(const String& argument, arguments) {
+		if (!args.empty())
+			args += "' '";
+
+		args += argument;
+	}
+	return "'" + args + "'";
 #endif /* _WIN32 */
 }
 

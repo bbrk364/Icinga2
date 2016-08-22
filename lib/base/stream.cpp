@@ -18,7 +18,6 @@
  ******************************************************************************/
 
 #include "base/stream.hpp"
-#include <boost/algorithm/string/trim.hpp>
 
 using namespace icinga;
 
@@ -97,8 +96,7 @@ StreamReadStatus Stream::ReadLine(String *line, StreamReadContext& context, bool
 		if (!context.FillFromStream(this, may_wait)) {
 			context.Eof = true;
 
-			*line = String(context.Buffer, &(context.Buffer[context.Size]));
-			boost::algorithm::trim_right(*line);
+			*line = String(context.Buffer, &(context.Buffer[context.Size])).TrimRight();
 
 			return StatusNewItem;
 		}
@@ -121,8 +119,7 @@ StreamReadStatus Stream::ReadLine(String *line, StreamReadContext& context, bool
 	context.MustRead = (count <= 1);
 
 	if (count > 0) {
-		*line = String(context.Buffer, &(context.Buffer[first_newline]));
-		boost::algorithm::trim_right(*line);
+		*line = String(context.Buffer, &(context.Buffer[first_newline])).TrimRight();
 
 		context.DropData(first_newline + 1);
 

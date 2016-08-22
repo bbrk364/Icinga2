@@ -31,7 +31,8 @@ const String::SizeType String::NPos = std::string::npos;
 
 String& String::operator+=(const Value& rhs)
 {
-	m_Data += static_cast<String>(rhs);
+	std::string t = GetData();
+	t += static_cast<String>(rhs);
 	return *this;
 }
 

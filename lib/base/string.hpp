@@ -23,6 +23,7 @@
 #include "base/i2-base.hpp"
 #include "base/object.hpp"
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/range/iterator.hpp>
 #include <boost/functional/hash.hpp>
@@ -30,6 +31,8 @@
 #include <functional>
 #include <string>
 #include <iosfwd>
+#include <boost/flyweight.hpp>
+#include <boost/flyweight/intermodule_holder.hpp>
 
 namespace icinga {
 
@@ -83,7 +86,7 @@ public:
 
 	template<typename InputIterator>
 	String(InputIterator begin, InputIterator end)
-		: m_Data(begin, end)
+		: m_Data(std::string(begin, end))
 	{ }
 
 	inline String& operator=(const String& rhs)
@@ -106,23 +109,22 @@ public:
 
 	inline const char& operator[](SizeType pos) const
 	{
-		return m_Data[pos];
-	}
-
-	inline char& operator[](SizeType pos)
-	{
-		return m_Data[pos];
+		return GetData()[pos];
 	}
 
 	inline String& operator+=(const String& rhs)
 	{
-		m_Data += rhs.m_Data;
+		std::string t = GetData();
+		t += rhs;
+		m_Data = t;
 		return *this;
 	}
 
 	inline String& operator+=(const char *rhs)
 	{
-		m_Data += rhs;
+		std::string t = GetData();
+		t += rhs;
+		m_Data = t;
 		return *this;
 	}
 
@@ -130,136 +132,148 @@ public:
 
 	inline String& operator+=(char rhs)
 	{
-		m_Data += rhs;
+		std::string t = GetData();
+		t += rhs;
+		m_Data = t;
 		return *this;
 	}
 
 	inline bool IsEmpty(void) const
 	{
-		return m_Data.empty();
+		return GetData().empty();
 	}
 
 	inline bool operator<(const String& rhs) const
 	{
-		return m_Data < rhs.m_Data;
+		return GetData() < rhs.GetData();
 	}
 
 	inline operator const std::string&(void) const
 	{
-		return m_Data;
+		return GetData();
 	}
 
 	inline const char *CStr(void) const
 	{
-		return m_Data.c_str();
-	}
-
-	inline void Clear(void)
-	{
-		m_Data.clear();
+		return GetData().c_str();
 	}
 
 	inline SizeType GetLength(void) const
 	{
-		return m_Data.size();
-	}
-
-	inline std::string& GetData(void)
-	{
-		return m_Data;
+		return GetData().size();
 	}
 
 	inline const std::string& GetData(void) const
 	{
-		return m_Data;
+		return m_Data.get();
 	}
 
 	inline SizeType Find(const String& str, SizeType pos = 0) const
 	{
-		return m_Data.find(str, pos);
+		return GetData().find(str, pos);
 	}
 
 	inline SizeType RFind(const String& str, SizeType pos = NPos) const
 	{
-		return m_Data.rfind(str, pos);
+		return GetData().rfind(str, pos);
 	}
 
 	inline SizeType FindFirstOf(const char *s, SizeType pos = 0) const
 	{
-		return m_Data.find_first_of(s, pos);
+		return GetData().find_first_of(s, pos);
 	}
 
 	inline SizeType FindFirstOf(char ch, SizeType pos = 0) const
 	{
-		return m_Data.find_first_of(ch, pos);
+		return GetData().find_first_of(ch, pos);
 	}
 
 	inline SizeType FindFirstNotOf(const char *s, SizeType pos = 0) const
 	{
-		return m_Data.find_first_not_of(s, pos);
+		return GetData().find_first_not_of(s, pos);
 	}
 
 	inline SizeType FindFirstNotOf(char ch, SizeType pos = 0) const
 	{
-		return m_Data.find_first_not_of(ch, pos);
+		return GetData().find_first_not_of(ch, pos);
 	}
 
 	inline SizeType FindLastOf(const char *s, SizeType pos = NPos) const
 	{
-		return m_Data.find_last_of(s, pos);
+		return GetData().find_last_of(s, pos);
 	}
 
 	inline SizeType FindLastOf(char ch, SizeType pos = NPos) const
 	{
-		return m_Data.find_last_of(ch, pos);
+		return GetData().find_last_of(ch, pos);
 	}
 
 	inline String SubStr(SizeType first, SizeType len = NPos) const
 	{
-		return m_Data.substr(first, len);
+		return GetData().substr(first, len);
 	}
 
-	inline void Replace(SizeType first, SizeType second, const String& str)
+	inline String Replace(SizeType first, SizeType second, const String& str)
 	{
-		m_Data.replace(first, second, str);
+		std::string t = GetData();
+		t.replace(first, second, str);
+		return t;
 	}
 
 	inline String Trim(void) const
 	{
-		String t = m_Data;
+		std::string t = GetData();
 		boost::algorithm::trim(t);
+		return t;
+	}
+
+	inline String TrimLeft(void) const
+	{
+		std::string t = GetData();
+		boost::algorithm::trim_left(t);
+		return t;
+	}
+
+	inline String TrimRight(void) const
+	{
+		std::string t = GetData();
+		boost::algorithm::trim_right(t);
 		return t;
 	}
 
 	inline String ToLower(void) const
 	{
-		String t = m_Data;
+		std::string t = GetData();
 		boost::algorithm::to_lower(t);
 		return t;
 	}
 
 	inline String ToUpper(void) const
 	{
-		String t = m_Data;
+		std::string t = GetData();
 		boost::algorithm::to_upper(t);
 		return t;
 	}
 
 	inline String Reverse(void) const
 	{
-		String t = m_Data;
-		std::reverse(t.m_Data.begin(), t.m_Data.end());
+		std::string t = GetData();
+		std::reverse(t.begin(), t.end());
 		return t;
 	}
 
-	inline void Append(int count, char ch)
+	template<typename T>
+	inline std::vector<String> Split(const T& chars) const
 	{
-		m_Data.append(count, ch);
+		std::string t = GetData();
+		std::vector<String> res;
+		boost::algorithm::split(res, t, boost::is_any_of(chars));
+		return res;
 	}
 
 	inline bool Contains(const String& str) const
 	{
-		return (m_Data.find(str) != std::string::npos);
+		return (GetData().find(str) != std::string::npos);
 	}
 
 	inline void swap(String& str)
@@ -267,55 +281,14 @@ public:
 		m_Data.swap(str.m_Data);
 	}
 
-	inline Iterator erase(Iterator first, Iterator last)
-	{
-		return m_Data.erase(first, last);
-	}
-
-	template<typename InputIterator>
-	void insert(Iterator p, InputIterator first, InputIterator last)
-	{
-		m_Data.insert(p, first, last);
-	}
-
-	inline Iterator Begin(void)
-	{
-		return m_Data.begin();
-	}
-
 	inline ConstIterator Begin(void) const
 	{
-		return m_Data.begin();
-	}
-
-	inline Iterator End(void)
-	{
-		return m_Data.end();
+		return GetData().begin();
 	}
 
 	inline ConstIterator End(void) const
 	{
-		return m_Data.end();
-	}
-
-	inline ReverseIterator RBegin(void)
-	{
-		return m_Data.rbegin();
-	}
-
-	inline ConstReverseIterator RBegin(void) const
-	{
-		return m_Data.rbegin();
-	}
-
-	inline ReverseIterator REnd(void)
-	{
-		return m_Data.rend();
-	}
-
-	inline ConstReverseIterator REnd(void) const
-	{
-		return m_Data.rend();
+		return GetData().end();
 	}
 
 	static const SizeType NPos;
@@ -323,7 +296,7 @@ public:
 	static Object::Ptr GetPrototype(void);
 
 private:
-	std::string m_Data;
+	boost::flyweight<std::string, boost::flyweights::intermodule_holder> m_Data;
 };
 
 inline std::ostream& operator<<(std::ostream& stream, const String& str)
@@ -440,19 +413,9 @@ inline bool operator!=(const char *lhs, const String& rhs)
 	return lhs != rhs.GetData();
 }
 
-inline String::Iterator range_begin(String& x)
-{
-	return x.Begin();
-}
-
 inline String::ConstIterator range_begin(const String& x)
 {
 	return x.Begin();
-}
-
-inline String::Iterator range_end(String& x)
-{
-	return x.End();
 }
 
 inline String::ConstIterator range_end(const String& x)
@@ -470,12 +433,6 @@ inline std::size_t hash_value(const String& s)
 
 namespace boost
 {
-
-template<>
-struct range_mutable_iterator<icinga::String>
-{
-	typedef icinga::String::Iterator type;
-};
 
 template<>
 struct range_const_iterator<icinga::String>

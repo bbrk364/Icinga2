@@ -117,8 +117,7 @@ void ConfigObject::ModifyAttribute(const String& attr, const Value& value, bool 
 
 	Type::Ptr type = GetReflectionType();
 
-	std::vector<String> tokens;
-	boost::algorithm::split(tokens, attr, boost::is_any_of("."));
+	std::vector<String> tokens = attr.Split(".");
 
 	String fieldName = tokens[0];
 
@@ -229,8 +228,7 @@ void ConfigObject::RestoreAttribute(const String& attr, bool updateVersion)
 {
 	Type::Ptr type = GetReflectionType();
 
-	std::vector<String> tokens;
-	boost::algorithm::split(tokens, attr, boost::is_any_of("."));
+	std::vector<String> tokens = attr.Split(".");
 
 	String fieldName = tokens[0];
 
@@ -283,8 +281,7 @@ void ConfigObject::RestoreAttribute(const String& attr, bool updateVersion)
 		{
 			ObjectLock olock(original_attributes);
 			BOOST_FOREACH(const Dictionary::Pair& kv, original_attributes) {
-				std::vector<String> originalTokens;
-				boost::algorithm::split(originalTokens, kv.first, boost::is_any_of("."));
+				std::vector<String> originalTokens = kv.first.Split(".");
 
 				if (tokens.size() > originalTokens.size())
 					continue;
@@ -653,8 +650,7 @@ void ConfigObject::DumpModifiedAttributes(const boost::function<void(const Confi
 
 				Type::Ptr type = object->GetReflectionType();
 
-				std::vector<String> tokens;
-				boost::algorithm::split(tokens, key, boost::is_any_of("."));
+				std::vector<String> tokens = key.Split(".");
 
 				String fieldName = tokens[0];
 				int fid = type->GetFieldId(fieldName);

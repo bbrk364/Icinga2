@@ -515,8 +515,7 @@ bool Utility::Glob(const String& pathSpec, const boost::function<void (const Str
 	std::vector<String> files, dirs;
 
 #ifdef _WIN32
-	std::vector<String> tokens;
-	boost::algorithm::split(tokens, pathSpec, boost::is_any_of("\\/"));
+	std::vector<String> tokens = pathSpec.split("\\/");;
 
 	String part1;
 
@@ -1250,9 +1249,8 @@ unsigned long Utility::SDBM(const String& str, size_t len)
 
 int Utility::CompareVersion(const String& v1, const String& v2)
 {
-	std::vector<String> tokensv1, tokensv2;
-	boost::algorithm::split(tokensv1, v1, boost::is_any_of("."));
-	boost::algorithm::split(tokensv2, v2, boost::is_any_of("."));
+	std::vector<String> tokensv1 = v1.Split(".");
+	std::vector<String> tokensv2 = v2.Split(".");
 
 	for (std::vector<String>::size_type i = 0; i < tokensv2.size() - tokensv1.size(); i++)
 		tokensv1.push_back("0");
