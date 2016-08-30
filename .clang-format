@@ -1,0 +1,39 @@
+---
+Language: Cpp
+BasedOnStyle:  LLVM
+AlignAfterOpenBracket: false
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+IndentWidth: 4
+ContinuationIndentWidth: 2
+AccessModifierOffset: -4
+IndentCaseLabels: true
+ReflowComments: false
+ColumnLimit: 100
+AlwaysBreakTemplateDeclarations: true
+IncludeCategories:
+  - Regex:           'i2-.\*.hpp"$'
+    Priority:        -1
+  - Regex:           '\.tcpp"$'
+    Priority:        1
+  - Regex:           '^"db_ido/'
+    Priority:        2
+  - Regex:           '^"icinga/'
+    Priority:        3
+  - Regex:           '^"(remote|cli)/'
+    Priority:        4
+  - Regex:           '^"config\/'
+    Priority:        5
+  - Regex:           '^"'
+    Priority:        6
+  - Regex:           '^<boost'
+    Priority:        7
+  - Regex:           '^<'
+    Priority:        8
+IncludeIsMainRegex: '$'

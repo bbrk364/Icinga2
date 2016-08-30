@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+  against=HEAD
+else
+  # Initial commit: diff against an empty tree object
+  against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+exec 1>&2
+
+if [ ! -f .clang-format ]; then
+  exit 0
+fi
+
+CLANG_FORMAT=$(which clang-format clang-format-mp-3.8 clang-format-mp-3.9 | head -1)
+
+if [ -z "$CLANG_FORMAT" ]; then
+  echo "Could not find clang-format."
+  exit 1
+fi
+
+for file in $(git diff --cached --name-only --diff-filter=ACM); do
+  include=0
+  for pattern in $(< .clang-format-include); do
+    if [[ $file =~ $pattern ]]; then
+      include=1
+      break
+    fi
+  done
+  for pattern in $(< .clang-format-exclude); do
+    if [[ $file =~ $pattern ]]; then
+      include=0
+      break
+    fi
+  done
+  if [ $include -eq 1 ]; then
+    if ! $CLANG_FORMAT --style=file -i $file; then
+      echo "clang-format failed to format file '$file'"
+      exit 1
+    fi
+
+    git add $file
+  fi
+done
+
+exit 0

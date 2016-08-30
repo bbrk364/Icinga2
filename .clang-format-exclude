@@ -1,0 +1,3 @@
+^third-party
+^icinga-studio/forms.h
+^(build|debug|release)
