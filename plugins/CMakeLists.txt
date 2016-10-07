@@ -52,6 +52,7 @@ if ( WIN32 )
   target_link_libraries ( check_procs Pdh.lib )
   target_link_libraries ( check_uptime ${Boost_SYSTEM_LIBRARY} )
   target_link_libraries ( check_users wtsapi32.lib )
+  target_link_libraries ( check_nscp ${Boost_SYSTEM_LIBRARY} base remote )
 
   install (
     TARGETS check_disk check_load  check_memory check_network check_nscp check_perfmon check_procs

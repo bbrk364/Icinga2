@@ -20,10 +20,20 @@
 #ifndef CHECK_NSCP_H
 #define CHECK_NSCP_H
 
+#include <WinSock2.h>
 #include <Windows.h>
 
-#include "thresholds.h"
+#include "base/application.hpp"
+#include "base/json.hpp"
+#include "base/string.hpp"
+#include "remote/httpclientconnection.hpp"
+#include "remote/httprequest.hpp"
 
-#include "boost/program_options.hpp"
+#include <boost/program_options.hpp>
+
+//int QueryEndpoint(const String&, const String&, const String&, const String&);
+//void ResultHttpCompletionCallback(const icinga::HttpRequest&, icinga::HttpResponse&, bool&, boost::condition_variable&, boost::mutex&, icinga::Dictionary::Ptr&);
+//int MatchState(const String&);
+//int FormatOutput(const icinga::Dictionary::Ptr&);
 
 #endif // !CHECK_NSCP_H
