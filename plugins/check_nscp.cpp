@@ -96,14 +96,51 @@ static int FormatOutput(const Dictionary::Ptr& result)
 	if (!result)
 		return 3;
 
-	Dictionary::Ptr payload = static_cast<Array::Ptr>(result->Get("payload"))->Get(0);
+	Array::Ptr payloads = result->Get("payload");
+	if (!payloads)
+		return 3;
+		//TODO
+	if (payloads->GetLength() == 0)
+		return 3;
+
+	Dictionary::Ptr payload;
+	try {
+		payload = payloads->Get(0);
+	} catch (const std::exception& ex) {
+		return 3;
+		//TODO
+	}
+
 	String state = static_cast<String>(payload->Get("result")).ToUpper();
-	
-	Array::Ptr lines = payload->Get("lines");
+	Array::Ptr lines;
+	try {
+		lines = payload->Get("lines");
+	} catch (const std::exception& ex) {
+		return 3;
+		//TODO
+	}
+
+	if (!lines) {
+		return 3;
+		//TODO
+	}
+
 	ObjectLock olock(lines);
 
-	for (const Dictionary::Ptr& line : lines) {
-		std::cout << payload->Get("command") << ' ' << state << " - " <<  line->Get("message") << " | ";
+	for (const Value& vline : lines) {
+		Dictionary::Ptr line;
+		try {
+			line = vline;
+		} catch (const std::exception& ex) {
+			return 3;
+			//TODO
+		}
+		if (!line) {
+			return 3;
+			//TODO
+		}
+
+		std::cout << payload->Get("command") << ' ' << line->Get("message") << " | ";
 
 		if (!line->Contains("perf")) {
 			std::cout << '\n';
@@ -172,6 +209,7 @@ void main(int argc, char **argv)
 		}
 
 		if (vm.count("help")) {
+			//TODO: Actual help text
 			std::cout << argv[0] << " Help\n\tVersion: " << VERSION << '\n';
 			std::cout << desc;
 			Application::Exit(0);
@@ -183,21 +221,28 @@ void main(int argc, char **argv)
 		Application::Exit(3);
 	}
 
-	String url = "/query/" + vm["query"].as<String>();
+	String endpoint = "/query/" + vm["query"].as<String>();
 	if (!vm.count("arg"))
-		url += '/';
+		endpoint += '/';
 	else {
-		url += '?';
+		endpoint += '?';
 		for (String arg : vm["arg"].as<std::vector<String>>()) {
-			url += arg;
-			url += '&';
+			String::SizeType pos = arg.FindFirstOf("=");
+			if (pos == String::NPos)
+				endpoint += Utility::EscapeString(arg, ACQUERY_ENCODE, false);
+			else {
+				String key = arg.SubStr(0, pos);
+				String val = arg.SubStr(pos + 1);
+				endpoint += Utility::EscapeString(key, ACQUERY_ENCODE, false) + "=" + Utility::EscapeString(val, ACQUERY_ENCODE, false);
+			}
+			endpoint += '&';
 		}
 	}
 
 	Application::InitializeBase();
 
 	Dictionary::Ptr result = QueryEndpoint(vm["host"].as<String>(), vm["port"].as<String>(),
-	    vm["passwd"].as<String>(), url);
+	    vm["passwd"].as<String>(), endpoint);
 
 	Application::Exit(FormatOutput(result));
 }
