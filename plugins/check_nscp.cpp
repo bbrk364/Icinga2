@@ -17,15 +17,23 @@
 * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.             *
 ******************************************************************************/
 
-#include "check_nscp.h"
-
 #define VERSION 0.1
+
+#include "remote/httpclientconnection.hpp"
+#include "remote/httprequest.hpp"
+#include "remote/url-characters.hpp"
+#include "base/application.hpp"
+#include "base/json.hpp"
+#include "base/string.hpp"
+#include <boost/program_options.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 using namespace icinga;
 namespace po = boost::program_options;
 
-void ResultHttpCompletionCallback(const HttpRequest& request, HttpResponse& response, bool& ready, 
-	    boost::condition_variable& cv, boost::mutex& mtx, Dictionary::Ptr& result) {
+static void ResultHttpCompletionCallback(const HttpRequest& request, HttpResponse& response, bool& ready,
+    boost::condition_variable& cv, boost::mutex& mtx, Dictionary::Ptr& result)
+{
 	String body;
 	char buffer[1024];
 	size_t count;
@@ -39,7 +47,8 @@ void ResultHttpCompletionCallback(const HttpRequest& request, HttpResponse& resp
 	cv.notify_all();
 }
 
-int MatchState(const String& state) {
+static int MatchState(const String& state)
+{
 	if (state.ToUpper() == "OK")
 		return 0;
 	if (state.ToUpper() == "WARNING")
@@ -50,8 +59,9 @@ int MatchState(const String& state) {
 	return 3;
 }
 
-Dictionary::Ptr QueryEndpoint(const String& host, const String& port, const String& password, const String& url) {
-
+static Dictionary::Ptr QueryEndpoint(const String& host, const String& port, const String& password,
+    const String& endpoint)
+{
 	HttpClientConnection::Ptr m_Connection = new HttpClientConnection(host, port, true);
 
 	try {
@@ -63,7 +73,7 @@ Dictionary::Ptr QueryEndpoint(const String& host, const String& port, const Stri
 		req->RequestMethod = "GET";
 
 		// Url() will call Utillity::UnescapeString() which will thrown an exception if it finds a lonely %
-		req->RequestUrl = new Url(Utility::EscapeString(url, "", true));
+		req->RequestUrl = new Url(endpoint);
 		req->AddHeader("password", password);
 		m_Connection->SubmitRequest(req, boost::bind(ResultHttpCompletionCallback, _1, _2,
 			boost::ref(ready), boost::ref(cv), boost::ref(mtx), boost::ref(result)));
@@ -72,15 +82,17 @@ Dictionary::Ptr QueryEndpoint(const String& host, const String& port, const Stri
 		while (!ready) {
 			cv.wait(lock);
 		}
+
 		return result;
 	}
 	catch (const std::exception& ex) {
-		std::cout << "Caught an exception: " << ex.what();
+		std::cout << "Caught an exception: " << ex.what() << '\n';
 		return Dictionary::Ptr();
 	}
 }
 
-int FormatOutput(Dictionary::Ptr result) {
+static int FormatOutput(const Dictionary::Ptr& result)
+{
 	if (!result)
 		return 3;
 
@@ -102,23 +114,33 @@ int FormatOutput(Dictionary::Ptr result) {
 		ObjectLock olock(perfs);
 
 		for (const Dictionary::Ptr& perf : perfs) {
-			std::cout << perf->Get("alias") << "=";
+			std::cout << "'" << perf->Get("alias") << "'=";
 			Dictionary::Ptr values = perf->Contains("int_value") ? perf->Get("int_value") : perf->Get("float_value");
-			std::cout << values->Get("value") << (values->Contains("unit") ? values->Get("unit") : "")
-				<< ';' << values->Get("warning") << ';' << values->Get("critical");
+			//TODO: Test ohne unit
+			std::cout << values->Get("value") << values->Get("unit") << ';' << values->Get("warning") << ';' << values->Get("critical");
 
-			if (values->Contains("minimum") && values->Contains("maximum"))
-				std::cout << ';' << values->Get("minimum") << ';' << values->Get("maximum");
+			if (values->Contains("minimum") || values->Contains("maximum")) {
+				std::cout << ';';
+
+				//TODO check standard
+				if (values->Contains("minimum"))
+					std::cout << values->Get("minimum");
+
+				if (values->Contains("maximum"))
+					std::cout << ';' << values->Get("maximum");
+			}
 
 			std::cout << ' ';
 		}
+
 		std::cout << '\n';
 	}
 
 	return MatchState(payload->Get("result"));
 }
 
-void main(int argc, char **argv) {
+void main(int argc, char **argv)
+{
 	po::variables_map vm;
 	po::options_description desc("Options");
 
