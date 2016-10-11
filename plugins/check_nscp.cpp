@@ -47,18 +47,6 @@ static void ResultHttpCompletionCallback(const HttpRequest& request, HttpRespons
 	cv.notify_all();
 }
 
-static int MatchState(const String& state)
-{
-	if (state.ToUpper() == "OK")
-		return 0;
-	if (state.ToUpper() == "WARNING")
-		return 1;
-	if (state.ToUpper() == "CRITICAL")
-		return 2;
-
-	return 3;
-}
-
 static Dictionary::Ptr QueryEndpoint(const String& host, const String& port, const String& password,
     const String& endpoint)
 {
@@ -93,38 +81,45 @@ static Dictionary::Ptr QueryEndpoint(const String& host, const String& port, con
 
 static int FormatOutput(const Dictionary::Ptr& result)
 {
-	if (!result)
+	if (!result) {
+		std::cout << "check_nscp UNKNOWN No data received.\n";
 		return 3;
+	}
 
 	Array::Ptr payloads = result->Get("payload");
-	if (!payloads)
+	if (!payloads) {
+		std::cout << "check_nscp UNKNOWN Answer format error: Answer is missing 'payload'.\n";
 		return 3;
-		//TODO
-	if (payloads->GetLength() == 0)
+	}
+
+	if (payloads->GetLength() == 0) {
+		std::cout << "check_nscp UNKNOWN Answer format error: 'payload' was empty.\n";
 		return 3;
+	}
 
 	Dictionary::Ptr payload;
 	try {
 		payload = payloads->Get(0);
 	} catch (const std::exception& ex) {
+		std::cout << "check_nscp UNKNOWN Answer format error: 'payload' was not a Dictionary.\n";
 		return 3;
-		//TODO
 	}
 
-	String state = static_cast<String>(payload->Get("result")).ToUpper();
+	
 	Array::Ptr lines;
 	try {
 		lines = payload->Get("lines");
-	} catch (const std::exception& ex) {
+	} catch (const std::exception&) {
+		std::cout << "check_nscp UNKNOWN Answer format error: 'payload' is missing 'lines'.\n";
 		return 3;
-		//TODO
 	}
 
 	if (!lines) {
+		std::cout << "check_nscp UNKNOWN Answer format error: 'lines' is Null.\n";
 		return 3;
-		//TODO
 	}
 
+	std::stringstream ssout;
 	ObjectLock olock(lines);
 
 	for (const Value& vline : lines) {
@@ -132,18 +127,18 @@ static int FormatOutput(const Dictionary::Ptr& result)
 		try {
 			line = vline;
 		} catch (const std::exception& ex) {
+			std::cout << "check_nscp UNKNOWN Answer format error: 'lines' entry was not a Dictionary.\n";
 			return 3;
-			//TODO
 		}
 		if (!line) {
+			std::cout << "check_nscp UNKNOWN Answer format error: 'lines' entry was Null.\n";
 			return 3;
-			//TODO
 		}
 
-		std::cout << payload->Get("command") << ' ' << line->Get("message") << " | ";
+		ssout << payload->Get("command") << ' ' << line->Get("message") << " | ";
 
 		if (!line->Contains("perf")) {
-			std::cout << '\n';
+			ssout << '\n';
 			break;
 		}
 
@@ -151,29 +146,35 @@ static int FormatOutput(const Dictionary::Ptr& result)
 		ObjectLock olock(perfs);
 
 		for (const Dictionary::Ptr& perf : perfs) {
-			std::cout << "'" << perf->Get("alias") << "'=";
+			ssout << "'" << perf->Get("alias") << "'=";
 			Dictionary::Ptr values = perf->Contains("int_value") ? perf->Get("int_value") : perf->Get("float_value");
 			//TODO: Test ohne unit
-			std::cout << values->Get("value") << values->Get("unit") << ';' << values->Get("warning") << ';' << values->Get("critical");
+			ssout << values->Get("value") << values->Get("unit") << ';' << values->Get("warning") << ';' << values->Get("critical");
 
 			if (values->Contains("minimum") || values->Contains("maximum")) {
-				std::cout << ';';
+				ssout << ';';
 
-				//TODO check standard
 				if (values->Contains("minimum"))
-					std::cout << values->Get("minimum");
+					ssout << values->Get("minimum");
 
 				if (values->Contains("maximum"))
-					std::cout << ';' << values->Get("maximum");
+					ssout << ';' << values->Get("maximum");
 			}
 
-			std::cout << ' ';
+			ssout << ' ';
 		}
 
-		std::cout << '\n';
+		ssout << '\n';
 	}
 
-	return MatchState(payload->Get("result"));
+	String state = static_cast<String>(payload->Get("result")).ToUpper();
+	int creturn = 0 ? state == "OK" : 1 ? state == "WARNING" : 2 ? state == "CRITICAL" : 3;
+
+	if (creturn == 3)
+		std::cout << "check_nscp UNKNOWN Answer format error: 'result' was not a known state.\n";
+	else
+		std::cout << ssout.rdbuf();
+	return creturn;
 }
 
 void main(int argc, char **argv)
