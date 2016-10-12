@@ -39,6 +39,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/regex.hpp>
 
 using namespace icinga;
 
@@ -109,14 +110,14 @@ void OpenTsdbWriter::CheckResultHandler(const Checkable::Ptr& checkable, const C
 	String metric;
 	std::map<String, String> tags;
 
-	String escaped_hostName = EscapeMetric(host->GetName());
+	String escaped_hostName = EscapeMetricTag(host->GetName());
 	tags["host"] = escaped_hostName;
 
 	double ts = cr->GetExecutionEnd();
 
 	if (service) {
 		String serviceName = service->GetShortName();
-		String escaped_serviceName = EscapeMetric(serviceName);
+		String escaped_serviceName = EscapeMetricTag(serviceName);
 		metric = "icinga.service." + escaped_serviceName;
 
 		SendMetric(metric + ".state", tags, service->GetState(), ts);
@@ -137,7 +138,7 @@ void OpenTsdbWriter::CheckResultHandler(const Checkable::Ptr& checkable, const C
 	if (service) {
 		tags["type"] = "service";
 		String serviceName = service->GetShortName();
-		String escaped_serviceName = EscapeTag(serviceName);
+		String escaped_serviceName = EscapeMetricTag(serviceName);
 		tags["service"] = escaped_serviceName;
 	} else {
 		tags["type"] = "host";
@@ -172,7 +173,7 @@ void OpenTsdbWriter::SendPerfdata(const String& metric, const std::map<String, S
 			}
 		}
 
-		String escaped_key = EscapeMetric(pdv->GetLabel());
+		String escaped_key = EscapeMetricTag(pdv->GetLabel());
 		boost::algorithm::replace_all(escaped_key, "::", ".");
 
 		SendMetric(metric + "." + escaped_key, tags, pdv->GetValue(), ts);
@@ -225,26 +226,9 @@ void OpenTsdbWriter::SendMetric(const String& metric, const std::map<String, Str
 	}
 }
 
-/* for metric and tag name rules, see
- * http://opentsdb.net/docs/build/html/user_guide/writing.html#metrics-and-tags
- */
-String OpenTsdbWriter::EscapeTag(const String& str)
+String OpenTsdbWriter::EscapeMetricTag(const String& str)
 {
-	String result = str;
-
-	boost::replace_all(result, " ", "_");
-	boost::replace_all(result, "\\", "_");
-
-	return result;
-}
-
-String OpenTsdbWriter::EscapeMetric(const String& str)
-{
-	String result = str;
-
-	boost::replace_all(result, " ", "_");
-	boost::replace_all(result, ".", "_");
-	boost::replace_all(result, "\\", "_");
+	String result = boost::regex_replace(str, replaceMetricTagRe, "_");
 
 	return result;
 }

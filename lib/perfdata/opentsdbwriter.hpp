@@ -26,6 +26,7 @@
 #include "base/tcpsocket.hpp"
 #include "base/timer.hpp"
 #include <fstream>
+#include <boost/regex.hpp>
 
 namespace icinga
 {
@@ -51,11 +52,23 @@ private:
 
 	Timer::Ptr m_ReconnectTimer;
 
+	/* for metric and tag name rules, see
+	* http://opentsdb.net/docs/build/html/user_guide/writing.html#metrics-and-tags
+	* as of writing this the rule is:
+	*
+	* - Strings are case sensitive, i.e. "Sys.Cpu.User" will be stored separately from "sys.cpu.user"
+	* - Spaces are not allowed
+	* - Only the following characters are allowed: a to z, A to Z, 0 to 9, -, _, ., /
+	*   or Unicode letters (as per the specification)
+	* - Metric and tags are not limited in length, though you should try to keep the values fairly short.
+	*/
+	const boost::regex replaceMetricTagRe("[^a-zA-Z0-9_./-]");
+
+
 	void CheckResultHandler(const Checkable::Ptr& checkable, const CheckResult::Ptr& cr);
 	void SendMetric(const String& metric, const std::map<String, String>& tags, double value, double ts);
 	void SendPerfdata(const String& metric, const std::map<String, String>& tags, const CheckResult::Ptr& cr, double ts);
-	static String EscapeTag(const String& str);
-	static String EscapeMetric(const String& str);
+	static String EscapeMetricTag(const String& str);
 
 	void ReconnectTimerHandler(void);
 };
