@@ -15,29 +15,33 @@
 # along with this program; if not, write to the Free Software Foundation
 # Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
 
+add_executable ( check_nscp check_nscp.cpp  )
+target_link_libraries ( check_nscp ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_SYSTEM_LIBRARY} base remote )
+install ( TARGETS check_nscp RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR} )
+
 if ( WIN32 )
 
   add_definitions ( -DUNICODE -D_UNICODE )
-  
+
   add_library ( thresholds thresholds )
     set_target_properties (
     thresholds PROPERTIES
     INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}/icinga2
     FOLDER Plugins
   )
-  
-  list ( APPEND check_SOURCES 
-    check_disk.cpp check_load.cpp check_memory.cpp check_network.cpp check_nscp.cpp check_perfmon.cpp
+
+  list ( APPEND check_SOURCES
+    check_disk.cpp check_load.cpp check_memory.cpp check_network.cpp check_perfmon.cpp
     check_ping.cpp check_procs.cpp check_service.cpp check_swap.cpp check_update.cpp check_uptime.cpp
     check_users.cpp )
-  
-  foreach ( source ${check_SOURCES} ) 
+
+  foreach ( source ${check_SOURCES} )
     string ( REGEX REPLACE ".cpp\$" "" check_OUT "${source}" )
     string ( REGEX REPLACE ".cpp\$" ".h" check_HEADER "${source}" )
-  
+
     add_executable ( ${check_OUT} ${source} ${check_HEADER} )
     target_link_libraries ( ${check_OUT} thresholds Shlwapi.lib ${Boost_PROGRAM_OPTIONS_LIBRARY} )
-    
+
     set_target_properties (
       ${check_OUT} PROPERTIES
       INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}/icinga2
@@ -52,10 +56,9 @@ if ( WIN32 )
   target_link_libraries ( check_procs Pdh.lib )
   target_link_libraries ( check_uptime ${Boost_SYSTEM_LIBRARY} )
   target_link_libraries ( check_users wtsapi32.lib )
-  target_link_libraries ( check_nscp ${Boost_SYSTEM_LIBRARY} base remote )
 
   install (
-    TARGETS check_disk check_load  check_memory check_network check_nscp check_perfmon check_procs
+    TARGETS check_disk check_load check_memory check_network check_perfmon check_procs
       check_ping check_service check_swap check_update check_uptime check_users
     RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR} )
 
