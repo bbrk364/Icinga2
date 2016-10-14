@@ -18,6 +18,12 @@
 add_executable ( check_nscp check_nscp.cpp  )
 target_link_libraries ( check_nscp ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_SYSTEM_LIBRARY} base remote )
 install ( TARGETS check_nscp RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR} )
+set_target_properties (
+  check_nscp PROPERTIES
+  INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}/icinga2
+  DEFINE_SYMBOL I2_PLUGINS_BUILD
+  FOLDER Plugins )
+  install ( TARGETS check_nscp RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR} )
 
 if ( WIN32 )
 
