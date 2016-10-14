@@ -31,6 +31,12 @@
 using namespace icinga;
 namespace po = boost::program_options;
 
+bool DEBUG = false;
+
+/*
+ * This function is called by an 'HttpRequest' once the server answers. After doing a short check on the 'response' it
+ * decodes it to a Dictionary and then tells 'QueryEndpoint()' that it's done
+ */
 static void ResultHttpCompletionCallback(const HttpRequest& request, HttpResponse& response, bool& ready,
     boost::condition_variable& cv, boost::mutex& mtx, Dictionary::Ptr& result)
 {
@@ -41,12 +47,29 @@ static void ResultHttpCompletionCallback(const HttpRequest& request, HttpRespons
 	while ((count = response.ReadBody(buffer, sizeof(buffer))) > 0)
 		body += String(buffer, buffer + count);
 
-	result = JsonDecode(body);
+	if (DEBUG) {
+		std::cout << "Received answer\n"
+			<< "\tHTTP code: " << response.StatusCode
+			<< "\n\tHTTP message: '" << response.StatusMessage << "'\n";
+	}
+
+	// Only try to decode the body if the 'HttpRequest' was successful
+	if (response.StatusCode != 200)
+		result = Dictionary::Ptr();
+	else
+		result = JsonDecode(body);
+
+	// Unlock our mutex, set ready and notify 'QueryEndpoint()'
 	boost::mutex::scoped_lock lock(mtx);
 	ready = true;
 	cv.notify_all();
 }
 
+/*
+ * This function takes all the information required to query an nscp instance on
+ * 'host':'port' with 'password'. The String 'endpoint' contains the specific
+ * query name and all the arguments formatted as an URL.
+ */
 static Dictionary::Ptr QueryEndpoint(const String& host, const String& port, const String& password,
     const String& endpoint)
 {
@@ -63,9 +86,15 @@ static Dictionary::Ptr QueryEndpoint(const String& host, const String& port, con
 		// Url() will call Utillity::UnescapeString() which will thrown an exception if it finds a lonely %
 		req->RequestUrl = new Url(endpoint);
 		req->AddHeader("password", password);
+		if (DEBUG)
+			std::cout << "Sending request to '" << req->RequestUrl->Format() << "'\n";
+
+		// Submits the request. The 'ResultHttpCompletionCallback' is called once the HttpRequest receives an answer,
+		// which then sets 'ready' to true
 		m_Connection->SubmitRequest(req, boost::bind(ResultHttpCompletionCallback, _1, _2,
 			boost::ref(ready), boost::ref(cv), boost::ref(mtx), boost::ref(result)));
 
+		// We need to spinlock here because our 'HttpRequest' works asynchrous
 		boost::mutex::scoped_lock lock(mtx);
 		while (!ready) {
 			cv.wait(lock);
@@ -74,17 +103,26 @@ static Dictionary::Ptr QueryEndpoint(const String& host, const String& port, con
 		return result;
 	}
 	catch (const std::exception& ex) {
+		// Exceptions should only happen in extreme edge cases we can't recover from
 		std::cout << "Caught an exception: " << ex.what() << '\n';
 		return Dictionary::Ptr();
 	}
 }
 
+/*
+ * Takes a Dictionary 'result' and constructs an icinga compliant output string.
+ * If 'result' is not in the expected format it returns 3 ("UNKNOWN") and prints an informative, icinga compliant,
+ * output string.
+ */
 static int FormatOutput(const Dictionary::Ptr& result)
 {
 	if (!result) {
 		std::cout << "check_nscp UNKNOWN No data received.\n";
 		return 3;
 	}
+
+	if (DEBUG)
+		std::cout << "JSON Body:\n" << result->ToString() << '\n';
 
 	Array::Ptr payloads = result->Get("payload");
 	if (!payloads) {
@@ -97,6 +135,11 @@ static int FormatOutput(const Dictionary::Ptr& result)
 		return 3;
 	}
 
+	if (payloads->GetLength() > 1) {
+		std::cout << "check_nscp UNKNOWN Answer format error: Multiple 'payload's are not supported.";
+		return 3;
+	}
+
 	Dictionary::Ptr payload;
 	try {
 		payload = payloads->Get(0);
@@ -105,7 +148,6 @@ static int FormatOutput(const Dictionary::Ptr& result)
 		return 3;
 	}
 
-	
 	Array::Ptr lines;
 	try {
 		lines = payload->Get("lines");
@@ -148,7 +190,6 @@ static int FormatOutput(const Dictionary::Ptr& result)
 		for (const Dictionary::Ptr& perf : perfs) {
 			ssout << "'" << perf->Get("alias") << "'=";
 			Dictionary::Ptr values = perf->Contains("int_value") ? perf->Get("int_value") : perf->Get("float_value");
-			//TODO: Test ohne unit
 			ssout << values->Get("value") << values->Get("unit") << ';' << values->Get("warning") << ';' << values->Get("critical");
 
 			if (values->Contains("minimum") || values->Contains("maximum")) {
@@ -167,17 +208,26 @@ static int FormatOutput(const Dictionary::Ptr& result)
 		ssout << '\n';
 	}
 
+	//TODO: Fix
 	String state = static_cast<String>(payload->Get("result")).ToUpper();
-	int creturn = 0 ? state == "OK" : 1 ? state == "WARNING" : 2 ? state == "CRITICAL" : 3;
+	int creturn = state == "OK" ? 0 :
+				  state == "WARNING" ? 1 :
+				  state == "CRITICAL" ? 2 :
+				  state == "UNKNOWN" ? 3 : 4;
 
-	if (creturn == 3)
+	if (creturn == 4) {
 		std::cout << "check_nscp UNKNOWN Answer format error: 'result' was not a known state.\n";
-	else
-		std::cout << ssout.rdbuf();
+		return 3;
+	}
+
+	std::cout << ssout.rdbuf();
 	return creturn;
 }
 
-void main(int argc, char **argv)
+/* 
+ *  Process arguments, initialize environment and shut down gracefully.
+ */
+int main(int argc, char **argv)
 {
 	po::variables_map vm;
 	po::options_description desc("Options");
@@ -210,9 +260,10 @@ void main(int argc, char **argv)
 		}
 
 		if (vm.count("help")) {
-			//TODO: Actual help text
 			std::cout << argv[0] << " Help\n\tVersion: " << VERSION << '\n';
+			std::cout << "check_nscp is a program used to query against the NSClient API.\n";
 			std::cout << desc;
+			std::cout << "For detailed information on possible queries and their arguments see the NSClient documentation.";
 			Application::Exit(0);
 		}
 
@@ -222,6 +273,11 @@ void main(int argc, char **argv)
 		Application::Exit(3);
 	}
 
+	if (vm.count("debug")) {
+		DEBUG = true;
+	}
+
+	// Here we create our URL string, wee need to Escape certain characters since Url() follows RFC 3986
 	String endpoint = "/query/" + vm["query"].as<String>();
 	if (!vm.count("arg"))
 		endpoint += '/';
@@ -240,10 +296,13 @@ void main(int argc, char **argv)
 		}
 	}
 
+	// This needs to happen for HttpRequest to work
 	Application::InitializeBase();
 
 	Dictionary::Ptr result = QueryEndpoint(vm["host"].as<String>(), vm["port"].as<String>(),
 	    vm["passwd"].as<String>(), endpoint);
 
+	// Application::Exit() is the clean way to exit after calling InitializeBase()
 	Application::Exit(FormatOutput(result));
+	return 255;
 }
