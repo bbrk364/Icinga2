@@ -386,11 +386,7 @@ bool Url::ParseQuery(const String& query)
 		String key = token.SubStr(0, pHelper);
 		String value = Empty;
 
-<<<<<<< HEAD
 		if (pHelper != String::NPos && pHelper != token.GetLength() - 1)
-=======
-		if (pHelper != token.NPos && pHelper != token.GetLength() - 1)
->>>>>>> Fix Url query without values
 			value = token.SubStr(pHelper+1);
 
 		if (!ValidateToken(value, ACQUERY))
