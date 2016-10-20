@@ -62,7 +62,7 @@ private:
 	*   or Unicode letters (as per the specification)
 	* - Metric and tags are not limited in length, though you should try to keep the values fairly short.
 	*/
-	const boost::regex replaceMetricTagRe("[^a-zA-Z0-9_./-]");
+	static const boost::regex replaceMetricTagRe("[^a-zA-Z0-9_./-]");
 
 
 	void CheckResultHandler(const Checkable::Ptr& checkable, const CheckResult::Ptr& cr);
