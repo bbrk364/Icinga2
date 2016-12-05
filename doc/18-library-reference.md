@@ -1156,6 +1156,14 @@ Signature:
 Returns a copy of the array with all duplicate elements removed. The original order
 of the array is not preserved.
 
+### <a id="array-match"></a> Array#match
+
+Signature:
+
+    function match(pattern);
+
+Returns true if any string element matches the given string pattern, false otherwise
+
 ## <a id="dictionary-type"></a> Dictionary type
 
 Inherits methods from the [Object type](18-library-reference.md#object-type).

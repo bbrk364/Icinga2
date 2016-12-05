@@ -222,6 +222,23 @@ static Array::Ptr ArrayUnique(void)
 	return Array::FromSet(result);
 }
 
+static bool ArrayMatch(const Value& value)
+{
+	ScriptFrame *vframe = ScriptFrame::GetCurrentFrame();
+	Array::Ptr self = static_cast<Array::Ptr>(vframe->Self);
+
+	ObjectLock olock(self);
+	for (const Value& item : self) {
+		if (!item.IsString())
+			continue;
+
+		if (Utility::Match(value, item))
+			return true;
+	}
+
+	return false;
+}
+
 Object::Ptr Array::GetPrototype(void)
 {
 	static Dictionary::Ptr prototype;
@@ -243,6 +260,7 @@ Object::Ptr Array::GetPrototype(void)
 		prototype->Set("reduce", new Function("Array#reduce", WrapFunction(ArrayReduce), true));
 		prototype->Set("filter", new Function("Array#filter", WrapFunction(ArrayFilter), true));
 		prototype->Set("unique", new Function("Array#unique", WrapFunction(ArrayUnique), true));
+		prototype->Set("match", new Function("Array#match", WrapFunction(ArrayMatch), true));
 	}
 
 	return prototype;

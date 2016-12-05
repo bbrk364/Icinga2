@@ -31,7 +31,7 @@ using namespace icinga;
 REGISTER_PRIMITIVE_TYPE(Array, Object, Array::GetPrototype());
 
 /**
- * Restrieves a value from an array.
+ * Retrieves a value from an array.
  *
  * @param index The index.
  * @returns The value.
