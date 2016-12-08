@@ -1607,6 +1607,19 @@ Name             | Description
 users\_win\_warn | **Optional**. The warning threshold.
 users\_win\_crit | **Optional**. The critical threshold.
 
+### <a id="windows-plugins-nscp-windows"></a> nscp-windows
+
+Check command object for the `check_nscp.exe` plugin
+
+Custom attributes
+Name              | Description
+:-----------------|:------------
+nscp\_win\_host   | **Required**. NSCP host address.
+nscp\_win\_port   | **Optional**. NSCP port address, defaults to 8443.
+nscp\_win\_passwd | **Required**. Password, refer to the NSCP documentation.
+nscp\_win\_query  | **Required**. Query endpoint to use, refer to the NSCP documentation for possible values.
+nscp\_win\_arg    | **Optional**. Dictionary of arguments, either single strings or key-value pairs using'='. Refer to the NSCP documentation.
+
 
 ## <a id="nscp-plugin-check-commands"></a> Plugin Check Commands for NSClient++
 
