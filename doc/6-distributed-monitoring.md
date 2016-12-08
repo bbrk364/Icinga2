@@ -198,9 +198,9 @@ Here is an example of a master setup for the `icinga2-master1.localdomain` node 
 
     [root@icinga2-master1.localdomain /]# icinga2 node wizard
     Welcome to the Icinga 2 Setup Wizard!
-    
+
     We'll guide you through all required configuration details.
-    
+
     Please specify if this is a satellite setup ('n' installs a master setup) [Y/n]: n
     Starting the Master setup routine...
     Please specify the common name (CN) [icinga2-master1.localdomain]: icinga2-master1.localdomain
@@ -230,7 +230,7 @@ Here is an example of a master setup for the `icinga2-master1.localdomain` node 
     information/cli: Updating constants file '/etc/icinga2/constants.conf'.
     information/cli: Updating constants file '/etc/icinga2/constants.conf'.
     Done.
-    
+
     Now restart your Icinga 2 daemon to finish the installation!
 
     [root@icinga2-master1.localdomain /]# systemctl restart icinga2
@@ -350,9 +350,9 @@ is configured to accept configuration and commands from the master:
 
     [root@icinga2-client1.localdomain /]# icinga2 node wizard
     Welcome to the Icinga 2 Setup Wizard!
-    
+
     We'll guide you through all required configuration details.
-    
+
     Please specify if this is a satellite setup ('n' installs a master setup) [Y/n]:
     Starting the Node setup routine...
     Please specify the common name (CN) [icinga2-client1.localdomain]: icinga2-client1.localdomain
@@ -369,22 +369,22 @@ is configured to accept configuration and commands from the master:
     information/base: Writing private key to '/etc/icinga2/pki/icinga2-client1.localdomain.key'.
     information/base: Writing X509 certificate to '/etc/icinga2/pki/icinga2-client1.localdomain.crt'.
     information/cli: Fetching public certificate from master (192.168.56.101, 5665):
-    
+
     Certificate information:
-    
+
      Subject:     CN = icinga2-master1.localdomain
      Issuer:      CN = Icinga CA
      Valid From:  Feb 23 14:45:32 2016 GMT
      Valid Until: Feb 19 14:45:32 2031 GMT
      Fingerprint: AC 99 8B 2B 3D B0 01 00 E5 21 FA 05 2E EC D5 A9 EF 9E AA E3
-    
+
     Is this information correct? [y/N]: y
     information/cli: Received trusted master certificate.
-    
+
     Please specify the request ticket generated on your Icinga 2 master.
      (Hint: # icinga2 pki ticket --cn 'icinga2-client1.localdomain'): 4f75d2ecd253575fe9180938ebff7cbca262f96e
     information/cli: Requesting certificate with ticket '4f75d2ecd253575fe9180938ebff7cbca262f96e'.
-    
+
     information/cli: Created backup file '/etc/icinga2/pki/icinga2-client1.localdomain.crt.orig'.
     information/cli: Writing signed certificate to file '/etc/icinga2/pki/icinga2-client1.localdomain.crt'.
     information/cli: Writing CA certificate to file '/etc/icinga2/pki/ca.crt'.
@@ -2110,6 +2110,12 @@ for the requirements.
 
 ### <a id="distributed-monitoring-windows-nscp"></a> Windows Client and NSClient++
 
+There are currently two ways to go about using Icinga 2 and NSClient++ to monitor a Windows client.
+Either with the help of [nscp-local](6-distributed-monitoring#distributed-monitoring-windows-nscp-check_nt) or using [check_nscp](6-distributed-monitoring#distributed-monitoring-windows-nscp-check_nscp).
+In the following both methods will be explained, it is then up to you which you choose.
+
+#### <a id="distributed-monitoring-windows-nscp-check_nt"></a> NSCLient++ with nscp-local
+
 The [Windows setup](6-distributed-monitoring.md#distributed-monitoring-setup-client-windows) already allows
 you to install the NSClient++ package. In addition to the Windows plugins you can
 use the [nscp-local commands](10-icinga-template-library.md#nscp-plugin-check-commands)
@@ -2169,6 +2175,63 @@ Open Icinga Web 2 and check your newly added Windows NSClient++ check :)
 
 ![Icinga 2 Distributed Monitoring Windows Client with NSClient++](images/distributed-monitoring/icinga2_distributed_windows_nscp_counter_icingaweb2.png)
 
+#### <a id="distributed-monitoring-windows-nscp-check_nscp"></a> NSCLient++ with check_nscp
+`check_nscp` is part of the [Icinga 2-Windows checks](10-icinga-template-library.md#windows-plugins) and as such is included by default.
+Should this not be the case, edit your icinga2.conf and add this line:
+
+    vim /etc/icinga2/icinga2.conf
+
+    include <windows-plugins>
+
+`check_nscp.exe` runs queries against the NSClient++ API. This means the webserver module needs to be enabled, if you have not done so already during the installation.
+(TODO: Vielleicht screenshot)
+The following will install the webserver and set the password 'icinga'.
+
+    ./check_nscp.exe web install
+    ./nscp web password — –set icinga
+
+With that you can now configure Services for any query, for a list of queries with additional information see the [NSClient++ documentation](https://docs.nsclient.org/reference/check/CheckHelpers.html#queries).
+The following is an example of a Service which uses 'check_drivsize' to monitor a clients free disk space.
+
+First a Host Object is required:
+
+    [root@icinga2-master1.localdomain /]# cd /etc/icinga2/zones.d/master
+    [root@icinga2-master1.localdomain /etc/icinga2/zones.d/master]# vim hosts.conf
+
+    object Host "icinga2-client2.localdomain" {
+        check_command = "hostalive"
+        address = "192.168.56.111"
+        vars.client_endpoint = name //follows the convention that host name == endpoint name
+        vars.os_type = "windows"
+        vars.nscp_passwd = "icinga"
+        vars.drives = ["C:", "D:"]
+    }
+
+Now apply the Service:
+
+    [root@icinga2-master1.localdomain /etc/icinga2/zones.d/master]# vim services.conf
+
+    apply Service for (drive in host.vars.drives) {
+      import "generic-service"
+
+      check_command = "nscp-windows"
+
+      display_name = "nscp-drive-" + drive
+
+      vars.nscp_win_host = "localhost"
+      vars.nscp_win_query = "check_drivesize"
+      vars.nscp_win_passwd = host.vars.nscp_passwd
+      vars.nscp_win_arg = [ "drive=" +  drive]
+
+      ignore where host.vars.os_type != "Windows"
+    }
+
+Validate the configuration and restart Icinga 2.
+
+    [root@icinga2-master1.localdomain /]# icinga2 daemon -C
+    [root@icinga2-master1.localdomain /]# systemctl restart icinga2
+
+Two new Services ("nscp-drive-D:" and "nscp-drive-C:") should now exist for the Host "icinga2-client2.localdomain".
 
 ## <a id="distributed-monitoring-advanced-hints"></a> Advanced Hints
 
