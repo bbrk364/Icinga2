@@ -463,7 +463,12 @@ namespace Icinga
 			btnRemoveEndpoint.Enabled = lvwEndpoints.SelectedItems.Count > 0;
 		}
 
-		private void lvwX509Fields_SelectedIndexChanged(object sender, EventArgs e)
+        private void lvwGlobalZones_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            btnRemoveGlobalZone.Enabled = lvwGlobalZones.SelectedItems.Count > 0;
+        }
+
+        private void lvwX509Fields_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (lvwX509Fields.SelectedItems.Count == 0)
 				return;
@@ -479,5 +484,29 @@ namespace Icinga
 				lvwEndpoints.Items.Remove(lvwEndpoints.SelectedItems[0]);
 			}
         }
-	}
+
+        private void btnAddGlobalZone_Click(object sender, EventArgs e)
+        {
+            GlobalZoneInputBox gib = new EndpointInputBox();
+
+            if (eib.ShowDialog(this) == DialogResult.Cancel)
+                return;
+
+            ListViewItem lvi = new ListViewItem();
+            lvi.Text = eib.txtInstanceName.Text;
+
+            if (eib.chkConnect.Checked)
+            {
+                lvi.SubItems.Add(eib.txtHost.Text);
+                lvi.SubItems.Add(eib.txtPort.Text);
+            }
+
+            lvwEndpoints.Items.Add(lvi);
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
 }
