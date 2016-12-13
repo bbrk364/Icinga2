@@ -24,9 +24,7 @@ set(base_test_SOURCES
   base-json.cpp base-match.cpp base-netstring.cpp base-object.cpp
   base-serialize.cpp base-shellescape.cpp base-stacktrace.cpp
   base-stream.cpp base-string.cpp base-timer.cpp base-type.cpp
-  base-value.cpp config-ops.cpp icinga-checkresult.cpp icinga-macros.cpp
-  icinga-notification.cpp
-  icinga-perfdata.cpp remote-base64.cpp remote-url.cpp
+  base-value.cpp config-ops.cpp
 )
 
 if(ICINGA2_UNITY_BUILD)
@@ -92,16 +90,31 @@ add_boost_test(base
         base_value/format
         config_ops/simple
         config_ops/advanced
-        icinga_checkresult/host_1attempt
+)
+
+###
+# Icinga tests
+###
+
+set(icinga_test_SOURCES
+  icinga-checkresult.cpp icinga-macros.cpp
+  icinga-notification.cpp icinga-perfdata.cpp
+)
+
+add_boost_test(icinga
+  SOURCES test-runner.cpp ${icinga_test_SOURCES}
+  LIBRARIES base config icinga
+  DEPENDENCIES methods
+  TESTS icinga_checkresult/host_1attempt
         icinga_checkresult/host_2attempts
         icinga_checkresult/host_3attempts
         icinga_checkresult/service_1attempt
         icinga_checkresult/service_2attempts
         icinga_checkresult/service_3attempts
-	icinga_checkresult/host_flapping_notification
-	icinga_checkresult/service_flapping_notification
-	icinga_notification/state_filter
-	icinga_notification/type_filter
+        icinga_checkresult/host_flapping_notification
+        icinga_checkresult/service_flapping_notification
+        icinga_notification/state_filter
+        icinga_notification/type_filter
         icinga_macros/simple
         icinga_perfdata/empty
         icinga_perfdata/simple
@@ -112,13 +125,30 @@ add_boost_test(base
         icinga_perfdata/ignore_invalid_warn_crit_min_max
         icinga_perfdata/invalid
         icinga_perfdata/multi
-        remote_base64/base64
+)
+
+###
+# Remote tests
+###
+
+set(remote_test_SOURCES
+  remote-base64.cpp remote-url.cpp
+)
+
+add_boost_test(remote
+  SOURCES test-runner.cpp ${remote_test_SOURCES}
+  LIBRARIES base config icinga
+  TESTS remote_base64/base64
         remote_url/id_and_path
         remote_url/parameters
         remote_url/get_and_set
         remote_url/format
         remote_url/illegal_legal_strings
 )
+
+###
+# Livestatus tests
+###
 
 if(ICINGA2_WITH_LIVESTATUS)
   set(livestatus_test_SOURCES
