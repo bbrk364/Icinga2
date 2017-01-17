@@ -368,7 +368,8 @@ void Checkable::ProcessCheckResult(const CheckResult::Ptr& cr, const MessageOrig
 		ExecuteEventHandler();
 
 	/* Flapping start/end notifications */
-	if (!was_flapping && is_flapping) {
+	if (send_notification && !was_flapping && is_flapping) {
+		/* FlappingStart notifications happen on state changes, not in downtimes */
 		if (!IsPaused())
 			OnNotificationsRequested(this, NotificationFlappingStart, cr, "", "", MessageOrigin::Ptr());
 
@@ -376,7 +377,8 @@ void Checkable::ProcessCheckResult(const CheckResult::Ptr& cr, const MessageOrig
 			<< "Flapping: Checkable " << GetName() << " started flapping (" << GetFlappingThreshold() << "% < " << GetFlappingCurrent() << "%).";
 
 		NotifyFlapping(origin);
-	} else if (was_flapping && !is_flapping) {
+	} else if (!in_downtime && was_flapping && !is_flapping) {
+		/* FlappingEnd notifications are independent from state changes, must not happen in downtine */
 		if (!IsPaused())
 			OnNotificationsRequested(this, NotificationFlappingEnd, cr, "", "", MessageOrigin::Ptr());
 
@@ -476,7 +478,7 @@ void Checkable::ExecuteCheck(void)
 			   a check result from the remote instance. The check will be re-scheduled
 			   using the proper check interval once we've received a check result. */
 			SetNextCheck(Utility::GetTime() + GetCheckCommand()->GetTimeout() + 30);
-		} else if (Application::GetInstance()->GetStartTime() < Utility::GetTime() - 300) {
+		} else if (!endpoint->GetSyncing() && Application::GetInstance()->GetStartTime() < Utility::GetTime() - 300) {
 			/* fail to perform check on unconnected endpoint */
 			cr->SetState(ServiceUnknown);
 

@@ -164,6 +164,14 @@ void ApiListener::Start(bool runtimeCreated)
 	OnMasterChanged(true);
 }
 
+void ApiListener::Stop(bool runtimeDeleted)
+{
+	ObjectImpl<ApiListener>::Stop(runtimeDeleted);
+
+	boost::mutex::scoped_lock lock(m_LogLock);
+	CloseLogFile();
+}
+
 ApiListener::Ptr ApiListener::GetInstance(void)
 {
 	return m_Instance;
@@ -681,7 +689,7 @@ void ApiListener::SyncSendMessage(const Endpoint::Ptr& endpoint, const Dictionar
 
 	if (!endpoint->GetSyncing()) {
 		Log(LogNotice, "ApiListener")
-		    << "Sending message to '" << endpoint->GetName() << "'";
+		    << "Sending message '" << message->Get("method") << "' to '" << endpoint->GetName() << "'";
 
 		double maxTs = 0;
 
@@ -705,9 +713,13 @@ bool ApiListener::RelayMessageOne(const Zone::Ptr& targetZone, const MessageOrig
 
 	Zone::Ptr myZone = Zone::GetLocalZone();
 
-	/* only relay the message to a) the same zone, b) the parent zone and c) direct child zones */
-	if (targetZone != myZone && targetZone != myZone->GetParent() && targetZone->GetParent() != myZone)
+	/* only relay the message to a) the same zone, b) the parent zone and c) direct child zones. Exception is a global zone. */
+	if (!targetZone->GetGlobal() &&
+	    targetZone != myZone &&
+	    targetZone != myZone->GetParent() &&
+	    targetZone->GetParent() != myZone) {
 		return true;
+	}
 
 	Endpoint::Ptr myEndpoint = GetLocalEndpoint();
 
@@ -715,7 +727,23 @@ bool ApiListener::RelayMessageOne(const Zone::Ptr& targetZone, const MessageOrig
 
 	bool relayed = false, log_needed = false, log_done = false;
 
-	for (const Endpoint::Ptr& endpoint : targetZone->GetEndpoints()) {
+	std::set<Endpoint::Ptr> targetEndpoints;
+
+	if (targetZone->GetGlobal()) {
+		targetEndpoints = myZone->GetEndpoints();
+
+		for (const Zone::Ptr& zone : ConfigType::GetObjectsByType<Zone>()) {
+			/* Fetch immediate child zone members */
+			if (zone->GetParent() == myZone) {
+				std::set<Endpoint::Ptr> endpoints = zone->GetEndpoints();
+				targetEndpoints.insert(endpoints.begin(), endpoints.end());
+			}
+		}
+	} else {
+		targetEndpoints = targetZone->GetEndpoints();
+	}
+
+	for (const Endpoint::Ptr& endpoint : targetEndpoints) {
 		/* don't relay messages to ourselves */
 		if (endpoint == GetLocalEndpoint())
 			continue;

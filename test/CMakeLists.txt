@@ -25,6 +25,7 @@ set(base_test_SOURCES
   base-serialize.cpp base-shellescape.cpp base-stacktrace.cpp
   base-stream.cpp base-string.cpp base-timer.cpp base-type.cpp
   base-value.cpp config-ops.cpp icinga-checkresult.cpp icinga-macros.cpp
+  icinga-notification.cpp
   icinga-perfdata.cpp remote-base64.cpp remote-url.cpp
 )
 
@@ -97,6 +98,10 @@ add_boost_test(base
         icinga_checkresult/service_1attempt
         icinga_checkresult/service_2attempts
         icinga_checkresult/service_3attempts
+	icinga_checkresult/host_flapping_notification
+	icinga_checkresult/service_flapping_notification
+	icinga_notification/state_filter
+	icinga_notification/type_filter
         icinga_macros/simple
         icinga_perfdata/empty
         icinga_perfdata/simple
