@@ -12,11 +12,11 @@ and distribution you are running.
 
   Distribution            | Repository
   ------------------------|---------------------------
-  Debian                  | [Icinga Repository](http://packages.icinga.org/debian/), [debmon](https://debmon.org/packages/debmon-jessie/icinga2)
-  Ubuntu                  | [Icinga Repository](http://packages.icinga.org/ubuntu/), [Icinga PPA](https://launchpad.net/~formorer/+archive/ubuntu/icinga)
-  RHEL/CentOS             | [Icinga Repository](http://packages.icinga.org/epel/)
-  openSUSE                | [Icinga Repository](http://packages.icinga.org/openSUSE/), [Server Monitoring Repository](https://build.opensuse.org/package/show/server:monitoring/icinga2)
-  SLES                    | [Icinga Repository](http://packages.icinga.org/SUSE/)
+  Debian                  | [Icinga Repository](http://packages.icinga.com/debian/), [debmon](https://debmon.org/packages/debmon-jessie/icinga2)
+  Ubuntu                  | [Icinga Repository](http://packages.icinga.com/ubuntu/), [Icinga PPA](https://launchpad.net/~formorer/+archive/ubuntu/icinga)
+  RHEL/CentOS             | [Icinga Repository](http://packages.icinga.com/epel/)
+  openSUSE                | [Icinga Repository](http://packages.icinga.com/openSUSE/), [Server Monitoring Repository](https://build.opensuse.org/package/show/server:monitoring/icinga2)
+  SLES                    | [Icinga Repository](http://packages.icinga.com/SUSE/)
   Gentoo                  | [Upstream](http://packages.gentoo.org/package/net-analyzer/icinga2)
   FreeBSD                 | [Upstream](http://www.freshports.org/net-mgmt/icinga2)
   ArchLinux               | [Upstream](https://aur.archlinux.org/packages/icinga2)
@@ -29,54 +29,55 @@ available. Please contact your distribution packagers.
 You need to add the Icinga repository to your package management configuration.
 Below is a list with examples for the various distributions.
 
-Debian (debmon):
+Debian:
 
-    # wget -O - https://debmon.org/debmon/repo.key 2>/dev/null | apt-key add -
-    # echo 'deb http://debmon.org/debmon debmon-jessie main' >/etc/apt/sources.list.d/debmon.list
+    # wget -O - http://packages.icinga.com/icinga.key | apt-key add -
+    # echo 'deb http://packages.icinga.com/debian icinga-jessie main' >/etc/apt/sources.list.d/icinga.list
     # apt-get update
 
-Ubuntu (PPA):
+Ubuntu:
 
-    # add-apt-repository ppa:formorer/icinga
+    # wget -O - http://packages.icinga.com/icinga.key | apt-key add -
+    # echo 'deb http://packages.icinga.com/ubuntu icinga-xenial main' >/etc/apt/sources.list.d/icinga.list
     # apt-get update
 
 RHEL/CentOS 7:
 
-    yum install https://packages.icinga.org/epel/7/release/noarch/icinga-rpm-release-7-1.el7.centos.noarch.rpm
+    yum install https://packages.icinga.com/epel/7/release/noarch/icinga-rpm-release-7-1.el7.centos.noarch.rpm
 
 RHEL/CentOS 6:
 
-    yum install https://packages.icinga.org/epel/6/release/noarch/icinga-rpm-release-6-1.el6.noarch.rpm
+    yum install https://packages.icinga.com/epel/6/release/noarch/icinga-rpm-release-6-1.el6.noarch.rpm
 
 RHEL/CentOS 5:
 
-    rpm -i http://packages.icinga.org/epel/5/release/noarch/icinga-rpm-release-5-1.el5.centos.noarch.rpm
+    rpm -i http://packages.icinga.com/epel/5/release/noarch/icinga-rpm-release-5-1.el5.centos.noarch.rpm
+
+Fedora 25:
+
+    dnf install https://packages.icinga.com/fedora/25/release/noarch/icinga-rpm-release-25-1.fc25.noarch.rpm
+
+Fedora 24:
+
+    dnf install https://packages.icinga.com/fedora/24/release/noarch/icinga-rpm-release-24-1.fc24.noarch.rpm
 
 Fedora 23:
 
-    dnf install https://packages.icinga.org/fedora/23/release/noarch/icinga-rpm-release-23-1.fc23.noarch.rpm
-
-Fedora 22:
-
-    dnf install https://packages.icinga.org/fedora/22/release/noarch/icinga-rpm-release-22-1.fc22.noarch.rpm
-
-Fedora 21:
-
-    yum install http://packages.icinga.org/fedora/21/release/noarch/icinga-rpm-release-21-1.fc21.noarch.rpm
+    dnf install https://packages.icinga.com/fedora/23/release/noarch/icinga-rpm-release-23-1.fc23.noarch.rpm
 
 SLES 11:
 
-    # zypper ar http://packages.icinga.org/SUSE/ICINGA-release-11.repo
+    # zypper ar http://packages.icinga.com/SUSE/ICINGA-release-11.repo
     # zypper ref
 
 SLES 12:
 
-    # zypper ar http://packages.icinga.org/SUSE/ICINGA-release.repo
+    # zypper ar http://packages.icinga.com/SUSE/ICINGA-release.repo
     # zypper ref
 
 openSUSE:
 
-    # zypper ar http://packages.icinga.org/openSUSE/ICINGA-release.repo
+    # zypper ar http://packages.icinga.com/openSUSE/ICINGA-release.repo
     # zypper ref
 
 
@@ -96,6 +97,11 @@ the [EPEL rpm package](http://fedoraproject.org/wiki/EPEL#How_can_I_use_these_ex
 
 The packages for SLES 11 depend on the `openssl1` package which is distributed
 as part of the [SLES 11 Security Module](https://www.suse.com/communities/conversations/introducing-the-suse-linux-enterprise-11-security-module/).
+
+#### <a id="package-sles-sdk"></a> SLES 12 SDK
+
+Icinga 2 requires the `libboost_chrono1_54_0` package from the `SLES 12 SDK` repository. Refer to the SUSE Enterprise 
+Linux documentation for further information.
 
 ### <a id="installing-icinga2"></a> Installing Icinga 2
 
@@ -140,7 +146,7 @@ You can verify that by calling `icinga2 feature list`
 enabled and disabled.
 
     # icinga2 feature list
-    Disabled features: api command compatlog debuglog graphite icingastatus ido-mysql ido-pgsql livestatus notification perfdata statusdata syslog
+    Disabled features: api command compatlog debuglog gelf graphite icingastatus ido-mysql ido-pgsql influxdb livestatus opentsdb perfdata statusdata syslog
     Enabled features: checker mainlog notification
 
 
@@ -148,19 +154,21 @@ enabled and disabled.
 
 By default Icinga 2 uses the following files and directories:
 
-  Path                                | Description
-  ------------------------------------|------------------------------------
-  /etc/icinga2                        | Contains Icinga 2 configuration files.
-  /etc/init.d/icinga2                 | The Icinga 2 init script.
-  /usr/sbin/icinga2                   | The Icinga 2 binary.
-  /usr/share/doc/icinga2              | Documentation files that come with Icinga 2.
-  /usr/share/icinga2/include          | The Icinga Template Library and plugin command configuration.
-  /var/run/icinga2                    | PID file.
-  /var/run/icinga2/cmd                | Command pipe and Livestatus socket.
-  /var/cache/icinga2                  | status.dat/objects.cache, icinga2.debug files
-  /var/spool/icinga2                  | Used for performance data spool files.
-  /var/lib/icinga2                    | Icinga 2 state file, cluster log, local CA and configuration files.
-  /var/log/icinga2                    | Log file location and compat/ directory for the CompatLogger feature.
+  Path                                		| Description
+  ----------------------------------------------|------------------------------------
+  /etc/icinga2                        		| Contains Icinga 2 configuration files.
+  /usr/lib/systemd/system/icinga2.service 	| The Icinga 2 Systemd service file on systems using Systemd.
+  /etc/init.d/icinga2                 		| The Icinga 2 init script on systems using SysVinit.
+  /usr/sbin/icinga2                   		| Shell wrapper for the Icinga 2 binary.
+  /usr/lib\*/icinga2				| Libraries and the Icinga 2 binary (use `find /usr -type f -name icinga2` to locate the binary path).
+  /usr/share/doc/icinga2              		| Documentation files that come with Icinga 2.
+  /usr/share/icinga2/include          		| The Icinga Template Library and plugin command configuration.
+  /var/run/icinga2                    		| PID file.
+  /var/run/icinga2/cmd                		| Command pipe and Livestatus socket.
+  /var/cache/icinga2                  		| status.dat/objects.cache, icinga2.debug files
+  /var/spool/icinga2                  		| Used for performance data spool files.
+  /var/lib/icinga2                    		| Icinga 2 state file, cluster log, local CA and configuration files (cluster, api).
+  /var/log/icinga2                    		| Log file location and compat/ directory for the CompatLogger feature.
 
 FreeBSD uses slightly different paths:
 
@@ -170,14 +178,15 @@ By default Icinga 2 uses the following files and directories:
   ------------------------------------|------------------------------------
   /usr/local/etc/icinga2              | Contains Icinga 2 configuration files.
   /usr/local/etc/rc.d/icinga2         | The Icinga 2 init script.
-  /usr/local/sbin/icinga2             | The Icinga 2 binary.
+  /usr/local/sbin/icinga2             | Shell wrapper for the Icinga 2 binary.
+  /usr/local/lib/icinga2              | Libraries and the Icinga 2 binary.
   /usr/local/share/doc/icinga2        | Documentation files that come with Icinga 2.
   /usr/local/share/icinga2/include    | The Icinga Template Library and plugin command configuration.
   /var/run/icinga2                    | PID file.
   /var/run/icinga2/cmd                | Command pipe and Livestatus socket.
   /var/cache/icinga2                  | status.dat/objects.cache, icinga2.debug files
   /var/spool/icinga2                  | Used for performance data spool files.
-  /var/lib/icinga2                    | Icinga 2 state file, cluster log, local CA and configuration files.
+  /var/lib/icinga2                    | Icinga 2 state file, cluster log, local CA and configuration files (cluster, api).
   /var/log/icinga2                    | Log file location and compat/ directory for the CompatLogger feature.
 
 ## <a id="setting-up-check-plugins"></a> Setting up Check Plugins

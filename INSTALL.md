@@ -7,10 +7,17 @@ of operating systems.
 Please check the documentation in the [doc/](doc/) directory for a current list
 of available packages and detailed installation instructions.
 
+The online documentation is available at [docs.icinga.com](https://docs.icinga.com)
+and will guide you step by step.
+
 There are a number of known caveats when installing from source such as
 incorrect directory and file permissions. So even if you're planning to
 not use the official packages it is advisable to build your own Debian
 or RPM packages.
+
+# Builds
+
+This information is intended for developers and packagers.
 
 ## Build Requirements
 
@@ -21,6 +28,7 @@ parentheses):
 * cmake >= 2.6
 * GNU make (make)
 * C++ compiler which supports C++11 (gcc-c++ >= 4.7 on RHEL/SUSE, build-essential on Debian, alternatively clang++)
+ * RedHat Developer Tools on RHEL5/6 (details on building below)
 * pkg-config
 * OpenSSL library and header files >= 0.9.8 (openssl-devel on RHEL, libopenssl1-devel on SLES11,
 libopenssl-devel on SLES12, libssl-dev on Debian)
@@ -127,6 +135,33 @@ Copy the icinga2.spec file to `rpmbuild/SPEC` and then run this command:
 
     $ rpmbuild -ba SPEC/icinga2.spec
 
+#### RHEL/CentOS 5 and 6
+
+The RedHat Developer Toolset is required for building Icinga 2 beforehand.
+This contains a modern version of flex and a C++ compiler which supports
+C++11 features.
+
+    cat >/etc/yum.repos.d/devtools-2.repo <<REPO
+    [testing-devtools-2-centos-\$releasever]
+    name=testing 2 devtools for CentOS $releasever
+    baseurl=http://people.centos.org/tru/devtools-2/\$releasever/\$basearch/RPMS
+    gpgcheck=0
+    REPO
+
+    yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
+
+    export LD_LIBRARY_PATH=/opt/rh/devtoolset-2/root/usr/lib:$LD_LIBRARY_PATH
+    export PATH=/opt/rh/devtoolset-2/root/usr/bin:$PATH
+    ln -sf /opt/rh/devtoolset-2/root/usr/bin/ld.bfd /opt/rh/devtoolset-2/root/usr/bin/ld
+    for file in `find /opt/rh/devtoolset-2/root/usr/include/c++ -name c++config.h`; do
+      echo '#define _GLIBCXX__PTHREADS' >> $file
+    done
+
+#### SLES 11
+
+The Icinga repository provides the required boost package version and must be
+added before building.
+
 ### Building Icinga 2 Debs
 
 Setup your build environment on Debian/Ubuntu, copy the 'debian' directory from
@@ -143,18 +178,15 @@ install requirements:
 * enable the `checker`, `notification` and `mainlog` feature by default
 * run 'icinga2 api setup' in order to enable the `api` feature and generate SSL certificates for the node
 
-
 ## Running Icinga 2
 
 Icinga 2 comes with a single binary that takes care of loading all the relevant
 components (e.g. for check execution, notifications, etc.):
 
-    # /usr/sbin/icinga2 daemon
-    [2015-03-12 13:25:56 +0100] information/cli: Icinga application loader (version: v2.3.0-20-ga4d3713; debug)
-    [2015-03-12 13:25:56 +0100] information/cli: Loading application type: icinga/IcingaApplication
-    [2015-03-12 13:25:56 +0100] information/Utility: Loading library 'libicinga.dylib'
-    [2015-03-12 13:25:56 +0100] information/ConfigCompiler: Compiling config file: /Users/gunnar/i2/etc/icinga2/icinga2.conf
-    [2015-03-12 13:25:56 +0100] information/ConfigCompiler: Compiling config file: /Users/gunnar/i2/etc/icinga2/constants.conf
+    # icinga2 daemon
+    [2016-12-08 16:44:24 +0100] information/cli: Icinga application loader (version: v2.5.4-231-gb10a6b7; debug)
+    [2016-12-08 16:44:24 +0100] information/cli: Loading configuration file(s).
+    [2016-12-08 16:44:25 +0100] information/ConfigItem: Committing config item(s).
     ...
 
 Icinga 2 can be started as a daemon using the provided init script:
