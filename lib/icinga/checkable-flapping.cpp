@@ -23,14 +23,19 @@
 
 using namespace icinga;
 
-#define FLAPPING_INTERVAL (30 * 60)
+#define FLAPPING_INTERVAL (30 * 60 * 1.0)
 
 double Checkable::GetFlappingCurrent(void) const
 {
 	if (GetFlappingPositive() + GetFlappingNegative() <= 0)
 		return 0;
 
-	return 100 * GetFlappingPositive() / (GetFlappingPositive() + GetFlappingNegative());
+	double pct = 100 * GetFlappingPositive() / (GetFlappingPositive() + GetFlappingNegative());
+
+	if (pct < 0)
+		pct = 0;
+
+	return pct;
 }
 
 void Checkable::UpdateFlappingStatus(bool stateChange)
