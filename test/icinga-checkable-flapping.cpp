@@ -24,38 +24,32 @@
 using namespace icinga;
 
 #ifdef I2_DEBUG
-CheckResult::Ptr build_check_result(int status)
+static CheckResult::Ptr MakeCheckResult(ServiceState state)
 {
-	printf("Building a check result status=%d now=%d\n", status, (int) Utility::GetTime());
-
 	CheckResult::Ptr cr = new CheckResult();
-	cr->SetCheckSource("test");
-	cr->SetActive(true);
-	cr->SetOutput("test output");
-	cr->SetExitStatus(status);
-	cr->SetState(static_cast<ServiceState>(status));
+
+	cr->SetState(state);
+
+	double now = Utility::GetTime();
+	cr->SetScheduleStart(now);
+	cr->SetScheduleEnd(now);
+	cr->SetExecutionStart(now);
+	cr->SetExecutionEnd(now);
 
 	return cr;
 }
 
-void output_flapping(const Checkable::Ptr& obj)
+void LogFlapping(const Checkable::Ptr& obj)
 {
-	printf("Flapping status: is=%d percent=%d positive=%d negative=%d\n",
-	   (int) obj->IsFlapping(),
-	   (int) obj->GetFlappingCurrent(),
-	   obj->GetFlappingPositive(),
-	   obj->GetFlappingNegative()
-	);
+	std::cout << "Flapping status: is_flapping: " << obj->IsFlapping() << " percent: " << obj->GetFlappingCurrent()
+	    << " positive: " << obj->GetFlappingPositive()
+	    << " negative: " << obj->GetFlappingNegative() << std::endl;
 }
 
-void output_host_status(const Host::Ptr &host)
+void LogHostStatus(const Host::Ptr &host)
 {
-	printf("Current status: state=%d hard=%d attempt=%d/%d\n\n",
-	   host->GetState(),
-	   host->GetStateType(),
-	   host->GetCheckAttempt(),
-	   host->GetMaxCheckAttempts()
-	);
+	std::cout << "Current status: state: " << host->GetState() << " state_type: " << host->GetStateType()
+	    << "check attempt: " << host->GetCheckAttempt() << "/" << host->GetMaxCheckAttempts() << std::endl;
 }
 #endif /* I2_DEBUG */
 
@@ -76,7 +70,7 @@ BOOST_AUTO_TEST_CASE(host_not_flapping)
 	Utility::SetTime(0);
 
 	// check if our first result has been processed
-	host->ProcessCheckResult(build_check_result(0));
+	host->ProcessCheckResult(MakeCheckResult(ServiceOK));
 
 	BOOST_CHECK(host->GetState() == 0);
 	BOOST_CHECK(host->GetCheckAttempt() == 1);
@@ -87,14 +81,14 @@ BOOST_AUTO_TEST_CASE(host_not_flapping)
 	BOOST_CHECK(host->GetFlappingPositive() == 0);
 	BOOST_CHECK(host->GetFlappingNegative() == 0);
 
-	output_flapping(host);
-	output_host_status(host);
+	LogFlapping(host);
+	LogHostStatus(host);
 	Utility::IncrementTime(60);
 
 	// watch the state being stable
 	int i = 0;
 	while (i++ < 10) {
-		host->ProcessCheckResult(build_check_result(0));
+		host->ProcessCheckResult(MakeCheckResult(ServiceOK));
 
 		BOOST_CHECK(host->GetState() == 0);
 		BOOST_CHECK(host->GetCheckAttempt() == 1);
@@ -105,8 +99,8 @@ BOOST_AUTO_TEST_CASE(host_not_flapping)
 		BOOST_CHECK(host->GetFlappingPositive() == 0);
 		BOOST_CHECK(host->GetFlappingNegative() == Utility::GetTime());
 
-		output_flapping(host);
-		output_host_status(host);
+		LogFlapping(host);
+		LogHostStatus(host);
 		Utility::IncrementTime(60);
 	}
 #endif /* I2_DEBUG */
@@ -120,7 +114,7 @@ BOOST_AUTO_TEST_CASE(host_flapping_bad_hard)
 	std::cout << "Running test with bad hard states...\n";
 
 	// some configuration
-	int interval = 60;
+	double interval = 60;
 	int max_attempts = 5;
 	int attempts_broken = max_attempts + 3;
 	int attempts_ok = 3;
@@ -131,18 +125,18 @@ BOOST_AUTO_TEST_CASE(host_flapping_bad_hard)
 	host->SetMaxCheckAttempts(max_attempts);
 
 	Utility::SetTime(0);
-	int now = 0;
-	int flapping_positive = 0;
-	int flapping_negative = 0;
+	double now = 0;
+	double flapping_positive = 0;
+	double flapping_negative = 0;
 
 	// now let the host get bad, any stay bad for a few minutes
-	int i = 0;
-	while (i <= attempts_broken + attempts_ok) {
-		int state = 0;
-		if (i > 0 && i <= attempts_broken)
-			state = 2;
+	for (int i = 0; i <= attempts_broken + attempts_ok; i++) {
+		ServiceState state = ServiceOK;
 
-		host->ProcessCheckResult(build_check_result(state));
+		if (i > 0 && i <= attempts_broken)
+			state = ServiceCritical;
+
+		host->ProcessCheckResult(MakeCheckResult(state));
 
 		BOOST_CHECK(host->GetLastCheck() == now);
 
@@ -151,16 +145,14 @@ BOOST_AUTO_TEST_CASE(host_flapping_bad_hard)
 			BOOST_CHECK(host->GetCheckAttempt() == 1);
 			BOOST_CHECK(host->GetStateType() == StateTypeHard);
 
-		}
-		else if (i <= max_attempts) {
+		} else if (i <= max_attempts) {
 			BOOST_CHECK(host->GetState() == 1);
 			BOOST_CHECK(host->GetCheckAttempt() == i);
 			BOOST_CHECK(host->GetStateType() == StateTypeSoft);
 
 			BOOST_CHECK(host->GetFlappingPositive() == 0);
 			BOOST_CHECK(host->GetFlappingNegative() == 0);
-		}
-		else if (i <= attempts_broken) {
+		} else if (i <= attempts_broken) {
 			if (i == max_attempts + 1) // first hard state
 				flapping_negative += (interval * max_attempts); // note: full time in soft counts as changing
 
@@ -171,8 +163,7 @@ BOOST_AUTO_TEST_CASE(host_flapping_bad_hard)
 			flapping_negative += interval;
 			BOOST_CHECK(host->GetFlappingPositive() == 0); // TODO: should this have been increased?
 			BOOST_CHECK(host->GetFlappingNegative() == flapping_negative);
-		}
-		else {
+		} else {
 			BOOST_CHECK(host->GetState() == 0);
 			BOOST_CHECK(host->GetCheckAttempt() == 1);
 			BOOST_CHECK(host->GetStateType() == StateTypeHard);
@@ -186,10 +177,9 @@ BOOST_AUTO_TEST_CASE(host_flapping_bad_hard)
 			BOOST_CHECK(host->GetFlappingNegative() == flapping_negative);
 		}
 
-		output_flapping(host);
-		output_host_status(host);
+		LogFlapping(host);
+		LogHostStatus(host);
 		Utility::SetTime(now += interval);
-		i++;
 	}
 #endif /* I2_DEBUG */
 }
@@ -202,7 +192,7 @@ BOOST_AUTO_TEST_CASE(host_flapping_bad_soft_ok)
     std::cout << "Running test with bad soft states...\n";
 
 	// configuration
-	int interval = 60;
+	double interval = 60;
 	int max_attempts = 3;
 	int checks = 10;
 
@@ -212,17 +202,16 @@ BOOST_AUTO_TEST_CASE(host_flapping_bad_soft_ok)
 	host->SetMaxCheckAttempts(max_attempts);
 
 	Utility::SetTime(0);
-	int now = 0;
-	int flapping_positive = 0;
-	int flapping_negative = 0;
+	double now = 0;
+	double flapping_positive = 0;
+	double flapping_negative = 0;
 
 	// let the host flap between 1st soft and an ok state
-	int i = 0;
-	while (i < checks) {
-		int state = (i % 2 == 0) ? 0 : 2;
-		host->ProcessCheckResult(build_check_result(state));
+	for (int i = 0; i < checks; i++) {
+		ServiceState state = (i % 2 == 0) ? ServiceOK : ServiceCritical;
+		host->ProcessCheckResult(MakeCheckResult(state));
 
-		BOOST_CHECK(host->GetState() == (state == 2) ? 1 : 0); // note: host state here
+		BOOST_CHECK(host->GetState() == (state == ServiceCritical) ? ServiceWarning : ServiceOK); // note: host state here
 		BOOST_CHECK(host->GetLastCheck() == now);
 
 		if (i % 2 == 0) {
@@ -241,10 +230,9 @@ BOOST_AUTO_TEST_CASE(host_flapping_bad_soft_ok)
 		BOOST_CHECK(host->GetFlappingPositive() == flapping_positive);
 		BOOST_CHECK(host->GetFlappingNegative() == flapping_negative);
 
-		output_flapping(host);
-		output_host_status(host);
+		LogFlapping(host);
+		LogHostStatus(host);
 		Utility::SetTime(now += interval);
-		i++;
 	}
 #endif /* I2_DEBUG */
 }
